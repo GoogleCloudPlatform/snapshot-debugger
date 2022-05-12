@@ -23,6 +23,16 @@ use GitHub pull requests for this purpose. Consult
 [GitHub Help](https://help.github.com/articles/about-pull-requests/) for more
 information on using pull requests.
 
+## CLI coding style
+
+The CLI python code follows the [Google Python Style
+Guide](https://google.github.io/styleguide/pyguide.html) with one exception:
+
+- 2 spaces for indentation rather than 4.
+
+It also uses the [YAPF](https://github.com/google/yapf) formatter, which should
+be run on any code changes.
+
 ## Community Guidelines
 
 This project follows
