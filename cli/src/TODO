@@ -1,9 +1,0 @@
-- Cleanup/add function comments, follow docstring,
-  https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings
-- List snapshots should return recently (past 5 minutes) finished snapshots be default
-- List snapshots should sort the snapshots based on timestamp
-- Sort output of list_snapshots
-- Add logpoint support
-- Autodetect if default-rtdb should be used
-- Add all-users argument to list_snapshots command to match delete_snapshots
-- Fix output for stout/stderr, reserve stdout for JSON output, everything else to stderr
