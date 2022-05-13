@@ -66,20 +66,23 @@ roles](https://cloud.google.com/iam/docs/understanding-roles#firebase-roles)
 Snapshot Debugger requires Python 3.6 or above and the `gcloud` CLI. If you are
 working in Cloud Shell, you already have Python and `gcloud` installed.
 
-#### Set up the environment
+In addition, the environment should already configured correctly by default. You
+can verify this by running the following commands:
 
-1. Run `gcloud auth login`, be sure to use the account that has permissions on
-   the Google Cloud project you are working on.
-2. Run `gcloud config set project PROJECT_ID`. Where PROJECT_ID is the project
-   you want to use. The Snapshot Debugger CLI always acts on the current
-   `gcloud` configured project.
+1. `gcloud config get-value project`
+2. `gcloud config get-value account`
+
+> **NOTE**: When running the cli, you may encounter a popup warning you that
+`gcloud is requesting your credentials to make a GCP API call`. You'll  need to
+click `AUTHORIZE` to proceed.
+
 
 ### Using Snapshot Debugger outside of Cloud Shell
 
-#### Ensure you have Python 3.5 or above installed
+#### Ensure you have Python 3.6 or above installed
 
 The Snapshot Debugger CLI requires [Python](https://www.python.org/downloads/)
-3.5 or newer.
+3.6 or newer.
 
 #### Install Google Cloud `gcloud` CLI
 
@@ -182,7 +185,7 @@ This will instruct the CLI to create and use a database with the name
 `PROJECT_ID-default-rtdb`. It will only be created if it does not currently
 exist.
 
-1. Run `python3 cli/src/cli.py init –use-default-rtdb`
+1. Run `python3 cli/src/cli.py init --use-default-rtdb`
 2. The output resembles the following:
 
 ```
@@ -225,7 +228,9 @@ to create one.
 
     See the [Firebase information on scopes for Realtime Database and
     Authentication](https://firebase.google.com/docs/admin/setup#set-scopes-for-realtime-database-auth)
-    page for more information on access scopes.
+    page for more information on access scopes. To note, the `userinfo.email`
+    scope is not included when specifying `full access to google apis` when
+    creating a GCE instance, and will need to be added.
 
 2. Use [npm](https://www.npmjs.com/) to install the package:
 
@@ -238,7 +243,7 @@ to create one.
 
     ```
     require('@google-cloud/debug-agent').start({
-      useFirebase: true
+      useFirebase: true,
       serviceContext: {
         service: 'SERVICE',
         version: 'VERSION',
@@ -278,9 +283,11 @@ The debugger is now ready for use with your app.
 
     ```
     require('@google-cloud/debug-agent').start({
-      useFirebase: true
+      useFirebase: true,
       firebaseKeyPath: 'PATH-TO-KEY-FILE',
-      firebaseDbUrl: 'https://RTDB-NAME.firebaseio.com',
+      // Specify this if you are the Spark billing plan and are using the
+      // default RTDB instance.
+      // firebaseDbUrl: 'https://RTDB-NAME-default-rtdb.firebaseio.com',
       serviceContext: {
         service: 'SERVICE',
         version: 'VERSION',
@@ -318,9 +325,10 @@ Add the `--use-default-rtdb` flag if you are using the free Firebase Spark plan.
 The output resembles the following:
 
 ```
-Name           ID  Description
----------  ------  -------------
-default -  123456  node index.js
+Name           ID                                Description
+-------------  --------------------------------  ----------------------------------------
+test-app - v1  4a1d08461c8e10cc010b606353389d3e  node index.js module:test-app version:v1
+test-app - v2  2054916c4b46c04e04fffa32781bbd2f  node index.js module:test-app version:v2
 ```
 
 ### Set Snapshots
@@ -333,11 +341,11 @@ return a snapshot of your app's data, and view it in detail to debug your app.
 2. Set snapshots with the following command:
 
 ```
-python3 cli/src/cli.py set_snapshot 123456 index.js:21
+python3 cli/src/cli.py set_snapshot 2054916c4b46c04e04fffa32781bbd2f index.js:21
 ```
 
 Where:
-*   `123456` is the debuggee ID
+*   `2054916c4b46c04e04fffa32781bbd2f` is the debuggee ID
 *   `index.js:21` is the `file:line` for the snapshot
 
 Add the `--use-default-rtdb` flag if you are using the Firebase Spark plan.
@@ -357,7 +365,7 @@ command.
 
 Example:
 ```
-python3 cli/src/cli.py set_snapshot --condition="ultimateAnswer <= 42 && foo==bar"
+python3 cli/src/cli.py set_snapshot 2054916c4b46c04e04fffa32781bbd2f index.js:26 --condition="ultimateAnswer <= 42 && foo==bar"
 ```
 
 You can use the following language features to express conditions:
@@ -396,7 +404,7 @@ command.
 
 Example:
 ```
-python3 cli/src/cli.py set_snapshot --expression="histogram.length"
+python3 cli/src/cli.py set_snapshot 2054916c4b46c04e04fffa32781bbd2f index.js:26 --expression="histogram.length"
 ```
 
 
@@ -406,11 +414,11 @@ python3 cli/src/cli.py set_snapshot --expression="histogram.length"
 2. List snapshots with the following command:
 
 ```
-python3 cli/src/cli.py list_snapshots 123456 --include-inactive
+python3 cli/src/cli.py list_snapshots 2054916c4b46c04e04fffa32781bbd2f --include-inactive
 ```
 
 Where:
-*   `123456` is the debuggee ID
+*   `2054916c4b46c04e04fffa32781bbd2f` is the debuggee ID
 
 Add the `--use-default-rtdb` flag if you are using the Firebase Spark plan.
 
@@ -431,11 +439,11 @@ COMPLETED  index.js:21               2022-03-23T02:52:23.558000Z  b-1648003845
 2. Get a snapshot with the following command:
 
 ```
-python3 cli/src/cli.py get_snapshot 123456 b-1649947203
+python3 cli/src/cli.py get_snapshot 2054916c4b46c04e04fffa32781bbd2f b-1649947203
 ```
 
 Where:
-*   `123456` is the debuggee ID
+*   `2054916c4b46c04e04fffa32781bbd2f` is the debuggee ID
 *   `b-1649947203` is the snapshot ID
 
 Add the `--use-default-rtdb` flag if you are using the Firebase Spark plan.
@@ -443,8 +451,19 @@ Add the `--use-default-rtdb` flag if you are using the Firebase Spark plan.
 The output resembles the following:
 
 ```
+--------------------------------------------------------------------------------
+| Summary
+--------------------------------------------------------------------------------
+
+Location:    index.js:30
+Condition:   No condition set.
+Expressions: No expressions set.
+Status:      Complete
+Create Time: 2022-05-13T14:14:01.444000Z
+Final Time:  2022-05-13T14:14:02.516000Z
+
 -------------------------------------------------------------------------------
-| Expressions
+| Evaluated Expressions
 --------------------------------------------------------------------------------
 
 There were no expressions specified.
@@ -481,11 +500,11 @@ Function              Location
 2. Delete snapshots with the following command:
 
 ```
-python3 cli/src/cli.py delete_snapshots 123456 --include-inactive
+python3 cli/src/cli.py delete_snapshots 2054916c4b46c04e04fffa32781bbd2f --include-inactive
 ```
 
 Where:
-*   `123456` is the debuggee ID
+*   `2054916c4b46c04e04fffa32781bbd2f` is the debuggee ID
 
 Add the `--use-default-rtdb` flag if you are using the Firebase Spark plan.
 
