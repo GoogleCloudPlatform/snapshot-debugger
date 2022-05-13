@@ -66,11 +66,11 @@ roles](https://cloud.google.com/iam/docs/understanding-roles#firebase-roles)
 Snapshot Debugger requires Python 3.6 or above and the `gcloud` CLI. If you are
 working in Cloud Shell, you already have Python and `gcloud` installed.
 
-#### Set up the environment
+In addition, the environment should already configured correctly by default. You
+can verify this by running the following commands:
 
-1. Run `gcloud config set project PROJECT_ID`. Where PROJECT_ID is the project
-   you want to use. The Snapshot Debugger CLI always acts on the current
-   `gcloud` configured project.
+1. `gcloud config get-value project`
+2. `gcloud config get-value account`
 
 > **NOTE**: When running the cli, you may encounter a popup warning you that
 `gcloud is requesting your credentials to make a GCP API call`. You'll  need to
@@ -283,7 +283,7 @@ The debugger is now ready for use with your app.
 
     ```
     require('@google-cloud/debug-agent').start({
-      useFirebase: true
+      useFirebase: true,
       firebaseKeyPath: 'PATH-TO-KEY-FILE',
       // Specify this if you are the Spark billing plan and are using the
       // default RTDB instance.
