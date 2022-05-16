@@ -18,14 +18,20 @@ grouped here so they can be reused.
 """
 
 import argparse
+import os
 
-DATABASE_URL_HELP = """
+DATABASE_URL_ENV_VAR_NAME = 'SNAPSHOT_DEBUGGER_DATABASE_URL'
+DEBUGGEE_ID_ENV_VAR_NAME = 'SNAPSHOT_DEBUGGER_DEBUGGEE_ID'
+
+DATABASE_URL_HELP = f"""
 Specify the database URL for the CLI to use. This should only be used as an
 override to make the CLI talk to a specific instance and isn't expected to be
 needed. If you are on the Spark plan and want the CLI to use the default
 instance use the --use-default-rtdb flag instead. If neither of the
 --database-id or --use-default-rtdb flags are used with the init command, the
-CLI uses the default url.
+CLI uses the default url.  This value may be specified either via this command
+line argument or via the '{DATABASE_URL_ENV_VAR_NAME}' environment variable.
+When both are specified, the value from the command line takes precedence.
 """
 
 FORMAT_HELP = """
@@ -41,9 +47,11 @@ Required for projects on the Spark plan. When specified, instructs the CLI to
 use the project's default Firebase RTDB database.
 """
 
-DEBUGGEE_ID_HELP = """
+DEBUGGEE_ID_HELP = f"""
 Specify the debuggee ID. It must be an ID obtained from the list_debuggees
-command.
+command. This value is required, it must be specified either via this command
+line argument or via the '{DEBUGGEE_ID_ENV_VAR_NAME}' environment variable.
+When both are specified, the value from the command line takes precedence.
 """
 
 
@@ -68,8 +76,17 @@ class CommonArgumentParsers:
 
   @staticmethod
   def create_database_url_parser():
+    arguments = {
+        'help': DATABASE_URL_HELP,
+    }
+
+    env_database_url = os.environ.get(DATABASE_URL_ENV_VAR_NAME)
+
+    if env_database_url is not None:
+      arguments['default'] = env_database_url
+
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument('--database-url', help=DATABASE_URL_HELP)
+    parser.add_argument('--database-url', **arguments)
     return parser
 
   @staticmethod
@@ -87,9 +104,19 @@ class CommonArgumentParsers:
 
   @staticmethod
   def create_debuggee_id_parser():
+    arguments = {
+        'help': DEBUGGEE_ID_HELP,
+    }
+
+    env_debuggee_id = os.environ.get(DEBUGGEE_ID_ENV_VAR_NAME)
+
+    if env_debuggee_id is not None:
+      arguments['default'] = env_debuggee_id
+    else:
+      arguments['required'] = True
+
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument(
-        'debuggee_id', metavar='debuggee-id', help=DEBUGGEE_ID_HELP)
+    parser.add_argument('--debuggee-id', **arguments)
     return parser
 
 

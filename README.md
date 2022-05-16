@@ -341,11 +341,10 @@ return a snapshot of your app's data, and view it in detail to debug your app.
 2. Set snapshots with the following command:
 
 ```
-python3 cli/src/cli.py set_snapshot 2054916c4b46c04e04fffa32781bbd2f index.js:21
+python3 cli/src/cli.py set_snapshot index.js:21 --debuggee-id 2054916c4b46c04e04fffa32781bbd2f
 ```
 
 Where:
-*   `2054916c4b46c04e04fffa32781bbd2f` is the debuggee ID
 *   `index.js:21` is the `file:line` for the snapshot
 
 Add the `--use-default-rtdb` flag if you are using the Firebase Spark plan.
@@ -365,7 +364,7 @@ command.
 
 Example:
 ```
-python3 cli/src/cli.py set_snapshot 2054916c4b46c04e04fffa32781bbd2f index.js:26 --condition="ultimateAnswer <= 42 && foo==bar"
+python3 cli/src/cli.py set_snapshot index.js:26 --debuggee-id 2054916c4b46c04e04fffa32781bbd2f --condition="ultimateAnswer <= 42 && foo==bar"
 ```
 
 You can use the following language features to express conditions:
@@ -404,7 +403,7 @@ command.
 
 Example:
 ```
-python3 cli/src/cli.py set_snapshot 2054916c4b46c04e04fffa32781bbd2f index.js:26 --expression="histogram.length"
+python3 cli/src/cli.py set_snapshot index.js:26 --debuggee-id 2054916c4b46c04e04fffa32781bbd2f --expression="histogram.length"
 ```
 
 
@@ -414,11 +413,8 @@ python3 cli/src/cli.py set_snapshot 2054916c4b46c04e04fffa32781bbd2f index.js:26
 2. List snapshots with the following command:
 
 ```
-python3 cli/src/cli.py list_snapshots 2054916c4b46c04e04fffa32781bbd2f --include-inactive
+python3 cli/src/cli.py list_snapshots --debuggee-id 2054916c4b46c04e04fffa32781bbd2f --include-inactive
 ```
-
-Where:
-*   `2054916c4b46c04e04fffa32781bbd2f` is the debuggee ID
 
 Add the `--use-default-rtdb` flag if you are using the Firebase Spark plan.
 
@@ -439,11 +435,10 @@ COMPLETED  index.js:21               2022-03-23T02:52:23.558000Z  b-1648003845
 2. Get a snapshot with the following command:
 
 ```
-python3 cli/src/cli.py get_snapshot 2054916c4b46c04e04fffa32781bbd2f b-1649947203
+python3 cli/src/cli.py get_snapshot b-1649947203 --debuggee-id 2054916c4b46c04e04fffa32781bbd2f
 ```
 
 Where:
-*   `2054916c4b46c04e04fffa32781bbd2f` is the debuggee ID
 *   `b-1649947203` is the snapshot ID
 
 Add the `--use-default-rtdb` flag if you are using the Firebase Spark plan.
@@ -500,11 +495,8 @@ Function              Location
 2. Delete snapshots with the following command:
 
 ```
-python3 cli/src/cli.py delete_snapshots 2054916c4b46c04e04fffa32781bbd2f --include-inactive
+python3 cli/src/cli.py delete_snapshots --debuggee-id 2054916c4b46c04e04fffa32781bbd2f --include-inactive
 ```
-
-Where:
-*   `2054916c4b46c04e04fffa32781bbd2f` is the debuggee ID
 
 Add the `--use-default-rtdb` flag if you are using the Firebase Spark plan.
 
@@ -588,7 +580,7 @@ Snapshot Debugger.
 | Argument                      | Description |
 |-------------------------------|-------------|
 | `-h`, `--help`                | Show this help message and exit. |
-| `--database-url DATABASE_URL` | Specify the database URL for the CLI to use. This should only be used as an override to make the CLI talk to a specific instance and isn't expected to be needed. If you are on the Spark plan and want the CLI to use the default instance use the `--use-default-rtdb` flag instead. If neither of the `--database-id` or `--use-default-rtdb` flags are used with the `init` command, the CLI uses the default url. |
+| `--database-url DATABASE_URL` | Specify the database URL for the CLI to use. This should only be used as an override to make the CLI talk to a specific instance and isn't expected to be needed. If you are on the Spark plan and want the CLI to use the default instance use the --use-default-rtdb flag instead. If neither of the --database-id or --use-default-rtdb flags are used with the init command, the CLI uses the default url.  This value may be specified either via this command line argument or via the `SNAPSHOT_DEBUGGER_DATABASE_URL` environment variable.  When both are specified, the value from the command line takes precedence. |
 | `--format FORMAT`             | Set the format for printing command output resources. The default is a command-specific human-friendly output format. The supported formats are: `default`, `json` (raw) and `pretty-json` (formatted `json`). |
 | `--use-default-rtdb`          | Required for projects on the Spark plan. When specified, instructs the CLI to use the project's default Firebase RTDB database. |
 | `--debug`                     | Enable CLI debug messages. |
@@ -602,7 +594,7 @@ python3 cli/src/cli.py set_snapshot
 
 Usage: `cli.py set_snapshot [-h] [--database-url DATABASE_URL]
 [--use-default-rtdb] [--debug] [--condition CONDITION] [--expression EXPRESSION]
-location debuggee_id`
+[--debuggee-id DEBUGGEE_ID] location`
 
 Creates a snapshot on a debug target (Debuggee). Snapshots allow you to capture
 stack traces and local variables from your running service without interfering
@@ -618,15 +610,15 @@ again. It is also possible to inspect snapshot results with the
 
 | Argument      | Description |
 |---------------|-------------|
-| `debuggee-id` | Specify the debuggee ID. It must be an ID obtained from the `list_debuggees` command. |
 | `location`    | Specify the location to take a snapshot. Locations are of the form `FILE:LINE`, where `FILE` is the file name, or the file name preceded by enough path components to differentiate it from other files with the same name. If the file name isn't unique in the debuggee, the behavior is unspecified. |
 
 #### Optional arguments
 
-| Argument                     | Description |
-|------------------------------|-------------|
+| Argument                      | Description |
+|-------------------------------|-------------|
 | `-h`, `--help`                | Show this help message and exit. |
-| `--database-url DATABASE_URL` | Specify the database URL for the CLI to use. This should only be used as an override to make the CLI talk to a specific instance and isn't expected to be needed. If you are on the Spark plan and want the CLI to use the default instance use the `--use-default-rtdb` flag instead. If neither of the `--database-id` or `--use-default-rtdb` flags are used with the `init` command, the CLI uses the default url. |
+| `--debuggee-id DEBUGGEE_ID`   | Specify the debuggee ID. It must be an ID obtained from the list_debuggees command. This value is required, it must be specified either via this command line argument or via the `SNAPSHOT_DEBUGGER_DEBUGGEE_ID` environment variable.  When both are specified, the value from the command line takes precedence. |
+| `--database-url DATABASE_URL` | Specify the database URL for the CLI to use. This should only be used as an override to make the CLI talk to a specific instance and isn't expected to be needed. If you are on the Spark plan and want the CLI to use the default instance use the --use-default-rtdb flag instead. If neither of the --database-id or --use-default-rtdb flags are used with the init command, the CLI uses the default url.  This value may be specified either via this command line argument or via the `SNAPSHOT_DEBUGGER_DATABASE_URL` environment variable.  When both are specified, the value from the command line takes precedence. |
 | `--use-default-rtdb`          | Required for projects on the Spark plan. When specified, instructs the CLI to use the project's default Firebase RTDB database. |
 | `--debug`                     | Enable CLI debug messages. |
 | `--condition CONDITION`       | Specify a condition to restrict when the snapshot is taken. When the snapshot location is executed, the condition will be evaluated, and the snapshot is generated if the condition is true. |
@@ -640,18 +632,12 @@ python3 cli/src/cli.py list_snapshots
 
 
 Usage: `cli.py list_snapshots [-h] [--database-url DATABASE_URL] [--format
-FORMAT] [--use-default-rtdb] [--debug] [--include-inactive] debuggee_id`
+FORMAT] [--use-default-rtdb] [--debug] [--include-inactive]
+[--debuggee-id DEBUGGEE_ID]`
 
 Used to display the debug snapshots for a debug target (debuggee). By default
 all active snapshots are returned. To obtain completed snapshots specify the
 `--include-inactive` option.
-
-#### Positional arguments
-
-| Arguments     | Description |
-|---------------|-------------|
-| `debuggee_id` | Specify the debuggee ID. It must be an ID obtained from the `list_debuggees` command. |
-
 
 #### Optional arguments
 
@@ -659,7 +645,8 @@ all active snapshots are returned. To obtain completed snapshots specify the
 |-------------------------------|-------------|
 | -h, --help                    | Show this help message and exit. |
 | `--include-inactive`          | Include completed snapshots. |
-| `--database-url DATABASE_URL` | Specify the database URL for the CLI to use. This should only be used as an override to make the CLI talk to a specific instance and isn't expected to be needed. If you are on the Spark plan and want the CLI to use the default instance use the `--use-default-rtdb` flag instead. If neither of the `--database-id` or `--use-default-rtdb` flags are used with the `init` command, the CLI uses the default url. |
+| `--debuggee-id DEBUGGEE_ID`   | Specify the debuggee ID. It must be an ID obtained from the list_debuggees command. This value is required, it must be specified either via this command line argument or via the `SNAPSHOT_DEBUGGER_DEBUGGEE_ID` environment variable.  When both are specified, the value from the command line takes precedence. |
+| `--database-url DATABASE_URL` | Specify the database URL for the CLI to use. This should only be used as an override to make the CLI talk to a specific instance and isn't expected to be needed. If you are on the Spark plan and want the CLI to use the default instance use the --use-default-rtdb flag instead. If neither of the --database-id or --use-default-rtdb flags are used with the init command, the CLI uses the default url.  This value may be specified either via this command line argument or via the `SNAPSHOT_DEBUGGER_DATABASE_URL` environment variable.  When both are specified, the value from the command line takes precedence. |
 | `--use-default-rtdb`          | Required for projects on the Spark plan. When specified, instructs the CLI to use the project's default Firebase RTDB database. |
 | `--format FORMAT`             | Set the format for printing command output resources. The default is a command-specific human-friendly output format. The supported formats are: `default`, `json` (raw) and `pretty-json` (formatted `json`). |
 | `--debug`                     | Enable CLI debug messages. |
@@ -672,7 +659,7 @@ python3 cli/src/cli.py get_snapshot
 
 Usage: `cli.py get_snapshot [-h] [--database-url DATABASE_URL] [--format FORMAT]
 [--use-default-rtdb] [--debug] [--frame-index FRAME_INDEX] [--max-level
-MAX_LEVEL] debuggee-id ID`
+MAX_LEVEL] [--debuggee-id DEBUGGEE_ID]`
 
 Used to retrieve a debug snapshot from a debug target (debuggee). If the
 snapshot has completed, the output includes details on the stack trace and local
@@ -686,7 +673,6 @@ form which is intended to be machine-readable rather than human-readable.
 
 | Arguments     | Description |
 |---------------|-------------|
-| `debuggee_id` | Specify the debuggee ID. It must be an ID obtained from the `list_debuggees` command. |
 | `ID`          | Specify the snapshot ID to retrieve. |
 
 #### Optional arguments
@@ -695,7 +681,8 @@ form which is intended to be machine-readable rather than human-readable.
 |-------------------------------|-------------|
 | -h, --help                    | Show this help message and exit. |
 | `--include-inactive`          | Include completed snapshots. |
-| `--database-url DATABASE_URL` | Specify the database URL for the CLI to use. This should only be used as an override to make the CLI talk to a specific instance and isn't expected to be needed. If you are on the Spark plan and want the CLI to use the default instance use the `--use-default-rtdb` flag instead. If neither of the `--database-id` or `--use-default-rtdb` flags are used with the `init` command, the CLI uses the default url. |
+| `--debuggee-id DEBUGGEE_ID`   | Specify the debuggee ID. It must be an ID obtained from the list_debuggees command. This value is required, it must be specified either via this command line argument or via the `SNAPSHOT_DEBUGGER_DEBUGGEE_ID` environment variable.  When both are specified, the value from the command line takes precedence. |
+| `--database-url DATABASE_URL` | Specify the database URL for the CLI to use. This should only be used as an override to make the CLI talk to a specific instance and isn't expected to be needed. If you are on the Spark plan and want the CLI to use the default instance use the --use-default-rtdb flag instead. If neither of the --database-id or --use-default-rtdb flags are used with the init command, the CLI uses the default url.  This value may be specified either via this command line argument or via the `SNAPSHOT_DEBUGGER_DATABASE_URL` environment variable.  When both are specified, the value from the command line takes precedence. |
 | `--use-default-rtdb`          | Required for projects on the Spark plan. When specified, instructs the CLI to use the project's default Firebase RTDB database. |
 | `--format FORMAT`             | Set the format for printing command output resources. The default is a command-specific human-friendly output format. The supported formats are: `default`, `json` (raw) and `pretty-json` (formatted `json`). |
 | `--debug`                     | Enable CLI debug messages. |
@@ -711,7 +698,7 @@ python3 cli/src/cli.py delete_snapshots
 
 Usage: `cli.py delete_snapshots [-h] [--database-url DATABASE_URL] [--format
 FORMAT] [--use-default-rtdb] [--debug] [--all-users] [--include-inactive]
-[--quiet] debuggee-id [ID ...]`
+[--quiet] [--debuggee-id DEBUGGEE_ID] [ID ...]`
 
 Used to delete snapshots from a debug target (debuggee). You are prompted for
 confirmation before any snapshots are deleted. To suppress confirmation, use the
@@ -722,7 +709,6 @@ confirmation before any snapshots are deleted. To suppress confirmation, use the
 
 | Arguments     | Description |
 |---------------|-------------|
-| `debuggee_id` | Specify the debuggee ID. It must be an ID obtained from the `list_debuggees` command. |
 | `ID`          | Zero or more snapshot IDs. The specified snapshots will be deleted. By default, If no snapshot IDs are specified, all active snapshots created by the user are selected for deletion. |
 
 #### Optional arguments
@@ -731,7 +717,8 @@ confirmation before any snapshots are deleted. To suppress confirmation, use the
 |-------------------------------|-------------|
 | -h, --help                    | Show this help message and exit. |
 | `--include-inactive`          | Include completed snapshots. |
-| `--database-url DATABASE_URL` | Specify the database URL for the CLI to use. This should only be used as an override to make the CLI talk to a specific instance and isn't expected to be needed. If you are on the Spark plan and want the CLI to use the default instance use the `--use-default-rtdb` flag instead. If neither of the `--database-id` or `--use-default-rtdb` flags are used with the `init` command, the CLI uses the default url. |
+| `--debuggee-id DEBUGGEE_ID`   | Specify the debuggee ID. It must be an ID obtained from the list_debuggees command. This value is required, it must be specified either via this command line argument or via the `SNAPSHOT_DEBUGGER_DEBUGGEE_ID` environment variable.  When both are specified, the value from the command line takes precedence. |
+| `--database-url DATABASE_URL` | Specify the database URL for the CLI to use. This should only be used as an override to make the CLI talk to a specific instance and isn't expected to be needed. If you are on the Spark plan and want the CLI to use the default instance use the --use-default-rtdb flag instead. If neither of the --database-id or --use-default-rtdb flags are used with the init command, the CLI uses the default url.  This value may be specified either via this command line argument or via the `SNAPSHOT_DEBUGGER_DATABASE_URL` environment variable.  When both are specified, the value from the command line takes precedence. |
 | `--use-default-rtdb`          | Required for projects on the Spark plan. When specified, instructs the CLI to use the project's default Firebase RTDB database. |
 | `--format FORMAT`             | Set the format for printing command output resources. The default is a command-specific human-friendly output format. The supported formats are: `default`, `json` (raw) and `pretty-json` (formatted `json`). |
 | `--debug`                     | Enable CLI debug messages. |
