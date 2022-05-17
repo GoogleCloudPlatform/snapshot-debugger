@@ -15,6 +15,7 @@
 """
 
 from exceptions import SilentlyExitError
+from firebase_types import FIREBASE_RTDB_MANAGMENT_API_SERVICE
 from firebase_types import DatabaseGetStatus
 from firebase_types import FirebaseProject
 from firebase_management_rest_service import FirebaseManagementRestService
@@ -34,6 +35,13 @@ SNAPSHOT_DEBUGGER_DEFAULT_DB_ID = '{project_id}-cdbg'
 # when possible we do the right thing and get it from there, however this is
 # used as a fall back when required.
 FIREBASE_DEFAULT_RTDB_ID = '{project_id}-default-rtdb'
+
+CHECK_CONFIGURATION_MSG = """
+Confirm the correct project has been configured and that the 'init' command has
+been run.  See
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/main/README.md for
+more information.
+"""
 
 
 class CliServices:
@@ -91,7 +99,6 @@ class CliServices:
     If the database URL is known it can be passed in, otherwise it will be
     be determined based on the cached args and the project.
     """
-
     if self._firebase_rtdb_service is None:
       if database_url is None:
         database_url = self.get_database_url(self.args)
@@ -155,7 +162,18 @@ class CliServices:
 
     Returns:
       The appropriate database URL for the caller to use.
+
+    Raises:
+      SilentlyExitError: When no database URL could be found or another unexpted
+        error occurred.
     """
+    if not self.gcloud_service.is_api_enabled(
+        FIREBASE_RTDB_MANAGMENT_API_SERVICE):
+      self.user_output.error(
+          f'The {FIREBASE_RTDB_MANAGMENT_API_SERVICE} API service is '
+          f"disabled on project '{self.project_id}'.")
+      self.user_output.error(CHECK_CONFIGURATION_MSG)
+      raise SilentlyExitError
 
     if 'database_url' in args and args.database_url is not None:
       self.output.debug(f'Using user specified database {args.datbase_url}')
@@ -172,10 +190,9 @@ class CliServices:
           self.get_firebase_default_rtdb_id())
 
     if not is_db_configured:
-      self.user_output.error(
-          'Failed to find a configured database for project '
-          f"{self.project_id}. Ensure the 'init' command has been successfuly "
-          'run on it')
+      self.user_output.error('Failed to find a configured database for project '
+                             f"'{self.project_id}'.")
+      self.user_output.error(CHECK_CONFIGURATION_MSG)
       raise SilentlyExitError
 
     self.user_output.debug(f'Using configured database {db_url}')

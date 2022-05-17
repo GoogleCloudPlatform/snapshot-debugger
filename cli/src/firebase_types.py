@@ -19,6 +19,9 @@ The types here help work with the data and response messages from Firebase.
 from enum import Enum
 from exceptions import SilentlyExitError
 
+FIREBASE_MANAGMENT_API_SERVICE = 'firebase.googleapis.com'
+FIREBASE_RTDB_MANAGMENT_API_SERVICE = 'firebasedatabase.googleapis.com'
+
 
 class FirebaseProjectStatus(Enum):
   ENABLED = 1

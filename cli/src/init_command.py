@@ -18,6 +18,8 @@ resources so Snapshot Debugger can use Firebase as a backend.
 """
 
 import time
+from firebase_types import FIREBASE_MANAGMENT_API_SERVICE
+from firebase_types import FIREBASE_RTDB_MANAGMENT_API_SERVICE
 from firebase_types import DatabaseCreateStatus
 from firebase_types import DatabaseGetStatus
 from firebase_types import FirebaseProjectStatus
@@ -64,10 +66,6 @@ FIREBASE_MANAGEMENT_API_URL = (
 ENABLE_FIREBASE_API_GCLOUD_CMD = """
 gcloud services enable firebase.googleapis.com
 """
-
-FIREBASE_MANAGMENT_API_SERVICE = 'firebase.googleapis.com'
-
-FIREBASE_RTDB_MANAGMENT_API_SERVICE = 'firebasedatabase.googleapis.com'
 
 BILLING_PLAN_URL = ('https://console.firebase.google.com/project/{project_id}/'
                     'usage/details')
