@@ -44,10 +44,7 @@ class ListDebuggeesCommand:
     pass
 
   def register(self, args_subparsers, required_parsers, common_parsers):
-    parent_parsers = [
-        common_parsers.database_url, common_parsers.format,
-        common_parsers.use_default_rtdb
-    ]
+    parent_parsers = [common_parsers.database_url, common_parsers.format]
     parent_parsers += required_parsers
     parser = args_subparsers.add_parser(
         'list_debuggees', description=DESCRIPTION, parents=parent_parsers)

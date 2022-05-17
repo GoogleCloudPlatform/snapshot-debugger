@@ -31,6 +31,11 @@ class FirebaseProject:
   Documentation for what's expected to be in a FirebaseProject can be found
   here:
   https://firebase.google.com/docs/projects/api/reference/rest/v1beta1/projects#FirebaseProject
+
+  Attributes:
+    default_rtdb_instance: The project's default RTDB database instance. This
+    value is the name of the instance (not a URL). A value of None indicates the
+    project has no default instance.
   """
 
   def __init__(self, firebase_project):

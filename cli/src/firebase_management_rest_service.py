@@ -171,6 +171,7 @@ class FirebaseManagementRestService:
       response = self.http_service.send(request, handle_http_error=False)
     except HTTPError as err:
       if err.code == 404:
+        print_http_error(self.user_output, request, err, is_debug_message=True)
         self.user_output.debug("Got 404, DB did not exist")
         return DatabaseGetResponse(status=DatabaseGetStatus.DOES_NOT_EXIST)
 

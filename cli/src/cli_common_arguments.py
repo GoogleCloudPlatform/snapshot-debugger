@@ -26,12 +26,10 @@ DEBUGGEE_ID_ENV_VAR_NAME = 'SNAPSHOT_DEBUGGER_DEBUGGEE_ID'
 DATABASE_URL_HELP = f"""
 Specify the database URL for the CLI to use. This should only be used as an
 override to make the CLI talk to a specific instance and isn't expected to be
-needed. If you are on the Spark plan and want the CLI to use the default
-instance use the --use-default-rtdb flag instead. If neither of the
---database-id or --use-default-rtdb flags are used with the init command, the
-CLI uses the default url.  This value may be specified either via this command
-line argument or via the '{DATABASE_URL_ENV_VAR_NAME}' environment variable.
-When both are specified, the value from the command line takes precedence.
+needed. It is only required if the '--database-id' argument was used with the
+init command.  This value may be specified either via this command line argument
+or via the '{DATABASE_URL_ENV_VAR_NAME}' environment variable.  When both
+are specified, the value from the command line takes precedence.
 """
 
 FORMAT_HELP = """
@@ -41,11 +39,6 @@ command-specific human-friendly output format. The supported formats are:
 """
 
 DEBUG_HELP = 'Enable CLI debug messages.'
-
-USE_DEFAULT_RTDB_HELP = """
-Required for projects on the Spark plan. When specified, instructs the CLI to
-use the project's default Firebase RTDB database.
-"""
 
 DEBUGGEE_ID_HELP = f"""
 Specify the debuggee ID. It must be an ID obtained from the list_debuggees
@@ -64,14 +57,12 @@ class CommonArgumentParsers:
   Attributes:
     database_url: Argument parser for the 'database-url' cli argument.
     format: Argument parser for the 'format' cli argument.
-    use_default_rtdb: Argument parser for the 'use-default-rtdb' cli argument.
     debuggee_id: Argument parser for the 'debuggee-id' cli argument.
   """
 
   def __init__(self):
     self.database_url = self.create_database_url_parser()
     self.format = self.create_format_parser()
-    self.use_default_rtdb = self.create_use_default_rtdb_parser()
     self.debuggee_id = self.create_debuggee_id_parser()
 
   @staticmethod
@@ -93,13 +84,6 @@ class CommonArgumentParsers:
   def create_format_parser():
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument('--format', help=FORMAT_HELP, default='default')
-    return parser
-
-  @staticmethod
-  def create_use_default_rtdb_parser():
-    parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument(
-        '--use-default-rtdb', help=USE_DEFAULT_RTDB_HELP, action='store_true')
     return parser
 
   @staticmethod
