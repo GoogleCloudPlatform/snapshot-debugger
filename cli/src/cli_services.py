@@ -38,8 +38,8 @@ FIREBASE_DEFAULT_RTDB_ID = '{project_id}-default-rtdb'
 
 CHECK_CONFIGURATION_MSG = """
 Confirm the correct project has been configured and that the 'init' command has
-been run.  See https://github.com/GoogleCloudPlatform/snapshot-debugger for more
-information.
+been run.  See https://github.com/GoogleCloudPlatform/snapshot-debugger#readme
+for more information.
 """
 
 
