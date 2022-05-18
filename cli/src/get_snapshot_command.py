@@ -62,7 +62,7 @@ class GetSnapshotCommand:
   def register(self, args_subparsers, required_parsers, common_parsers):
     parent_parsers = [
         common_parsers.database_url, common_parsers.format,
-        common_parsers.use_default_rtdb, common_parsers.debuggee_id
+        common_parsers.debuggee_id
     ]
     parent_parsers += required_parsers
     parser = args_subparsers.add_parser(

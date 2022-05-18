@@ -18,11 +18,13 @@ resources so Snapshot Debugger can use Firebase as a backend.
 """
 
 import time
+from firebase_types import FIREBASE_MANAGMENT_API_SERVICE
+from firebase_types import FIREBASE_RTDB_MANAGMENT_API_SERVICE
 from firebase_types import DatabaseCreateStatus
 from firebase_types import DatabaseGetStatus
 from firebase_types import FirebaseProjectStatus
 from exceptions import SilentlyExitError
-from cli_services import CDBG_DEFAULT_DB_ID
+from cli_services import SNAPSHOT_DEBUGGER_DEFAULT_DB_ID
 
 DATABASE_ID_HELP = """
 Specify the ID of the database instance for the CLI to create as part of the
@@ -43,6 +45,11 @@ LOCATION_HELP = f"""
 Location for the database instance, defaults to {DEFAULT_LOCATION}
 """
 
+USE_DEFAULT_RTDB_HELP = """
+Required for projects on the Spark plan. When specified, instructs the CLI to
+use the project's default Firebase RTDB database.
+"""
+
 FIREBASE_CONSOLE_URL = ('https://console.firebase.google.com/project/'
                         '{project_id}')
 
@@ -59,10 +66,6 @@ FIREBASE_MANAGEMENT_API_URL = (
 ENABLE_FIREBASE_API_GCLOUD_CMD = """
 gcloud services enable firebase.googleapis.com
 """
-
-FIREBASE_MANAGMENT_API_SERVICE = 'firebase.googleapis.com'
-
-FIREBASE_RTDB_MANAGMENT_API_SERVICE = 'firebasedatabase.googleapis.com'
 
 BILLING_PLAN_URL = ('https://console.firebase.google.com/project/{project_id}/'
                     'usage/details')
@@ -81,7 +84,7 @@ REQUIRED_PERMISSIONS = [
 
 MIGRATE_PROJECT_INSTRUCTIONS = """
 Your Google Cloud project must be enabled for Firebase resources. To do so,
-complete the following steps and then then run the init command again.
+complete the following steps and then run the init command again.
 
 1. Enable your Google Cloud project for Firebase resources.
 
@@ -203,13 +206,16 @@ class InitCommand:
     pass
 
   def register(self, args_subparsers, required_parsers, common_parsers):
-    parent_parsers = [common_parsers.use_default_rtdb]
-    parent_parsers += required_parsers
+    unused_common_parsers = common_parsers
+    parent_parsers = required_parsers
     parser = args_subparsers.add_parser(
         'init', description=CMD_DESCRIPTION, parents=parent_parsers)
     parser.add_argument(
+        '--use-default-rtdb', help=USE_DEFAULT_RTDB_HELP, action='store_true')
+    parser.add_argument(
         '--database-id',
-        help=DATABASE_ID_HELP.format(default_database_id=CDBG_DEFAULT_DB_ID))
+        help=DATABASE_ID_HELP.format(
+            default_database_id=SNAPSHOT_DEBUGGER_DEFAULT_DB_ID))
     parser.set_defaults(func=self.cmd)
 
     # Only some locations are supported, see:
@@ -328,7 +334,7 @@ class InitCommand:
       self.gcloud_service.enable_api(FIREBASE_RTDB_MANAGMENT_API_SERVICE)
 
   def check_and_handle_database_instance(self, args, firebase_project):
-    database_id = self.services.get_database_id(
+    database_id = self.get_database_id(
         args=args, firebase_project=firebase_project)
 
     instance_response = self.firebase_management_service.rtdb_instance_get(
@@ -360,6 +366,15 @@ class InitCommand:
       raise SilentlyExitError
 
     return database_instance
+
+  def get_database_id(self, args, firebase_project=None):
+    if 'database_id' in args and args.database_id is not None:
+      return args.database_id
+
+    if 'use_default_rtdb' in args and args.use_default_rtdb:
+      return self.services.get_firebase_default_rtdb_id(firebase_project)
+
+    return self.services.get_snapshot_debugger_default_database_id()
 
   def handle_database_create_failed(self, database_id, create_response):
     if create_response.status == DatabaseCreateStatus.FAILED_PRECONDITION:

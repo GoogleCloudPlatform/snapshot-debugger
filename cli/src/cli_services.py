@@ -14,6 +14,9 @@
 """Contains service instances and base config required by the commands.
 """
 
+from exceptions import SilentlyExitError
+from firebase_types import FIREBASE_RTDB_MANAGMENT_API_SERVICE
+from firebase_types import DatabaseGetStatus
 from firebase_types import FirebaseProject
 from firebase_management_rest_service import FirebaseManagementRestService
 from firebase_rtdb_rest_service import FirebaseRtdbRestService
@@ -23,8 +26,8 @@ from permissions_rest_service import PermissionsRestService
 from user_input import UserInput
 from user_output import UserOutput
 
-# Unless specified otherwise, our preferred Database ID has this format.
-CDBG_DEFAULT_DB_ID = '{project_id}-cdbg'
+# The default/preferred Database ID the CLI attempts to use has this format.
+SNAPSHOT_DEBUGGER_DEFAULT_DB_ID = '{project_id}-cdbg'
 
 # All Firebase projects can have one default rtdb instance. It will have that
 # following format. In some very rare cases it could be different, and the
@@ -33,13 +36,11 @@ CDBG_DEFAULT_DB_ID = '{project_id}-cdbg'
 # used as a fall back when required.
 FIREBASE_DEFAULT_RTDB_ID = '{project_id}-default-rtdb'
 
-# The URLs for Firebase RTDBs come in two flavours:
-#
-# DATABASE_NAME.firebaseio.com for databases in us-central1
-# DATABASE_NAME.REGION.firebasedatabase.app for databases in all other locations
-#
-# For now we only support the location of us-central1
-DEFAULT_DB_URL = 'https://{database_id}.firebaseio.com'
+CHECK_CONFIGURATION_MSG = """
+Confirm the correct project has been configured and that the 'init' command has
+been run.  See https://github.com/GoogleCloudPlatform/snapshot-debugger for more
+information.
+"""
 
 
 class CliServices:
@@ -97,7 +98,6 @@ class CliServices:
     If the database URL is known it can be passed in, otherwise it will be
     be determined based on the cached args and the project.
     """
-
     if self._firebase_rtdb_service is None:
       if database_url is None:
         database_url = self.get_database_url(self.args)
@@ -109,14 +109,12 @@ class CliServices:
 
     return self._firebase_rtdb_service
 
-  def get_default_database_id(self):
-    return CDBG_DEFAULT_DB_ID.format(project_id=self.project_id)
+  def get_snapshot_debugger_default_database_id(self):
+    return SNAPSHOT_DEBUGGER_DEFAULT_DB_ID.format(project_id=self.project_id)
 
-  def get_default_database_url(self):
-    return DEFAULT_DB_URL.format(database_id=self.get_default_database_id())
-
-  def get_database_id(self, args, firebase_project: FirebaseProject = None):
-    """Determines the database_id based on the args and project configuration.
+  def get_firebase_default_rtdb_id(self,
+                                   firebase_project: FirebaseProject = None):
+    """Determines the default RTDB instance ID.
 
     A note on terminology here, database ID, database Name and database instance
     effectively refer to the same thing. For instance, for a database with URL
@@ -124,34 +122,80 @@ class CliServices:
     which happens to be globally unique across all firebase projects.
 
     Args:
-      args: These are the parsed command line arguments.
       firebase_project: An instance of the current firebase project if the
         caller already has it, it can be None otherwise.
 
     Returns:
-      The appropriate database ID for the caller to use.
+      The appropriate database ID for the caller to use. If the project did not
+      have a default RTDB instance, None is returned.
     """
+    if firebase_project is None:
+      project_response = self.firebase_management_service.project_get()
+      firebase_project = project_response.firebase_project
 
-    if 'database_id' in args and args.database_id is not None:
-      return args.database_id
+    default_rtdb = None
 
-    if 'use_default_rtdb' in args and args.use_default_rtdb:
-      if firebase_project is None:
-        project_response = self.firebase_management_service.project_get()
-        firebase_project = project_response.firebase_project
+    if firebase_project is not None:
+      default_rtdb = firebase_project.default_rtdb_instance
 
-      default_rtdb = None
+    if default_rtdb is None:
+      default_rtdb = FIREBASE_DEFAULT_RTDB_ID.format(project_id=self.project_id)
 
-      if firebase_project is not None:
-        default_rtdb = firebase_project.default_rtdb_instance
+    return default_rtdb
 
-      if default_rtdb is None:
-        default_rtdb = FIREBASE_DEFAULT_RTDB_ID.format(
-            project_id=self.project_id)
+  def get_database_url(self, args):
+    """Determines the database URL to use.
 
-      return default_rtdb
+     The URLs for Firebase RTDBs come in two flavours:
 
-    return CDBG_DEFAULT_DB_ID.format(project_id=self.project_id)
+       DATABASE_NAME.firebaseio.com for databases in us-central1
+       DATABASE_NAME.REGION.firebasedatabase.app for databases in all other
+         locations
+
+    See https://firebase.google.com/docs/database/rest/start#create_a_database
+    and https://firebase.google.com/docs/projects/locations#rtdb-locations for
+    more information.
+
+    Args:
+      args: These are the parsed command line arguments.
+
+    Returns:
+      The appropriate database URL for the caller to use.
+
+    Raises:
+      SilentlyExitError: When no database URL could be found or another unexpted
+        error occurred.
+    """
+    if not self.gcloud_service.is_api_enabled(
+        FIREBASE_RTDB_MANAGMENT_API_SERVICE):
+      self.user_output.error(
+          f'The {FIREBASE_RTDB_MANAGMENT_API_SERVICE} API service is '
+          f"disabled on project '{self.project_id}'.")
+      self.user_output.error(CHECK_CONFIGURATION_MSG)
+      raise SilentlyExitError
+
+    if 'database_url' in args and args.database_url is not None:
+      self.output.debug(f'Using user specified database {args.datbase_url}')
+      return args.database_url
+
+    is_db_configured, db_url = self.get_database_url_from_id(
+        self.get_snapshot_debugger_default_database_id())
+
+    # If the prefered default was not found, try the defaut firebase RTDB, this
+    # would be configured if '--use-default-rtdb' was used with the init
+    # command.
+    if not is_db_configured:
+      is_db_configured, db_url = self.get_database_url_from_id(
+          self.get_firebase_default_rtdb_id())
+
+    if not is_db_configured:
+      self.user_output.error('Failed to find a configured database for project '
+                             f"'{self.project_id}'.")
+      self.user_output.error(CHECK_CONFIGURATION_MSG)
+      raise SilentlyExitError
+
+    self.user_output.debug(f'Using configured database {db_url}')
+    return db_url
 
   def get_database_url_from_id(self, database_id):
     """Determines the database URL based on the database_id.
@@ -162,23 +206,24 @@ class CliServices:
     Returns:
       The appropriate database URL for the caller to use.
     """
-    # Note, for now we only support the one default location, so the below
-    # is fine. However this could be modified to peform an instance get call
-    # that would return the URL for the database.
-    return DEFAULT_DB_URL.format(database_id=database_id)
+    instance_response = self.firebase_management_service.rtdb_instance_get(
+        database_id)
 
-  def get_database_url(self, args):
-    """Determines the database URL to use.
+    if instance_response.status != DatabaseGetStatus.EXISTS:
+      self.user_output.debug(f'Database ID: {database_id} does not exist')
+      return (False, None)
 
-    Args:
-      args: These are the parsed command line arguments.
+    db_url = instance_response.database_instance.database_url
 
-    Returns:
-      The appropriate database URL for the caller to use.
-    """
+    rtdb_service = FirebaseRtdbRestService(
+        http_service=self.http_service,
+        database_url=db_url,
+        user_output=self.user_output)
 
-    if 'database_url' in args and args.database_url is not None:
-      return args.database_url
+    is_configured = rtdb_service.get('schema_version') is not None
 
-    database_id = self.get_database_id(args)
-    return self.get_database_url_from_id(database_id)
+    self.user_output.debug(
+        f'Database ID: {database_id}, URL: {db_url}, is configured: '
+        f'{is_configured}')
+
+    return (is_configured, db_url)
