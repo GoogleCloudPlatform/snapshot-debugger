@@ -346,6 +346,7 @@ python3 cli/src/cli.py set_snapshot index.js:21 --debuggee-id 2054916c4b46c04e04
 
 Where:
 *   `index.js:21` is the `file:line` for the snapshot
+*   2054916c4b46c04e04fffa32781bbd2f is the debuggee ID
 
 
 #### Snapshot conditions (optional)
@@ -415,6 +416,9 @@ python3 cli/src/cli.py set_snapshot index.js:26 --debuggee-id 2054916c4b46c04e04
 python3 cli/src/cli.py list_snapshots --debuggee-id 2054916c4b46c04e04fffa32781bbd2f --include-inactive
 ```
 
+Where:
+*   2054916c4b46c04e04fffa32781bbd2f is the debuggee ID
+
 The output resembles the following:
 
 ```
@@ -437,6 +441,7 @@ python3 cli/src/cli.py get_snapshot b-1649947203 --debuggee-id 2054916c4b46c04e0
 
 Where:
 *   `b-1649947203` is the snapshot ID
+*   2054916c4b46c04e04fffa32781bbd2f is the debuggee ID
 
 The output resembles the following:
 
@@ -492,6 +497,9 @@ Function              Location
 ```
 python3 cli/src/cli.py delete_snapshots --debuggee-id 2054916c4b46c04e04fffa32781bbd2f --include-inactive
 ```
+
+Where:
+*   2054916c4b46c04e04fffa32781bbd2f is the debuggee ID
 
 The output resembles the following:
 
