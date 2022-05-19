@@ -18,6 +18,19 @@ local debugging are supported. Snapshot Debugger only works with the
 [Node.js](https://github.com/googleapis/cloud-debug-nodejs) agent for preview.
 
 
+### Upcoming Features
+
+* Java agent support
+* Python 3 agent support
+* App Engine support for Java, Python 3, and Node.js
+
+Note:
+
+*  All upcoming features will be implemented before the
+   [Cloud Debugger shutdown](https://cloud.google.com/debugger/docs/deprecations)
+*  Python 2.7 will not be supported
+
+
 ## Support Period
 
 Snapshot Debugger and associated agents will be supported until Aug 31, 2023,
