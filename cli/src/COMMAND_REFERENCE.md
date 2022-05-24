@@ -92,7 +92,7 @@ python3 cli/src/cli.py list_snapshots
 
 
 Usage: `cli.py list_snapshots [-h] [--database-url DATABASE_URL] [--format
-FORMAT] [--debug] [--include-inactive]
+FORMAT] [--debug] [--all-users] [--include-inactive]
 [--debuggee-id DEBUGGEE_ID]`
 
 Used to display the debug snapshots for a debug target (debuggee). By default
@@ -105,6 +105,7 @@ all active snapshots are returned. To obtain completed snapshots specify the
 |-------------------------------|-------------|
 | -h, --help                    | Show this help message and exit. |
 | `--include-inactive`          | Include completed snapshots. |
+| ` --all-users`                | If set, display snapshots from all users, rather than only the current user. |
 | `--debuggee-id DEBUGGEE_ID`   | Specify the debuggee ID. It must be an ID obtained from the list_debuggees command. This value is required, it must be specified either via this command line argument or via the `SNAPSHOT_DEBUGGER_DEBUGGEE_ID` environment variable.  When both are specified, the value from the command line takes precedence. |
 | `--database-url DATABASE_URL` | Specify the database URL for the CLI to use. This should only be used as an override to make the CLI talk to a specific instance and isn't expected to be needed. It is only required if the `--database-id` argument was used with the init command.  This value may be specified either via this command line argument or via the `SNAPSHOT_DEBUGGER_DATABASE_URL` environment variable.  When both are specified, the value from the command line takes precedence. |
 | `--format FORMAT`             | Set the format for printing command output resources. The default is a command-specific human-friendly output format. The supported formats are: `default`, `json` (raw) and `pretty-json` (formatted `json`). |
