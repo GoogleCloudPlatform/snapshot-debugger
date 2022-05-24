@@ -50,6 +50,6 @@ def print_table(user_output, headers, values):
 
 def print_json(user_output, json_doc, pretty=False):
   if pretty:
-    user_output.normal(json.dumps(json_doc, indent=2))
+    user_output.json_data(json.dumps(json_doc, indent=2))
   else:
-    user_output.normal(json.dumps(json_doc))
+    user_output.json_data(json.dumps(json_doc))
