@@ -233,7 +233,7 @@ Firebase backend.
 If you don’t have a project yet and want to try out Snapshot Debugger, follow
 the steps in [Getting started with Node.js on Compute Engine | Google
 Cloud](https://cloud.google.com/nodejs/getting-started/getting-started-on-compute-engine)
-to create one.
+to create one.  (Note that you may need to upgrade to a more recent version of node.)
 
 ### Set up Google Compute Engine
 
