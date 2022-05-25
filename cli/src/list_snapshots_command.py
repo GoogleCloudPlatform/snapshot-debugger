@@ -29,6 +29,10 @@ all active snapshots are returned.  To obtain completed snapshots specify the
 
 INCLUDE_INACTIVE_HELP = 'Include all snapshots which have completed.'
 
+ALL_USERS_HELP = """
+If set, display snapshots from all users, rather than only the current user.
+"""
+
 SUMMARY_HEADERS = ['Status', 'Location', 'Condition', 'CompletedTime', 'ID']
 
 
@@ -63,6 +67,7 @@ class ListSnapshotsCommand:
         'list_snapshots', description=DESCRIPTION, parents=parent_parsers)
     parser.add_argument(
         '--include-inactive', help=INCLUDE_INACTIVE_HELP, action='store_true')
+    parser.add_argument('--all-users', help=ALL_USERS_HELP, action='store_true')
     parser.set_defaults(func=self.cmd)
 
   def cmd(self, args, cli_services):
@@ -72,9 +77,12 @@ class ListSnapshotsCommand:
     command_utils.validate_debuggee_id(user_output, firebase_rtdb_service,
                                        args.debuggee_id)
 
+    user_email = None if args.all_users is True else cli_services.account
+
     snapshots = breakpoint_utils.get_snapshots(firebase_rtdb_service,
                                                args.debuggee_id,
-                                               args.include_inactive)
+                                               args.include_inactive,
+                                               user_email)
 
     if args.format in ('json', 'pretty-json'):
       format_utils.print_json(
