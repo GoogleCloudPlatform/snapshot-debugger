@@ -19,7 +19,6 @@ The get_snapshot command is used to create a snapshot on a debug target
 
 from exceptions import SilentlyExitError
 import breakpoint_utils
-import command_utils
 import format_utils
 from snapshot_parser import SnapshotParser
 
@@ -133,12 +132,11 @@ class GetSnapshotCommand:
 
   def cmd(self, args, cli_services):
     self.user_output = cli_services.user_output
-    firebase_rtdb_service = cli_services.get_firebase_rtdb_service()
+    debugger_rtdb_service = cli_services.get_snapshot_debugger_rtdb_service()
 
-    command_utils.validate_debuggee_id(self.user_output, firebase_rtdb_service,
-                                       args.debuggee_id)
-    snapshot = breakpoint_utils.get_snapshot(firebase_rtdb_service,
-                                             args.debuggee_id, args.snapshot_id)
+    debugger_rtdb_service.validate_debuggee_id(args.debuggee_id)
+    snapshot = debugger_rtdb_service.get_snapshot(args.debuggee_id,
+                                                  args.snapshot_id)
 
     if snapshot is None:
       self.user_output.error(f'Snapshot ID not found: {args.snapshot_id}')

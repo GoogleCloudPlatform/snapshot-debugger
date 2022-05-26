@@ -18,7 +18,7 @@ using the REST interface, which is documented at
 https://firebase.google.com/docs/reference/rest/database.
 """
 
-FULL_REQUEST_URL = "{database_url}/cdbg/{db_path}.json"
+FULL_REQUEST_URL = "{database_url}/{db_path}.json"
 
 
 class FirebaseRtdbRestService:
