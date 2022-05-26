@@ -88,10 +88,9 @@ class DeleteSnapshotsCommand:
   def cmd(self, args, cli_services):
     user_input = cli_services.user_input
     user_output = cli_services.user_output
-    firebase_rtdb_service = cli_services.get_firebase_rtdb_service()
-    breakpoints_service = firebase_rtdb_service.breakpoints_rtdb_service
+    debugger_rtdb_service = cli_services.get_snapshot_debugger_rtdb_service()
 
-    firebase_rtdb_service.validate_debuggee_id(args.debuggee_id)
+    debugger_rtdb_service.validate_debuggee_id(args.debuggee_id)
 
     # This will be a list, if no IDs were specified it will be empty. If any IDs
     # are specified those are the only ones that will be deleted.
@@ -105,7 +104,7 @@ class DeleteSnapshotsCommand:
       ids_not_found = []
 
       for bp_id in snapshot_ids:
-        snapshot = breakpoints_service.get_breakpoint(args.debuggee_id, bp_id)
+        snapshot = debugger_rtdb_service.get_breakpoint(args.debuggee_id, bp_id)
         if snapshot is None:
           ids_not_found.append(bp_id)
         else:
@@ -115,9 +114,9 @@ class DeleteSnapshotsCommand:
         user_output.error(f"Snapshot ID not found: {', '.join(ids_not_found)}")
         raise SilentlyExitError
     else:
-      snapshots = breakpoints_service.get_snapshots(args.debuggee_id,
-                                                    args.include_inactive,
-                                                    user_email)
+      snapshots = debugger_rtdb_service.get_snapshots(args.debuggee_id,
+                                                      args.include_inactive,
+                                                      user_email)
 
     if snapshots:
       user_output.normal('This command will delete the following snapshots:\n')
@@ -129,7 +128,7 @@ class DeleteSnapshotsCommand:
         user_output.error('Delete aborted.')
         return
 
-    breakpoints_service.delete_breakpoints(args.debuggee_id, snapshots)
+    debugger_rtdb_service.delete_breakpoints(args.debuggee_id, snapshots)
 
     # Status output goes to stderr
     user_output.normal(f'Deleted {len(snapshots)} snapshots.')

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Service for making breakpoint related requests to the Firebase RTDB.
+"""Service for making requests to the Firebase RTDB.
 """
 
 from breakpoint_utils import normalize_breakpoint
@@ -19,25 +19,61 @@ from exceptions import SilentlyExitError
 
 import time
 
+DEBUGGEE_NOT_FOUND_ERROR_MESSAGE = (
+    'Debuggee ID {debuggee_id} was not found.  Specify a debuggee ID found in '
+    'the result of the list_debuggees command.')
 
-class BreakpointsRtdbService:
-  """This class provides breakpoints query/update methods.
 
-  This service provides breakpoints related utility methods that need to
-  communicate with the Firebase RTDB instance.
+class SnapshotDebuggerRtdbService:
+  """This class provides methods that communicates with the database.
+
+  This service provides utility methods that need to communicate with the
+  Firebase RTDB instance.
   """
 
-  def __init__(self, firebase_rtdb_service, schema_service, user_output):
+  def __init__(self, firebase_rtdb_rest_service, snapshot_debugger_schema,
+               user_output):
     """Initializes a BreakpointsRtdbService instance with required services.
 
     Args:
-      firebase_rtdb_service: A FirebaseRtdbService instance.
-      schema_service: A SnapshotDebuggerSchema instance.
+      firebase_rtdb_rest_service: A FirebaseRtdbRestService instance.
+      snapshot_debugger_schema: A SnapshotDebuggerSchema instance.
       user_output: A UserOutput instance.
     """
-    self.firebase_rtdb_service = firebase_rtdb_service
-    self.schema_service = schema_service
+    self.rest_service = firebase_rtdb_rest_service
+    self.schema = snapshot_debugger_schema
     self.user_output = user_output
+
+  def get_schema_version(self):
+    return self.rest_service.get(self.schema.get_path_schema_version())
+
+  def set_schema_version(self, version):
+    return self.rest_service.set(self.schema.get_path_schema_version(), version)
+
+  def get_debuggees(self):
+    return self.rest_service.get(self.schema.get_path_debuggees())
+
+  def validate_debuggee_id(self, debuggee_id):
+    """Validates the debuggee ID exists.
+
+    Verifies the debuggee ID exists in the Firebase RTDB instance. If the
+    debuggee ID did not exist an appropriate error message is emitted to the
+    user and the SilentlyExitError exception is raised.
+
+    Args:
+      debuggee_id: The debuggee ID to validate.
+
+    Raises:
+      SilentlyExitError: When the debuggee ID did not exist, or an underlying
+        error occurred attempting to contact the RTDB instance.
+    """
+
+    debuggee_path = self.schema.get_path_debuggees_for_id(debuggee_id)
+
+    if self.rest_service.get(debuggee_path) is None:
+      self.user_output.error(
+          DEBUGGEE_NOT_FOUND_ERROR_MESSAGE.format(debuggee_id=debuggee_id))
+      raise SilentlyExitError
 
   # Per
   # https://firebase.googleblog.com/2014/04/best-practices-arrays-in-firebase.html
@@ -54,13 +90,13 @@ class BreakpointsRtdbService:
 
     for i in range(0, 10):
       breakpoint_id = f'b-{time_secs + i}'
-      active_path = self.schema_service.get_path_breakpoints_active_for_id(
+      active_path = self.schema.get_path_breakpoints_active_for_id(
           debuggee_id, breakpoint_id)
-      final_path = self.schema_service.get_path_breakpoints_final_for_id(
+      final_path = self.schema.get_path_breakpoints_final_for_id(
           debuggee_id, breakpoint_id)
 
-      bp_active = self.firebase_rtdb_service.get(active_path, shallow=True)
-      bp_final = self.firebase_rtdb_service.get(final_path, shallow=True)
+      bp_active = self.rest_service.get(active_path, shallow=True)
+      bp_final = self.rest_service.get(final_path, shallow=True)
 
       # This case means there no breakpoints were found with that id, which
       # means the id is free to use.
@@ -77,55 +113,55 @@ class BreakpointsRtdbService:
 
   def delete_breakpoints(self, debuggee_id, breakpoints):
     for b in breakpoints:
-      active_path = self.schema_service.get_path_breakpoints_active_for_id(
+      active_path = self.schema.get_path_breakpoints_active_for_id(
           debuggee_id, b['id'])
-      final_path = self.schema_service.get_path_breakpoints_final_for_id(
+      final_path = self.schema.get_path_breakpoints_final_for_id(
           debuggee_id, b['id'])
-      snapshot_path = self.schema_service.get_path_breakpoints_snapshot_for_id(
+      snapshot_path = self.schema.get_path_breakpoints_snapshot_for_id(
           debuggee_id, b['id'])
 
-      self.firebase_rtdb_service.delete(active_path)
-      self.firebase_rtdb_service.delete(final_path)
+      self.rest_service.delete(active_path)
+      self.rest_service.delete(final_path)
 
       if b['action'] == 'CAPTURE':
-        self.firebase_rtdb_service.delete(snapshot_path)
+        self.rest_service.delete(snapshot_path)
 
   def get_breakpoint(self, debuggee_id, breakpoint_id):
-    active_path = self.schema_service.get_path_breakpoints_active_for_id(
+    active_path = self.schema.get_path_breakpoints_active_for_id(
         debuggee_id, breakpoint_id)
-    final_path = self.schema_service.get_path_breakpoints_snapshot_for_id(
+    final_path = self.schema.get_path_breakpoints_snapshot_for_id(
         debuggee_id, breakpoint_id)
 
-    bp = self.firebase_rtdb_service.get(active_path)
+    bp = self.rest_service.get(active_path)
 
     # If it wasn't active, the response will be None, so then try the final
     # path.
     if bp is None:
-      bp = self.firebase_rtdb_service.get(final_path)
+      bp = self.rest_service.get(final_path)
 
     return normalize_breakpoint(bp, breakpoint_id)
 
   def get_snapshot(self, debuggee_id, snapshot_id):
-    active_path = self.schema_service.get_path_breakpoints_active_for_id(
+    active_path = self.schema.get_path_breakpoints_active_for_id(
         debuggee_id, snapshot_id)
-    snapshot_path = self.schema_service.get_path_breakpoints_snapshot_for_id(
+    snapshot_path = self.schema.get_path_breakpoints_snapshot_for_id(
         debuggee_id, snapshot_id)
 
-    bp = self.firebase_rtdb_service.get(active_path)
+    bp = self.rest_service.get(active_path)
 
     # If it wasn't active, the response will be None, so then try the full
     # snapshot path.
     if bp is None:
-      bp = self.firebase_rtdb_service.get(snapshot_path)
+      bp = self.rest_service.get(snapshot_path)
 
     return normalize_breakpoint(bp, snapshot_id)
 
   def get_active_breakpoints(self, debuggee_id, action, user_email):
-    path = self.schema_service.get_path_breakpoints_active(debuggee_id)
+    path = self.schema.get_path_breakpoints_active(debuggee_id)
     return self._get_breakpoints(path, action, user_email)
 
   def get_final_breakpoints(self, debuggee_id, action, user_email):
-    path = self.schema_service.get_path_breakpoints_final(debuggee_id)
+    path = self.schema.get_path_breakpoints_final(debuggee_id)
     return self._get_breakpoints(path, action, user_email)
 
   def get_breakpoints(self,
@@ -145,7 +181,7 @@ class BreakpointsRtdbService:
                                 user_email)
 
   def _get_breakpoints(self, path, action, user_email):
-    breakpoints = self.firebase_rtdb_service.get(path) or {}
+    breakpoints = self.rest_service.get(path) or {}
 
     # We want the breakpoints to be in list form, they will be in dict form
     # after the firebase call.
@@ -159,7 +195,7 @@ class BreakpointsRtdbService:
     return breakpoints
 
   def set_breakpoint(self, debuggee_id, breakpoint_data):
-    path = self.schema_service.get_path_breakpoints_active_for_id(
+    path = self.schema.get_path_breakpoints_active_for_id(
         debuggee_id, breakpoint_data['id'])
-    bp = self.firebase_rtdb_service.set(path, data=breakpoint_data)
+    bp = self.rest_service.set(path, data=breakpoint_data)
     return normalize_breakpoint(bp)

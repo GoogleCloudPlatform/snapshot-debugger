@@ -71,16 +71,15 @@ class ListSnapshotsCommand:
 
   def cmd(self, args, cli_services):
     user_output = cli_services.user_output
-    firebase_rtdb_service = cli_services.get_firebase_rtdb_service()
-    breakpoints_service = firebase_rtdb_service.breakpoints_rtdb_service
+    debugger_rtdb_service = cli_services.get_snapshot_debugger_rtdb_service()
 
-    firebase_rtdb_service.validate_debuggee_id(args.debuggee_id)
+    debugger_rtdb_service.validate_debuggee_id(args.debuggee_id)
 
     user_email = None if args.all_users is True else cli_services.account
 
-    snapshots = breakpoints_service.get_snapshots(args.debuggee_id,
-                                                  args.include_inactive,
-                                                  user_email)
+    snapshots = debugger_rtdb_service.get_snapshots(args.debuggee_id,
+                                                    args.include_inactive,
+                                                    user_email)
 
     if args.format in ('json', 'pretty-json'):
       format_utils.print_json(

@@ -38,7 +38,7 @@ class SnapshotDebuggerSchema:
   """This class provides methods for retrieving database paths.
 
   The purpose of this class is to keep all the information about the database
-  paths in one location and provide utility methods for retrieving the paths.
+  paths in one location and provide utility methods for retrieving them.
   """
 
   def get_path_schema_version(self):
