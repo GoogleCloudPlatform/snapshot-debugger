@@ -19,10 +19,12 @@ from firebase_types import FIREBASE_RTDB_MANAGMENT_API_SERVICE
 from firebase_types import DatabaseGetStatus
 from firebase_types import FirebaseProject
 from firebase_management_rest_service import FirebaseManagementRestService
+from firebase_rtdb_service import FirebaseRtdbService
 from firebase_rtdb_rest_service import FirebaseRtdbRestService
 from gcloud_cli_service import GcloudCliService
 from http_service import HttpService
 from permissions_rest_service import PermissionsRestService
+from snapshot_debugger_schema import SnapshotDebuggerSchema
 from user_input import UserInput
 from user_output import UserOutput
 
@@ -88,9 +90,27 @@ class CliServices:
         project_id=self.project_id,
         user_output=self.user_output)
 
-    # This one is deferred as it requires a database url which may not be known
-    # when this constructor runs.
+    # The services below here are deferred as they require a database url which
+    # may not be known when this constructor runs.
+    self._firebase_rtdb_rest_service = None
     self._firebase_rtdb_service = None
+
+  def _get_firebase_rtdb_rest_service(self, database_url):
+    """Retrieve the Firebase RTDB Rest Service.
+
+    If the database URL is known it can be passed in, otherwise it will be
+    be determined based on the cached args and the project.
+    """
+    if self._firebase_rtdb_rest_service is None:
+      if database_url is None:
+        database_url = self.get_database_url(self.args)
+
+      self._firebase_rtdb_rest_service = FirebaseRtdbRestService(
+          http_service=self.http_service,
+          database_url=database_url,
+          user_output=self.user_output)
+
+    return self._firebase_rtdb_rest_service
 
   def get_firebase_rtdb_service(self, database_url=None):
     """Retrieve the Firebase RTDB Service.
@@ -99,13 +119,9 @@ class CliServices:
     be determined based on the cached args and the project.
     """
     if self._firebase_rtdb_service is None:
-      if database_url is None:
-        database_url = self.get_database_url(self.args)
-
-      self._firebase_rtdb_service = FirebaseRtdbRestService(
-          http_service=self.http_service,
-          database_url=database_url,
-          user_output=self.user_output)
+      self._firebase_rtdb_service = FirebaseRtdbService(
+          self._get_firebase_rtdb_rest_service(database_url),
+          SnapshotDebuggerSchema(), self.user_output)
 
     return self._firebase_rtdb_service
 
@@ -215,12 +231,15 @@ class CliServices:
 
     db_url = instance_response.database_instance.database_url
 
-    rtdb_service = FirebaseRtdbRestService(
+    rest_service = FirebaseRtdbRestService(
         http_service=self.http_service,
         database_url=db_url,
         user_output=self.user_output)
 
-    is_configured = rtdb_service.get('schema_version') is not None
+    rtdb_service = FirebaseRtdbService(rest_service, SnapshotDebuggerSchema(),
+                                       self.user_output)
+
+    is_configured = rtdb_service.get_schema_version() is not None
 
     self.user_output.debug(
         f'Database ID: {database_id}, URL: {db_url}, is configured: '

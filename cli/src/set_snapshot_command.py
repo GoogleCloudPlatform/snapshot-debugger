@@ -18,7 +18,6 @@ The set_snapshot command is used to create a snapshot on a debug target
 """
 
 import breakpoint_utils
-import command_utils
 import format_utils
 
 from exceptions import SilentlyExitError
@@ -91,9 +90,10 @@ class SetSnapshotCommand:
   def cmd(self, args, cli_services):
     user_output = cli_services.user_output
     firebase_rtdb_service = cli_services.get_firebase_rtdb_service()
+    breakpoints_service = firebase_rtdb_service.breakpoints_rtdb_service
 
-    command_utils.validate_debuggee_id(user_output, firebase_rtdb_service,
-                                       args.debuggee_id)
+    firebase_rtdb_service.validate_debuggee_id(args.debuggee_id)
+
     location = breakpoint_utils.parse_and_validate_location(args.location)
 
     if location is None:
@@ -113,16 +113,13 @@ class SetSnapshotCommand:
     if args.expression:
       snapshot_data['expressions'] = args.expression
 
-    breakpoint_id = breakpoint_utils.get_new_breakpoint_id(
-        user_output, firebase_rtdb_service, args.debuggee_id)
+    breakpoint_id = breakpoints_service.get_new_breakpoint_id(args.debuggee_id)
 
     if breakpoint_id is None:
       return
 
     snapshot_data['id'] = breakpoint_id
-    path = f'breakpoints/{args.debuggee_id}/active/{breakpoint_id}'
-    bp = firebase_rtdb_service.set(path, data=snapshot_data)
-    bp = breakpoint_utils.normalize_breakpoint(bp)
+    bp = breakpoints_service.set_breakpoint(args.debuggee_id, snapshot_data)
 
     if bp is None:
       user_output.error(CREATE_FAILED_MESSAGE)

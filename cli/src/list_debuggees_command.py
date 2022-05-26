@@ -54,7 +54,7 @@ class ListDebuggeesCommand:
     user_output = cli_services.user_output
 
     firebase_rtdb_service = cli_services.get_firebase_rtdb_service()
-    debuggees = firebase_rtdb_service.get('debuggees') or {}
+    debuggees = firebase_rtdb_service.get_debuggees() or {}
 
     # The result will be a dictionary, convert it to an array
     debuggees = list(debuggees.values())

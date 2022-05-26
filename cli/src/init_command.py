@@ -408,10 +408,10 @@ class InitCommand:
     rtdb_service = self.services.get_firebase_rtdb_service(
         database_url=database_instance.database_url)
 
-    path = 'schema_version'
+    # There is currently only one schema version.
     schema_version = '1'
 
-    version = rtdb_service.get(path)
+    version = rtdb_service.get_schema_version()
 
     if version is None:
-      rtdb_service.set(path, schema_version)
+      rtdb_service.set_schema_version(schema_version)
