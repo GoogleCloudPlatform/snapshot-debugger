@@ -27,6 +27,10 @@ class FirebaseRtdbService:
 
   This service provides utility methods that need to communicate with the
   Firebase RTDB instance.
+
+  Attributes:
+    breakpoints_rtdb_service: Service to use for breakpoints related read/write
+      requests to the Firebase RTDB instance.
   """
 
   def __init__(self, firebase_rtdb_rest_service, snapshot_debugger_schema,
