@@ -538,10 +538,18 @@ If you run into problems with Snapshot Debugger, file an
 
 ### Your project doesn’t show up when enabling Firebase
 
-If your project doesn’t show up when you try to enable Firebase, the Firebase
-Management API may already be enabled. Try using the following link to disable
-the Firebase Management API, then follow the steps in the [Enable Firebase for
-your GCP Project](#enable-firebase-for-your-gcp-project) section.
+#### Symptom
+
+Your project id is not auto populated and is not present in the project dropdown
+when you try to [Enable Firebase for your GCP
+Project](#enable-firebase-for-your-gcp-project).
+
+#### Resolution
+
+Check if the Firebase Management API is already enabled, as if it is, that
+interferes with the process. Try using the following link to disable the
+Firebase Management API, then go back and follow the steps in the [Enable
+Firebase for your GCP Project](#enable-firebase-for-your-gcp-project).
 
 ```
 https://console.developers.google.com/apis/api/firebase.googleapis.com?project=PROJECT_ID
