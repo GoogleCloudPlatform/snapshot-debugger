@@ -548,3 +548,22 @@ https://console.developers.google.com/apis/api/firebase.googleapis.com?project=P
 ```
 
 Where PROJECT_ID is your project ID.
+
+### Your database in not displayed in the Firebase Console
+
+Generally if the `init` command completed successfully, the Firebase RTDB should
+be visible under the Firebase Console's `Realtime Database` section. At the
+moment however this may not be the case for some projects that are on the Blaze
+pricing plan. A workaround is to point your web browser at the database's URL,
+which will redirect to its view in the console.
+
+To determine your database's URL, simply run the `init` command again the same
+way it was run the first time to configure your project. As this issue should
+only affect projects on the Blaze plan, see [Blaze plan RTDB
+setup](#blaze-plan-rtdb-setup) for details. As noted there, it is safe to run
+the `init` command multiple times to view your database's information.
+
+The URL should resemble `https://my-project-cdbg.firebaseio.com`, which should
+redirect to something like
+`https://firebase.corp.google.com/u/0/project/my-project/database/my-project-cdbg/data`
+for the Firebase console view.
