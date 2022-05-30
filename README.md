@@ -556,3 +556,23 @@ https://console.developers.google.com/apis/api/firebase.googleapis.com?project=P
 ```
 
 Where PROJECT_ID is your project ID.
+
+### Your database in not displayed in the Firebase Console
+
+#### Symptom
+
+A blank screen is shown when attempting to view database contents in Firebase
+Console's Realtime Database section. The project is using the Blaze pricing
+plan.
+
+#### Resolution
+
+Rerun the init command to find the database's url. Use that url to view the
+database's contents. See [Blaze plan RTDB setup](#blaze-plan-rtdb-setup) for
+details, as noted there, it is safe to run the `init` command multiple times to
+view your database's information.
+
+The database's url should resemble `https://DATABASE_NAME.firebaseio.com`,
+which should redirect to
+`https://console.firebase.google.com/project/PROJECT_ID/database/DATABASE_NAME/data`
+for the Firebase Console view.
