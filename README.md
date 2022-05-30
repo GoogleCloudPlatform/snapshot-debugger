@@ -41,7 +41,7 @@ they wish to maintain it going forward.
 ## CLI Command Reference
 
 See
-[COMMAND_REFERENCE.md](https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/main/cli/src/COMMAND_REFERENCE.md).
+[COMMAND_REFERENCE.md](https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/main/cli/COMMAND_REFERENCE.md).
 
 ## Download the Snapshot Debugger CLI
 
@@ -174,7 +174,7 @@ Where PROJECT_ID is your project ID
 This will instruct the debugger CLI to create and use a database with the name
 `PROJECT_ID-cdbg`
 
-1. Run `python3 cli/src/cli.py init` in the cloned `snapshot-debugger`
+1. Run `python3 cli/cli.py init` in the cloned `snapshot-debugger`
    directory.
 2. The output resembles the following:
 
@@ -194,7 +194,7 @@ commands.
 ```
 
 Note: The information printed by the `init` command can be accessed from within
-your Firebase project. It’s safe to run the `python3 cli/src/cli.py init`
+your Firebase project. It’s safe to run the `python3 cli/cli.py init`
 command multiple times to view this information.
 
 #### Spark plan RTDB setup
@@ -203,7 +203,7 @@ This will instruct the CLI to create and use a database with the name
 `PROJECT_ID-default-rtdb`. It will only be created if it does not currently
 exist.
 
-1. Run `python3 cli/src/cli.py init --use-default-rtdb`
+1. Run `python3 cli/cli.py init --use-default-rtdb`
 2. The output resembles the following:
 
 ```
@@ -222,7 +222,7 @@ commands.
 ```
 
 Note: The information printed by the `init` command can be accessed from within
-your Firebase project. It’s safe to run the `python3 cli/src/cli.py init
+your Firebase project. It’s safe to run the `python3 cli/cli.py init
 --use-default-rtdb` command multiple times to view this information.
 
 ## Set up Snapshot Debugger in your Google Cloud project
@@ -332,7 +332,7 @@ directory unless otherwise specified.
 2. Run the following command
 
 ```
-python3 cli/src/cli.py list_debuggees
+python3 cli/cli.py list_debuggees
 ```
 
 The output resembles the following:
@@ -354,7 +354,7 @@ return a snapshot of your app's data, and view it in detail to debug your app.
 2. Set snapshots with the following command:
 
 ```
-python3 cli/src/cli.py set_snapshot index.js:21 --debuggee-id 2054916c4b46c04e04fffa32781bbd2f
+python3 cli/cli.py set_snapshot index.js:21 --debuggee-id 2054916c4b46c04e04fffa32781bbd2f
 ```
 
 Where:
@@ -377,7 +377,7 @@ command.
 
 Example:
 ```
-python3 cli/src/cli.py set_snapshot index.js:26 --debuggee-id 2054916c4b46c04e04fffa32781bbd2f --condition="ultimateAnswer <= 42 && foo==bar"
+python3 cli/cli.py set_snapshot index.js:26 --debuggee-id 2054916c4b46c04e04fffa32781bbd2f --condition="ultimateAnswer <= 42 && foo==bar"
 ```
 
 You can use the following language features to express conditions:
@@ -416,7 +416,7 @@ command.
 
 Example:
 ```
-python3 cli/src/cli.py set_snapshot index.js:26 --debuggee-id 2054916c4b46c04e04fffa32781bbd2f --expression="histogram.length"
+python3 cli/cli.py set_snapshot index.js:26 --debuggee-id 2054916c4b46c04e04fffa32781bbd2f --expression="histogram.length"
 ```
 
 
@@ -426,7 +426,7 @@ python3 cli/src/cli.py set_snapshot index.js:26 --debuggee-id 2054916c4b46c04e04
 2. List snapshots with the following command:
 
 ```
-python3 cli/src/cli.py list_snapshots --debuggee-id 2054916c4b46c04e04fffa32781bbd2f --include-inactive
+python3 cli/cli.py list_snapshots --debuggee-id 2054916c4b46c04e04fffa32781bbd2f --include-inactive
 ```
 
 Where:
@@ -449,7 +449,7 @@ COMPLETED  index.js:21               2022-03-23T02:52:23.558000Z  b-1648003845
 2. Get a snapshot with the following command:
 
 ```
-python3 cli/src/cli.py get_snapshot b-1649947203 --debuggee-id 2054916c4b46c04e04fffa32781bbd2f
+python3 cli/cli.py get_snapshot b-1649947203 --debuggee-id 2054916c4b46c04e04fffa32781bbd2f
 ```
 
 Where:
@@ -508,7 +508,7 @@ Function              Location
 2. Delete snapshots with the following command:
 
 ```
-python3 cli/src/cli.py delete_snapshots --debuggee-id 2054916c4b46c04e04fffa32781bbd2f --include-inactive
+python3 cli/cli.py delete_snapshots --debuggee-id 2054916c4b46c04e04fffa32781bbd2f --include-inactive
 ```
 
 Where:
