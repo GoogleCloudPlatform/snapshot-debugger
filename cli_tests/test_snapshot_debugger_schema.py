@@ -18,7 +18,7 @@ import unittest
 from cli import snapshot_debugger_schema
 
 
-class TestSnapshotDebuggerSchema(unittest.TestCase):
+class SnapshotDebuggerSchemaTests(unittest.TestCase):
   """ Contains the unit tests for the SnapshotDebuggerSchema class.
   """
 
