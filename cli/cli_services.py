@@ -14,6 +14,7 @@
 """Contains service instances and base config required by the commands.
 """
 
+from data_formatter import DataFormatter
 from exceptions import SilentlyExitError
 from firebase_types import FIREBASE_RTDB_MANAGMENT_API_SERVICE
 from firebase_types import DatabaseGetStatus
@@ -68,7 +69,7 @@ class CliServices:
     self.args = args
     is_debug_enabled = args.debug if 'debug' in args else False
     self.user_input = UserInput()
-    self.user_output = UserOutput(is_debug_enabled)
+    self.user_output = UserOutput(is_debug_enabled, DataFormatter())
     self.gcloud_service = GcloudCliService(self.user_output)
     self.account = self.gcloud_service.config_get_account()
     self.project_id = self.gcloud_service.config_get_project()
