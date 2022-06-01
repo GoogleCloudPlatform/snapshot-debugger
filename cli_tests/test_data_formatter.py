@@ -21,6 +21,10 @@ import json
 
 class SnapshotDebuggerSchemaTests(unittest.TestCase):
   """ Contains the unit tests for the DataFormatter class.
+
+  To note, tne to_json_string tests are not exhaustive as we are simply wrapping
+  the json python library, they are simply enough to ensure the method is doing
+  what it is supposed to.
   """
 
   def setUp(self):
