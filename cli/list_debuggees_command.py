@@ -26,8 +26,7 @@ Snapshot Debugger.
 def validate_debuggee(debuggee):
   required_fields = ['id']
 
-  for i in required_fields:
-    if i not in debuggee:
+  if not all(k in debuggee for k in required_fields):
       return False
 
   return True
