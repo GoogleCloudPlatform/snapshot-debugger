@@ -37,12 +37,11 @@ class DataFormatter:
         column). Each tuple must have the same number of elements, which much
         also match the length of the headers tuple.
     """
-    widths = [0] * len(headers)
-
-    for i in range(len(headers)):
-      widths[i] = max(widths[i], len(headers[i]))
-      for j in range(len(values)):
-        widths[i] = max(widths[i], len(values[j][i]))
+    widths = [
+        max(len(headers[i]), max([len(v[i])
+                                  for v in values]))
+        for i in range(len(headers))
+    ]
 
     separator_row = list(map(lambda w: '-' * w, widths))
 
@@ -55,10 +54,8 @@ class DataFormatter:
     table = ''
 
     for i in range(len(rows)):
-      for j in range(len(rows[i])):
-        table += f'{rows[i][j]:{widths[j]}}'
-        table += field_buffer
-      table = table[:-len(field_buffer)]
+      fields = [f'{rows[i][j]:{widths[j]}}' for j in range(len(rows[i]))]
+      table += field_buffer.join(fields)
       table += '\n'
 
     return table
