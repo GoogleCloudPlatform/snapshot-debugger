@@ -92,5 +92,6 @@ class SnapshotDebuggerSchemaTests(unittest.TestCase):
     # newlines indicating it's human readable.
     self.assertGreater(json_string.count('\n'), 10)
 
+
 if __name__ == '__main__':
   unittest.main()
