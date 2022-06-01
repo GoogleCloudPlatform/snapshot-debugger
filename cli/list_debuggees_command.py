@@ -22,6 +22,7 @@ Used to display a list of the debug targets (debuggees) registered with the
 Snapshot Debugger.
 """
 
+
 def validate_debuggee(debuggee):
   required_fields = ['id']
 
@@ -30,6 +31,7 @@ def validate_debuggee(debuggee):
       return False
 
   return True
+
 
 def get_debuggee_name(debuggee):
   module = debuggee.get('labels', {}).get('module', 'default')

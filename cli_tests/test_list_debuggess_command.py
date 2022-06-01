@@ -143,9 +143,7 @@ class ListDebuggeesCommandTests(unittest.TestCase):
                  ({
                      self.debuggee1['id']: self.debuggee1,
                      self.debuggee2['id']: self.debuggee2,
-                 }, [
-                     self.debuggee1_table_values, self.debuggee2_table_values
-                 ]),
+                 }, [self.debuggee1_table_values, self.debuggee2_table_values]),
                  ({
                      self.debuggee1['id']: self.debuggee1,
                      self.debuggee2['id']: self.debuggee2,
