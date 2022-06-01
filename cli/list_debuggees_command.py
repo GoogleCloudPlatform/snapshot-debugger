@@ -17,8 +17,6 @@ The list_debugees command is used to display a list of the debug targets
 (debuggees) registered with the Snapshot Debugger.
 """
 
-import format_utils
-
 DESCRIPTION = """
 Used to display a list of the debug targets (debuggees) registered with the
 Snapshot Debugger.
@@ -60,8 +58,7 @@ class ListDebuggeesCommand:
     debuggees = list(debuggees.values())
 
     if args.format in ('json', 'pretty-json'):
-      format_utils.print_json(
-          user_output, debuggees, pretty=(args.format == 'pretty-json'))
+      user_output.json_format(debuggees, pretty=(args.format == 'pretty-json'))
     else:
       headers = ['Name', 'ID', 'Description']
 
@@ -71,4 +68,4 @@ class ListDebuggeesCommand:
           d.get('description', '')
       ] for d in debuggees]
 
-      format_utils.print_table(user_output, headers, values)
+      user_output.tabular(headers, values)

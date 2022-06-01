@@ -19,7 +19,6 @@ The get_snapshot command is used to create a snapshot on a debug target
 
 from exceptions import SilentlyExitError
 import breakpoint_utils
-import format_utils
 from snapshot_parser import SnapshotParser
 
 DESCRIPTION = """
@@ -112,7 +111,7 @@ class GetSnapshotCommand:
     self.display_header('Evaluated Expressions')
 
     if parsed_expressions:
-      format_utils.print_json(self.user_output, parsed_expressions, pretty=True)
+      self.user_output.json_format(parsed_expressions, pretty=True)
     else:
       self.user_output.normal('There were no expressions specified.')
 
@@ -121,14 +120,14 @@ class GetSnapshotCommand:
         f'Local Variables For Stack Frame Index {stack_frame_index}:')
 
     if parsed_locals:
-      format_utils.print_json(self.user_output, parsed_locals, pretty=True)
+      self.user_output.json_format(parsed_locals, pretty=True)
     else:
       self.user_output.normal('There are no local variables.')
 
   def display_call_stack(self, parsed_call_stack):
     self.display_header('CallStack:')
     headers = ['Function', 'Location']
-    format_utils.print_table(self.user_output, headers, parsed_call_stack)
+    self.user_output.tabular(headers, parsed_call_stack)
 
   def cmd(self, args, cli_services):
     self.user_output = cli_services.user_output
@@ -143,8 +142,8 @@ class GetSnapshotCommand:
       raise SilentlyExitError
 
     if args.format in ('json', 'pretty-json'):
-      format_utils.print_json(
-          self.user_output, snapshot, pretty=(args.format == 'pretty-json'))
+      self.user_output.json_format(
+          snapshot, pretty=(args.format == 'pretty-json'))
       return
 
     snapshot_parser = SnapshotParser(snapshot, args.max_level)

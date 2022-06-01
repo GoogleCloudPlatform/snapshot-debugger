@@ -19,7 +19,6 @@ The delete_snapshots command is used to delete snapshots from a debug target
 
 from exceptions import SilentlyExitError
 import breakpoint_utils
-import format_utils
 
 DESCRIPTION = """
 Used to delete snapshots from a debug target (debuggee). You are prompted for
@@ -121,7 +120,7 @@ class DeleteSnapshotsCommand:
     if snapshots:
       user_output.normal('This command will delete the following snapshots:\n')
       values = list(map(transform_to_snapshot_summary, snapshots))
-      format_utils.print_table(user_output, SUMMARY_HEADERS, values)
+      user_output.tabular(SUMMARY_HEADERS, values)
       user_output.normal('\n')
 
       if not args.quiet and not user_input.prompt_user_to_continue():
@@ -134,5 +133,4 @@ class DeleteSnapshotsCommand:
     user_output.normal(f'Deleted {len(snapshots)} snapshots.')
 
     if args.format in ('json', 'pretty-json'):
-      format_utils.print_json(
-          user_output, snapshots, pretty=(args.format == 'pretty-json'))
+      user_output.json_format(snapshots, pretty=(args.format == 'pretty-json'))

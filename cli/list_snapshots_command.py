@@ -18,7 +18,6 @@ target (debuggee).
 """
 
 import breakpoint_utils
-import format_utils
 
 DESCRIPTION = """
 Used to display the debug snapshots for a debug target (debuggee). By default
@@ -82,8 +81,7 @@ class ListSnapshotsCommand:
                                                     user_email)
 
     if args.format in ('json', 'pretty-json'):
-      format_utils.print_json(
-          user_output, snapshots, pretty=(args.format == 'pretty-json'))
+      user_output.json_format(snapshots, pretty=(args.format == 'pretty-json'))
     else:
       values = list(map(transform_to_snapshot_summary, snapshots))
-      format_utils.print_table(user_output, SUMMARY_HEADERS, values)
+      user_output.tabular(SUMMARY_HEADERS, values)

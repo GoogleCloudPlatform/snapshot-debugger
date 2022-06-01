@@ -34,7 +34,7 @@ class UserOutput:
   ends up in stdout.
   """
 
-  def __init__(self, is_debug_enabled):
+  def __init__(self, is_debug_enabled, data_formatter):
     """Initializes the UserOuput instance.
 
     Args:
@@ -42,6 +42,7 @@ class UserOutput:
         emitted. The are suppressed otherwise.
     """
     self._is_debug_enabled = is_debug_enabled
+    self.data_formatter = data_formatter
 
   def debug(self, *args, **kwargs):
     """Outputs a debug message.
@@ -82,13 +83,27 @@ class UserOutput:
     """
     print(*args, file=sys.stderr, **kwargs)
 
-  def json_data(self, data):
-    """Outputs json data to stdout.
-
-    Outputs the data (which is expected to be in json format already) to stdout.
+  def json_format(self, data, pretty):
+    """Transforms the data to a JSON string and prints it to stdout.
 
     Args:
-      data: The JSON data to emit, which is expected to be a JSON formatted str.
+      data: The data to convert to a JSON string and printed to stdout. It is
+        expected to be a Python object representation of the data.
+      pretty: Boolean flag that when True will be cause the json string to be
+        human readable, otherwise it will be in a compact representation.
     """
+    json_string = self.data_formatter.to_json_string(data, pretty)
+    print(json_string, file=sys.stdout)
 
-    print(data, file=sys.stdout)
+  def tabular(self, headers, values):
+    """Outputs the data in a human friendly tabular form.
+
+    Args:
+      headers: Array of strings to be used as the top row of the table,
+        representing the column names.
+      values: Array of tuples containing one row of output (1 value for each
+        column). Each tuple must have the same number of elements, which much
+        also match the length of the headers tuple.
+    """
+    table = self.data_formatter.build_table(headers, values)
+    self.normal(table)

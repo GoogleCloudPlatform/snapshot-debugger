@@ -18,7 +18,6 @@ The set_snapshot command is used to create a snapshot on a debug target
 """
 
 import breakpoint_utils
-import format_utils
 
 from exceptions import SilentlyExitError
 
@@ -126,8 +125,7 @@ class SetSnapshotCommand:
       raise SilentlyExitError
 
     if args.format in ('json', 'pretty-json'):
-      format_utils.print_json(
-          user_output, bp, pretty=(args.format == 'pretty-json'))
+      user_output.json_format(bp, pretty=(args.format == 'pretty-json'))
     else:
       user_output.normal(
           CREATE_SUCCESS_MESSAGE.format(breakpoint_id=breakpoint_id))
