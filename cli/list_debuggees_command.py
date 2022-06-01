@@ -22,6 +22,14 @@ Used to display a list of the debug targets (debuggees) registered with the
 Snapshot Debugger.
 """
 
+def validate_debuggee(debuggee):
+  required_fields = ['id']
+
+  for i in required_fields:
+    if i not in debuggee:
+      return False
+
+  return True
 
 def get_debuggee_name(debuggee):
   module = debuggee.get('labels', {}).get('module', 'default')
@@ -55,7 +63,7 @@ class ListDebuggeesCommand:
     debuggees = debugger_rtdb_service.get_debuggees() or {}
 
     # The result will be a dictionary, convert it to an array
-    debuggees = list(debuggees.values())
+    debuggees = list(filter(validate_debuggee, debuggees.values()))
 
     if args.format in ('json', 'pretty-json'):
       user_output.json_format(debuggees, pretty=(args.format == 'pretty-json'))
