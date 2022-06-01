@@ -16,10 +16,11 @@
 
 import unittest
 from cli import data_formatter
+import json
 
 
 class SnapshotDebuggerSchemaTests(unittest.TestCase):
-  """ Contains the unit tests for the SnapshotDebuggerSchema class.
+  """ Contains the unit tests for the DataFormatter class.
   """
 
   def setUp(self):
@@ -46,8 +47,8 @@ class SnapshotDebuggerSchemaTests(unittest.TestCase):
         ('V1_3', 'V2_3', 'V3_3', 'V4_3'),
         ('V1_4', 'V2_4', 'V3_4', 'V4_4'),
     ]
-    # There's two spaces between each column, and the widest field
-    # in the column (header or row value) dictates width.
+    # There should be two spaces between each column, and the widest field in
+    # the column (header or row value) dictates width.
     output3 = ('C1    C22   C333  C4444\n'
                '----  ----  ----  -----\n'
                'V1_1  V2_1  V3_1  V4_1 \n'
@@ -63,6 +64,33 @@ class SnapshotDebuggerSchemaTests(unittest.TestCase):
         actual_output = self.formatter.build_table(args[0], args[1])
         self.assertEqual(actual_output, expected_output)
 
+  def test_to_json_string_pretty_false_produces_valid_json(self):
+    test_data = {'k1': 'v1', 'k2': {'k3': 'v3'}, 'k4': [1, 2, 3, 4]}
+    json_string = self.formatter.to_json_string(test_data, pretty=False)
+    json_parse = json.loads(json_string)
+    self.assertEqual(json_parse, test_data)
+
+  def test_to_json_string_pretty_false_is_compact(self):
+    test_data = {'k1': 'v1', 'k2': {'k3': 'v3'}, 'k4': [1, 2, 3, 4]}
+    json_string = self.formatter.to_json_string(test_data, pretty=False)
+
+    # When setting pretty to False the representation is expected to be compact
+    # and not formatted for human readability.
+    self.assertEqual(json_string.count('\n'), 0)
+
+  def test_to_json_string_pretty_true_produces_valid_json(self):
+    test_data = {'k1': 'v1', 'k2': {'k3': 'v3'}, 'k4': [1, 2, 3, 4]}
+    json_string = self.formatter.to_json_string(test_data, pretty=True)
+    json_parse = json.loads(json_string)
+    self.assertEqual(json_parse, test_data)
+
+  def test_to_json_string_pretty_true_is_human_readable(self):
+    test_data = {'k1': 'v1', 'k2': {'k3': 'v3'}, 'k4': [1, 2, 3, 4]}
+    json_string = self.formatter.to_json_string(test_data, pretty=True)
+
+    # Just a simple heuristic to check that setting pretty to True causes some
+    # newlines indicating it's human readable.
+    self.assertGreater(json_string.count('\n'), 10)
 
 if __name__ == '__main__':
   unittest.main()
