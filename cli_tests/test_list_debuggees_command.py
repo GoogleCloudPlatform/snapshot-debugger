@@ -149,7 +149,6 @@ class ListDebuggeesCommandTests(unittest.TestCase):
   def test_output_format_default(self):
     expected_headers = ['Name', 'ID', 'Description']
 
-    # yapf: disable
     testcases = [
       ('No debuggees present', {}, []),
       (
@@ -192,8 +191,7 @@ class ListDebuggeesCommandTests(unittest.TestCase):
          debuggees_to_dict([debuggee1[0], debuggee2[0], debuggee3[0]]),
          [debuggee1[1], debuggee2[1], debuggee3[1]]
       ),
-    ]
-    # yapf: enable
+    ] # yapf: disable (Subjectively, testcases more readable hand formatted)
 
     for test_name, debuggees_response, expected_tabular_data in testcases:
       with self.subTest(test_name):
@@ -209,7 +207,6 @@ class ListDebuggeesCommandTests(unittest.TestCase):
   def test_output_format_json(self):
     args = self.args_parser.parse_args(['list_debuggees'])
 
-    # yapf: disable
     testcases = [
       ('No debuggees present', {}, []),
       ('Debuggee missing ID', {'1': debuggee_missing_id[0]}, []),
@@ -248,8 +245,7 @@ class ListDebuggeesCommandTests(unittest.TestCase):
          debuggees_to_dict([debuggee1[0], debuggee2[0], debuggee3[0]]),
          [debuggee1[0], debuggee2[0], debuggee3[0]]
       ),
-    ]
-    # yapf: enable
+    ] # yapf: disable (Subjectively, testcases more readable hand formatted)
 
     for test_name, debuggees_response, expected_json_data in testcases:
       for json_format in ['json', 'pretty-json']:
