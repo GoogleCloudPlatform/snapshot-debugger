@@ -23,6 +23,12 @@ Snapshot Debugger.
 """
 
 
+def validate_debuggee(debuggee):
+  required_fields = ['id']
+
+  return all(k in debuggee for k in required_fields)
+
+
 def get_debuggee_name(debuggee):
   module = debuggee.get('labels', {}).get('module', 'default')
   version = debuggee.get('labels', {}).get('version', '')
@@ -54,8 +60,10 @@ class ListDebuggeesCommand:
     debugger_rtdb_service = cli_services.get_snapshot_debugger_rtdb_service()
     debuggees = debugger_rtdb_service.get_debuggees() or {}
 
-    # The result will be a dictionary, convert it to an array
-    debuggees = list(debuggees.values())
+    # The result will be a dictionary, convert it to an array, while also
+    # filtering out any invalid entries, such as if it's missing a debuggee ID,
+    # which is a required field.
+    debuggees = list(filter(validate_debuggee, debuggees.values()))
 
     if args.format in ('json', 'pretty-json'):
       user_output.json_format(debuggees, pretty=(args.format == 'pretty-json'))
