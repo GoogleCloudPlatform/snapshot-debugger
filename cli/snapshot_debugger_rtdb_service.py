@@ -14,8 +14,8 @@
 """Service for making requests to the Firebase RTDB.
 """
 
-from breakpoint_utils import normalize_breakpoint
-from exceptions import SilentlyExitError
+from cli.breakpoint_utils import normalize_breakpoint
+from cli.exceptions import SilentlyExitError
 
 import time
 

@@ -11,26 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-""" Snapshot Debugger CLI.
+"""Main entry point for the cli package."""
+# pylint: disable=invalid-name
+import cli
 
-This package provides the CLI of the Snapshot Debugger.
-"""
-
-import sys
-
-from cli.cli import run_cli
-from cli.exceptions import SilentlyExitError
-
-
-def main():
-  run_cli()
-
-def run_main():
-  try:
-    main()
-  except SilentlyExitError:
-    sys.exit(1)
-
-
-if __name__ == '__main__':
-  run_main()
+cli.run_main()

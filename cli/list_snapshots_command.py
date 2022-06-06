@@ -17,7 +17,7 @@ The list_snapshots command is Used to display the debug snapshots for a debug
 target (debuggee).
 """
 
-import breakpoint_utils
+from cli import breakpoint_utils
 
 DESCRIPTION = """
 Used to display the debug snapshots for a debug target (debuggee). By default

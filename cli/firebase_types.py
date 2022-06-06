@@ -16,8 +16,8 @@
 The types here help work with the data and response messages from Firebase.
 """
 
+from cli.exceptions import SilentlyExitError
 from enum import Enum
-from exceptions import SilentlyExitError
 
 FIREBASE_MANAGMENT_API_SERVICE = 'firebase.googleapis.com'
 FIREBASE_RTDB_MANAGMENT_API_SERVICE = 'firebasedatabase.googleapis.com'

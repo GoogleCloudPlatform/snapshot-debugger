@@ -17,9 +17,8 @@ The set_snapshot command is used to create a snapshot on a debug target
 (Debuggee).
 """
 
-import breakpoint_utils
-
-from exceptions import SilentlyExitError
+from cli import breakpoint_utils
+from cli.exceptions import SilentlyExitError
 
 DESCRIPTION = """
 Creates a snapshot on a debug target (Debuggee).  Snapshots allow you to capture

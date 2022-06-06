@@ -17,8 +17,8 @@ The delete_snapshots command is used to delete snapshots from a debug target
 (debuggee).
 """
 
-from exceptions import SilentlyExitError
-import breakpoint_utils
+from cli.exceptions import SilentlyExitError
+from cli import breakpoint_utils
 
 DESCRIPTION = """
 Used to delete snapshots from a debug target (debuggee). You are prompted for

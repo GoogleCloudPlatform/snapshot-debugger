@@ -21,7 +21,7 @@ from urllib.error import URLError
 from urllib.request import Request
 from urllib.request import urlopen
 
-from exceptions import SilentlyExitError
+from cli.exceptions import SilentlyExitError
 
 REST_ERROR_MSG = """
 ERROR the following REST request failed:

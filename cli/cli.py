@@ -20,18 +20,18 @@ the command line arguments and runs the specified command.
 import argparse
 import sys
 
-from cli_services import CliServices
-import cli_common_arguments
-from exceptions import SilentlyExitError
-from delete_snapshots_command import DeleteSnapshotsCommand
-from get_snapshot_command import GetSnapshotCommand
-from init_command import InitCommand
-from list_debuggees_command import ListDebuggeesCommand
-from list_snapshots_command import ListSnapshotsCommand
-from set_snapshot_command import SetSnapshotCommand
+from cli.cli_services import CliServices
+import cli.cli_common_arguments
+from cli.exceptions import SilentlyExitError
+from cli.delete_snapshots_command import DeleteSnapshotsCommand
+from cli.get_snapshot_command import GetSnapshotCommand
+from cli.init_command import InitCommand
+from cli.list_debuggees_command import ListDebuggeesCommand
+from cli.list_snapshots_command import ListSnapshotsCommand
+from cli.set_snapshot_command import SetSnapshotCommand
 
 
-def main():
+def run_cli():
   cli_commands = [
       DeleteSnapshotsCommand(),
       GetSnapshotCommand(),
@@ -42,8 +42,8 @@ def main():
   ]
 
   args_parser = argparse.ArgumentParser()
-  common_parsers = cli_common_arguments.CommonArgumentParsers()
-  required_parsers = cli_common_arguments.RequiredArgumentParsers().parsers
+  common_parsers = cli.cli_common_arguments.CommonArgumentParsers()
+  required_parsers = cli.cli_common_arguments.RequiredArgumentParsers().parsers
 
   args_subparsers = args_parser.add_subparsers()
 
@@ -66,10 +66,3 @@ def main():
 
   # This will run the appropriate command.
   args.func(args=args, cli_services=cli_services)
-
-
-if __name__ == '__main__':
-  try:
-    main()
-  except SilentlyExitError:
-    sys.exit(1)

@@ -21,16 +21,16 @@ https://firebase.google.com/docs/projects/api/reference/rest/v1beta1/projects/.
 import json
 from urllib.error import HTTPError
 
-from firebase_types import DatabaseCreateResponse
-from firebase_types import DatabaseCreateStatus
-from firebase_types import DatabaseGetResponse
-from firebase_types import DatabaseGetStatus
-from firebase_types import DatabaseInstance
-from firebase_types import FirebaseProject
-from firebase_types import FirebaseProjectGetResponse
-from firebase_types import FirebaseProjectStatus
-from exceptions import SilentlyExitError
-from http_service import print_http_error
+from cli.firebase_types import DatabaseCreateResponse
+from cli.firebase_types import DatabaseCreateStatus
+from cli.firebase_types import DatabaseGetResponse
+from cli.firebase_types import DatabaseGetStatus
+from cli.firebase_types import DatabaseInstance
+from cli.firebase_types import FirebaseProject
+from cli.firebase_types import FirebaseProjectGetResponse
+from cli.firebase_types import FirebaseProjectStatus
+from cli.exceptions import SilentlyExitError
+from cli.http_service import print_http_error
 
 PROJECTS_GET_URL = ("https://firebase.googleapis.com/v1beta1/projects/"
                     "{project_id}")
