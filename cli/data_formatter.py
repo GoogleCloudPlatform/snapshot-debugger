@@ -39,7 +39,7 @@ class DataFormatter:
     """
     widths = [
         max(len(headers[i]), max([len(v[i])
-                                  for v in values]))
+                                  for v in values], default=0))
         for i in range(len(headers))
     ]
 
