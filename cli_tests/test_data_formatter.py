@@ -31,6 +31,11 @@ class SnapshotDebuggerSchemaTests(unittest.TestCase):
     self.formatter = data_formatter.DataFormatter()
 
   def test_build_table_works_as_expected(self):
+    headers_values_empty = ['Co11', 'Col2']
+    values_empty = []
+    output_values_empty = ('Co11  Col2\n'
+                           '----  ----\n')
+
     headers1 = ['Col1']
     values1 = [('Val1',)]
     output1 = ('Col1\n'
@@ -44,27 +49,31 @@ class SnapshotDebuggerSchemaTests(unittest.TestCase):
                'Val1 \n'
                'Val22\n')
 
-    headers3 = ['C1', 'C22', 'C333', 'C4444']
+    headers3 = ['C1', 'C22', 'C333', 'C4444', 'C55555*']
     values3 = [
-        ('V1_1', 'V2_1', 'V3_1', 'V4_1'),
-        ('V1_2', 'V2_2', 'V3_2', 'V4_2'),
-        ('V1_3', 'V2_3', 'V3_3', 'V4_3'),
-        ('V1_4', 'V2_4', 'V3_4', 'V4_4'),
+        ('V1_1*', 'V2_1', 'V3_1', 'V4_1', 'V5_1'),
+        ('V1_2', 'V2_2*', 'V3_2', 'V4_2', 'V5_2'),
+        ('V1_3', 'V2_3', 'V3_3*', 'V4_3', 'V5_3'),
+        ('V1_4', 'V2_4', 'V3_4', 'V4_4**', 'V5_4'),
     ]
     # There should be two spaces between each column, and the widest field in
-    # the column (header or row value) dictates width.
-    output3 = ('C1    C22   C333  C4444\n'
-               '----  ----  ----  -----\n'
-               'V1_1  V2_1  V3_1  V4_1 \n'
-               'V1_2  V2_2  V3_2  V4_2 \n'
-               'V1_3  V2_3  V3_3  V4_3 \n'
-               'V1_4  V2_4  V3_4  V4_4 \n')
+    # the column (header or row value) dictates width. The * here is the field
+    # that dictates the width.
+    output3 = ('C1     C22    C333   C4444   C55555*\n'
+               '-----  -----  -----  ------  -------\n'
+               'V1_1*  V2_1   V3_1   V4_1    V5_1   \n'
+               'V1_2   V2_2*  V3_2   V4_2    V5_2   \n'
+               'V1_3   V2_3   V3_3*  V4_3    V5_3   \n'
+               'V1_4   V2_4   V3_4   V4_4**  V5_4   \n')
 
-    testcases = [((headers1, values1), output1), ((headers2, values2), output2),
-                 ((headers3, values3), output3)]
+    testcases = [('Values empty', (headers_values_empty, values_empty),
+                  output_values_empty),
+                 ('One Col, One Val', (headers1, values1), output1),
+                 ('One Col, Two Val', (headers2, values2), output2),
+                 ('Multi Col Multi Val', (headers3, values3), output3)]
 
-    for args, expected_output in testcases:
-      with self.subTest():
+    for test_name, args, expected_output in testcases:
+      with self.subTest(test_name):
         actual_output = self.formatter.build_table(args[0], args[1])
         self.assertEqual(actual_output, expected_output)
 
