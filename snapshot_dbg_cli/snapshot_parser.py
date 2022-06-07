@@ -17,8 +17,8 @@ The SnapshotParser utility class provides support to the get_snapshot command
 for parsing and printing snapshot data.
 """
 
-from cli import breakpoint_utils
-from cli.status_message import StatusMessage
+from snapshot_dbg_cli import breakpoint_utils
+from snapshot_dbg_cli.status_message import StatusMessage
 
 MSG_VARIABLE_CYCLE = (
     'DBG_MSG: Cycle, refers to same instance as ancestor field '

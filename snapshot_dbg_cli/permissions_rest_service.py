@@ -16,7 +16,7 @@
 This service is for testing if the user has IAM permissions on a project.
 """
 
-from cli.exceptions import SilentlyExitError
+from snapshot_dbg_cli.exceptions import SilentlyExitError
 
 TEST_IAM_PERMSSIONS_URL = "https://cloudresourcemanager.googleapis.com/v1/" \
                           "projects/{project_id}:testIamPermissions"

@@ -17,8 +17,8 @@
 import argparse
 import unittest
 
-from cli import cli_common_arguments
-from cli import list_debuggees_command
+from snapshot_dbg_cli import cli_common_arguments
+from snapshot_dbg_cli import list_debuggees_command
 from unittest.mock import MagicMock
 
 # Below are the debuggees test data. They are setup as a tuple, the first field

@@ -16,7 +16,7 @@
 The types here help work with the data and response messages from Firebase.
 """
 
-from cli.exceptions import SilentlyExitError
+from snapshot_dbg_cli.exceptions import SilentlyExitError
 from enum import Enum
 
 FIREBASE_MANAGMENT_API_SERVICE = 'firebase.googleapis.com'

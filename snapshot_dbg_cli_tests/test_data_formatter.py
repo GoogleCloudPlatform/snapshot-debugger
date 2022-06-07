@@ -15,7 +15,7 @@
 """
 
 import unittest
-from cli import data_formatter
+from snapshot_dbg_cli import data_formatter
 import json
 
 

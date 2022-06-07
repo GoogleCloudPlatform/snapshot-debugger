@@ -20,7 +20,7 @@ such as the gcloud configured project, account, get the users access token etc.
 import json
 import subprocess
 
-from cli.exceptions import SilentlyExitError
+from snapshot_dbg_cli.exceptions import SilentlyExitError
 
 # As a general note, error messages out of gcloud are detailed. So when a gcloud
 # command fails we are sure to output the error message, as the messsage below

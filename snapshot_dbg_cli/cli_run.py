@@ -13,25 +13,25 @@
 # limitations under the License.
 """ The main Snapshot Debugger CLI startup code.
 
-This module provides the main function, which sets up the CLI commands, parses
+This module provides the run() function, which sets up the CLI commands, parses
 the command line arguments and runs the specified command.
 """
 
 import argparse
 import sys
 
-from cli.cli_services import CliServices
-import cli.cli_common_arguments
-from cli.exceptions import SilentlyExitError
-from cli.delete_snapshots_command import DeleteSnapshotsCommand
-from cli.get_snapshot_command import GetSnapshotCommand
-from cli.init_command import InitCommand
-from cli.list_debuggees_command import ListDebuggeesCommand
-from cli.list_snapshots_command import ListSnapshotsCommand
-from cli.set_snapshot_command import SetSnapshotCommand
+from snapshot_dbg_cli.cli_services import CliServices
+from snapshot_dbg_cli import cli_common_arguments
+from snapshot_dbg_cli.exceptions import SilentlyExitError
+from snapshot_dbg_cli.delete_snapshots_command import DeleteSnapshotsCommand
+from snapshot_dbg_cli.get_snapshot_command import GetSnapshotCommand
+from snapshot_dbg_cli.init_command import InitCommand
+from snapshot_dbg_cli.list_debuggees_command import ListDebuggeesCommand
+from snapshot_dbg_cli.list_snapshots_command import ListSnapshotsCommand
+from snapshot_dbg_cli.set_snapshot_command import SetSnapshotCommand
 
 
-def run_cli():
+def run():
   cli_commands = [
       DeleteSnapshotsCommand(),
       GetSnapshotCommand(),
@@ -42,8 +42,8 @@ def run_cli():
   ]
 
   args_parser = argparse.ArgumentParser()
-  common_parsers = cli.cli_common_arguments.CommonArgumentParsers()
-  required_parsers = cli.cli_common_arguments.RequiredArgumentParsers().parsers
+  common_parsers = cli_common_arguments.CommonArgumentParsers()
+  required_parsers = cli_common_arguments.RequiredArgumentParsers().parsers
 
   args_subparsers = args_parser.add_subparsers()
 

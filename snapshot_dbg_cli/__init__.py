@@ -18,12 +18,13 @@ This package provides the CLI of the Snapshot Debugger.
 
 import sys
 
-from cli.cli import run_cli
-from cli.exceptions import SilentlyExitError
+import snapshot_dbg_cli.cli_run
+from snapshot_dbg_cli.exceptions import SilentlyExitError
 
 
 def main():
-  run_cli()
+  snapshot_dbg_cli.cli_run.run()
+
 
 def run_main():
   try:

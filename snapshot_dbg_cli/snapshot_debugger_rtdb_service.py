@@ -14,8 +14,8 @@
 """Service for making requests to the Firebase RTDB.
 """
 
-from cli.breakpoint_utils import normalize_breakpoint
-from cli.exceptions import SilentlyExitError
+from snapshot_dbg_cli.breakpoint_utils import normalize_breakpoint
+from snapshot_dbg_cli.exceptions import SilentlyExitError
 
 import time
 
