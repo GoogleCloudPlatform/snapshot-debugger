@@ -3,10 +3,10 @@
 ## init
 
 ```
-python3 cli/src/cli.py init
+python3 -m snapshot_cdb_cli init
 ```
 
-Usage: `cli.py init [-h] [--use-default-rtdb] [--debug] [--database-id
+Usage: `__main__.py init [-h] [--use-default-rtdb] [--debug] [--database-id
 DATABASE_ID] [-l LOCATION]`
 
 Initializes a GCP project with the required Firebase resources so Snapshot
@@ -27,11 +27,11 @@ perform a requested action and then rerun the command to make progress.
 ## list_debuggees
 
 ```
-python3 cli/src/cli.py list_debuggees
+python3 -m snapshot_cdb_cli list_debuggees
 ```
 
 
-Usage: `cli.py list_debuggees [-h] [--database-url DATABASE_URL] [--format
+Usage: `__main__.py list_debuggees [-h] [--database-url DATABASE_URL] [--format
 FORMAT] [--debug]`
 
 Used to display a list of the debug targets (debuggees) registered with the
@@ -50,10 +50,10 @@ Snapshot Debugger.
 ## set_snapshot
 
 ```
-python3 cli/src/cli.py set_snapshot
+python3 -m snapshot_cdb_cli set_snapshot
 ```
 
-Usage: `cli.py set_snapshot [-h] [--database-url DATABASE_URL]
+Usage: `__main__.py set_snapshot [-h] [--database-url DATABASE_URL]
 [--debug] [--condition CONDITION] [--expression EXPRESSION]
 [--debuggee-id DEBUGGEE_ID] location`
 
@@ -87,11 +87,11 @@ again. It is also possible to inspect snapshot results with the
 ## list_snapshots
 
 ```
-python3 cli/src/cli.py list_snapshots
+python3 -m snapshot_cdb_cli list_snapshots
 ```
 
 
-Usage: `cli.py list_snapshots [-h] [--database-url DATABASE_URL] [--format
+Usage: `__main__.py list_snapshots [-h] [--database-url DATABASE_URL] [--format
 FORMAT] [--debug] [--all-users] [--include-inactive]
 [--debuggee-id DEBUGGEE_ID]`
 
@@ -114,10 +114,10 @@ all active snapshots are returned. To obtain completed snapshots specify the
 ## get_snapshot
 
 ```
-python3 cli/src/cli.py get_snapshot
+python3 -m snapshot_cdb_cli get_snapshot
 ```
 
-Usage: `cli.py get_snapshot [-h] [--database-url DATABASE_URL] [--format FORMAT]
+Usage: `__main__.py get_snapshot [-h] [--database-url DATABASE_URL] [--format FORMAT]
 [--debug] [--frame-index FRAME_INDEX] [--max-level
 MAX_LEVEL] [--debuggee-id DEBUGGEE_ID]`
 
@@ -152,10 +152,10 @@ form which is intended to be machine-readable rather than human-readable.
 ## delete_snapshots
 
 ```
-python3 cli/src/cli.py delete_snapshots
+python3 -m snapshot_cdb_cli delete_snapshots
 ```
 
-Usage: `cli.py delete_snapshots [-h] [--database-url DATABASE_URL] [--format
+Usage: `__main__.py delete_snapshots [-h] [--database-url DATABASE_URL] [--format
 FORMAT] [--debug] [--all-users] [--include-inactive]
 [--quiet] [--debuggee-id DEBUGGEE_ID] [ID ...]`
 

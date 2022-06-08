@@ -41,7 +41,7 @@ they wish to maintain it going forward.
 ## CLI Command Reference
 
 See
-[COMMAND_REFERENCE.md](https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/main/cli/COMMAND_REFERENCE.md).
+[COMMAND_REFERENCE.md](https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/main/snapshot_dbg_cli/COMMAND_REFERENCE.md).
 
 ## Download the Snapshot Debugger CLI
 
