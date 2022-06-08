@@ -18,13 +18,13 @@ resources so Snapshot Debugger can use Firebase as a backend.
 """
 
 import time
-from firebase_types import FIREBASE_MANAGMENT_API_SERVICE
-from firebase_types import FIREBASE_RTDB_MANAGMENT_API_SERVICE
-from firebase_types import DatabaseCreateStatus
-from firebase_types import DatabaseGetStatus
-from firebase_types import FirebaseProjectStatus
-from exceptions import SilentlyExitError
-from cli_services import SNAPSHOT_DEBUGGER_DEFAULT_DB_ID
+from snapshot_dbg_cli.firebase_types import FIREBASE_MANAGMENT_API_SERVICE
+from snapshot_dbg_cli.firebase_types import FIREBASE_RTDB_MANAGMENT_API_SERVICE
+from snapshot_dbg_cli.firebase_types import DatabaseCreateStatus
+from snapshot_dbg_cli.firebase_types import DatabaseGetStatus
+from snapshot_dbg_cli.firebase_types import FirebaseProjectStatus
+from snapshot_dbg_cli.exceptions import SilentlyExitError
+from snapshot_dbg_cli.cli_services import SNAPSHOT_DEBUGGER_DEFAULT_DB_ID
 
 DATABASE_ID_HELP = """
 Specify the ID of the database instance for the CLI to create as part of the

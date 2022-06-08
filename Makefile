@@ -1,4 +1,4 @@
 .PHONY: test
 
 test:
-	python3 -m unittest discover -s cli_tests -t .
+	python3 -m unittest discover -s snapshot_dbg_cli_tests -t .

@@ -13,25 +13,25 @@
 # limitations under the License.
 """ The main Snapshot Debugger CLI startup code.
 
-This module provides the main function, which sets up the CLI commands, parses
+This module provides the run() function, which sets up the CLI commands, parses
 the command line arguments and runs the specified command.
 """
 
 import argparse
 import sys
 
-from cli_services import CliServices
-import cli_common_arguments
-from exceptions import SilentlyExitError
-from delete_snapshots_command import DeleteSnapshotsCommand
-from get_snapshot_command import GetSnapshotCommand
-from init_command import InitCommand
-from list_debuggees_command import ListDebuggeesCommand
-from list_snapshots_command import ListSnapshotsCommand
-from set_snapshot_command import SetSnapshotCommand
+from snapshot_dbg_cli.cli_services import CliServices
+from snapshot_dbg_cli import cli_common_arguments
+from snapshot_dbg_cli.exceptions import SilentlyExitError
+from snapshot_dbg_cli.delete_snapshots_command import DeleteSnapshotsCommand
+from snapshot_dbg_cli.get_snapshot_command import GetSnapshotCommand
+from snapshot_dbg_cli.init_command import InitCommand
+from snapshot_dbg_cli.list_debuggees_command import ListDebuggeesCommand
+from snapshot_dbg_cli.list_snapshots_command import ListSnapshotsCommand
+from snapshot_dbg_cli.set_snapshot_command import SetSnapshotCommand
 
 
-def main():
+def run():
   cli_commands = [
       DeleteSnapshotsCommand(),
       GetSnapshotCommand(),
@@ -66,10 +66,3 @@ def main():
 
   # This will run the appropriate command.
   args.func(args=args, cli_services=cli_services)
-
-
-if __name__ == '__main__':
-  try:
-    main()
-  except SilentlyExitError:
-    sys.exit(1)

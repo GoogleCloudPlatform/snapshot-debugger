@@ -15,7 +15,7 @@
 """
 
 import unittest
-from cli import snapshot_debugger_schema
+from snapshot_dbg_cli import snapshot_debugger_schema
 
 
 class SnapshotDebuggerSchemaTests(unittest.TestCase):

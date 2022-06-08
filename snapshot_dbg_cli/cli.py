@@ -11,3 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Old CLI startup code, no longer in use.
+
+This file is no longer in use but is being kept to help any users attempting to
+run the cli via the old mechanism learn how to run it the new way.
+"""
+import sys
+
+if __name__ == '__main__':
+  print("Please run 'python3 -m snapshot_dbg_cli ...' from the root of the "
+        'repository.')
+  sys.exit(1)

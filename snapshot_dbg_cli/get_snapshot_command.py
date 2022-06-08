@@ -17,9 +17,9 @@ The get_snapshot command is used to create a snapshot on a debug target
 (Debuggee).
 """
 
-from exceptions import SilentlyExitError
-import breakpoint_utils
-from snapshot_parser import SnapshotParser
+from snapshot_dbg_cli.exceptions import SilentlyExitError
+from snapshot_dbg_cli import breakpoint_utils
+from snapshot_dbg_cli.snapshot_parser import SnapshotParser
 
 DESCRIPTION = """
 Used to retrieve a debug snapshot from a debug target (debuggee). If the

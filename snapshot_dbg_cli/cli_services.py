@@ -14,20 +14,20 @@
 """Contains service instances and base config required by the commands.
 """
 
-from data_formatter import DataFormatter
-from exceptions import SilentlyExitError
-from firebase_types import FIREBASE_RTDB_MANAGMENT_API_SERVICE
-from firebase_types import DatabaseGetStatus
-from firebase_types import FirebaseProject
-from firebase_management_rest_service import FirebaseManagementRestService
-from firebase_rtdb_rest_service import FirebaseRtdbRestService
-from gcloud_cli_service import GcloudCliService
-from http_service import HttpService
-from permissions_rest_service import PermissionsRestService
-from snapshot_debugger_rtdb_service import SnapshotDebuggerRtdbService
-from snapshot_debugger_schema import SnapshotDebuggerSchema
-from user_input import UserInput
-from user_output import UserOutput
+from snapshot_dbg_cli.data_formatter import DataFormatter
+from snapshot_dbg_cli.exceptions import SilentlyExitError
+from snapshot_dbg_cli.firebase_types import FIREBASE_RTDB_MANAGMENT_API_SERVICE
+from snapshot_dbg_cli.firebase_types import DatabaseGetStatus
+from snapshot_dbg_cli.firebase_types import FirebaseProject
+from snapshot_dbg_cli.firebase_management_rest_service import FirebaseManagementRestService
+from snapshot_dbg_cli.firebase_rtdb_rest_service import FirebaseRtdbRestService
+from snapshot_dbg_cli.gcloud_cli_service import GcloudCliService
+from snapshot_dbg_cli.http_service import HttpService
+from snapshot_dbg_cli.permissions_rest_service import PermissionsRestService
+from snapshot_dbg_cli.snapshot_debugger_rtdb_service import SnapshotDebuggerRtdbService
+from snapshot_dbg_cli.snapshot_debugger_schema import SnapshotDebuggerSchema
+from snapshot_dbg_cli.user_input import UserInput
+from snapshot_dbg_cli.user_output import UserOutput
 
 # The default/preferred Database ID the CLI attempts to use has this format.
 SNAPSHOT_DEBUGGER_DEFAULT_DB_ID = '{project_id}-cdbg'
