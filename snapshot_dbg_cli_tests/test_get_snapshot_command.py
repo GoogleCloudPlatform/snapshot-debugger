@@ -344,7 +344,6 @@ class GetSnapshotTests(unittest.TestCase):
         self.assertEqual('', out.getvalue())
 
   def test_evaluated_expressions_section(self):
-
     snapshot_with_expressions = SNAPSHOT_COMPLETE
     snapshot_without_expressions = SNAPSHOT_COMPLETE.copy()
     del snapshot_without_expressions['expressions']
