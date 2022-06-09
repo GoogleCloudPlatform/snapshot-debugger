@@ -22,6 +22,7 @@ from io import StringIO
 
 from snapshot_dbg_cli import cli_run
 from snapshot_dbg_cli import data_formatter
+from snapshot_dbg_cli.snapshot_debugger_rtdb_service import SnapshotDebuggerRtdbService
 from snapshot_dbg_cli.user_output import UserOutput
 
 from snapshot_dbg_cli.exceptions import SilentlyExitError
@@ -151,7 +152,7 @@ class GetSnapshotTests(unittest.TestCase):
             data_formatter=data_formatter.DataFormatter()))
     self.cli_services.user_output = self.user_output_mock
 
-    self.rtdb_service_mock = MagicMock()
+    self.rtdb_service_mock = MagicMock(spec=SnapshotDebuggerRtdbService)
     self.cli_services.get_snapshot_debugger_rtdb_service = MagicMock(
         return_value=self.rtdb_service_mock)
 
