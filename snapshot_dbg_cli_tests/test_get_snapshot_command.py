@@ -22,6 +22,7 @@ from io import StringIO
 
 from snapshot_dbg_cli import cli_run
 from snapshot_dbg_cli import data_formatter
+from snapshot_dbg_cli.cli_services import CliServices
 from snapshot_dbg_cli.snapshot_debugger_rtdb_service import SnapshotDebuggerRtdbService
 from snapshot_dbg_cli.user_output import UserOutput
 
@@ -138,7 +139,7 @@ class GetSnapshotTests(unittest.TestCase):
   """
 
   def setUp(self):
-    self.cli_services = MagicMock()
+    self.cli_services = MagicMock(spec=CliServices)
 
     self.data_formatter = data_formatter.DataFormatter()
     self.cli_services.data_formatter = self.data_formatter
@@ -306,7 +307,7 @@ class GetSnapshotTests(unittest.TestCase):
 
     # We tag each testcase with information on wether the summary section is the
     # only expected output from the test. Since the condition/expressions tests
-    # are using an active snaphsot, they will all be tagged as complete.
+    # are using an active snaphsot, they will all be tagged as FULL.
     class OutputType(Enum):
       PARTIAL = 1
       FULL = 2
