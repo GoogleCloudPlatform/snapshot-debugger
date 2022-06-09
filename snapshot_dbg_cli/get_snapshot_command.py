@@ -110,19 +110,17 @@ class GetSnapshotCommand:
   def display_expressions(self, parsed_expressions):
     self.display_header('Evaluated Expressions')
 
-    if parsed_expressions:
-      self.user_output.json_format(parsed_expressions, pretty=True)
-    else:
-      self.user_output.normal('There were no expressions specified.')
+    self.user_output.normal(
+        self.data_formatter.to_json_string(parsed_expressions, pretty=True)
+        if parsed_expressions else 'There were no expressions specified.')
 
   def display_locals(self, parsed_locals, stack_frame_index):
     self.display_header(
         f'Local Variables For Stack Frame Index {stack_frame_index}:')
 
-    if parsed_locals:
-      self.user_output.json_format(parsed_locals, pretty=True)
-    else:
-      self.user_output.normal('There are no local variables.')
+    self.user_output.normal(
+        self.data_formatter.to_json_string(parsed_locals, pretty=True)
+        if parsed_locals else 'There are no local variables.')
 
   def display_call_stack(self, parsed_call_stack):
     self.display_header('CallStack:')
@@ -130,6 +128,7 @@ class GetSnapshotCommand:
     self.user_output.tabular(headers, parsed_call_stack)
 
   def cmd(self, args, cli_services):
+    self.data_formatter = cli_services.data_formatter
     self.user_output = cli_services.user_output
     debugger_rtdb_service = cli_services.get_snapshot_debugger_rtdb_service()
 

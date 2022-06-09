@@ -52,6 +52,7 @@ class CliServices:
   Attributes:
     args: The command line arguments from the CLI invocation.
     is_debug_enabled: Flag that indicates if debugging is enabled.
+    data_formatter: DataFormatter instance for commands to used.
     user_input: Service for prompting and retrieving text input from the user.
     user_output: Service for emitting text output for the user.
     gcloud_service: Service for interacting with the gcloud command.
@@ -68,8 +69,9 @@ class CliServices:
   def __init__(self, args):
     self.args = args
     is_debug_enabled = args.debug if 'debug' in args else False
+    self.data_formatter = DataFormatter()
     self.user_input = UserInput()
-    self.user_output = UserOutput(is_debug_enabled, DataFormatter())
+    self.user_output = UserOutput(is_debug_enabled, self.data_formatter)
     self.gcloud_service = GcloudCliService(self.user_output)
     self.account = self.gcloud_service.config_get_account()
     self.project_id = self.gcloud_service.config_get_project()
