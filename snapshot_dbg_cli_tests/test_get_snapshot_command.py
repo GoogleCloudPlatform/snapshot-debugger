@@ -14,14 +14,15 @@
 """ Unit test file for the GetSnapshot class.
 """
 
+import sys
 import argparse
+import json
 import unittest
 from enum import Enum
 from io import StringIO
 
-from snapshot_dbg_cli import cli_common_arguments
+from snapshot_dbg_cli import cli_run
 from snapshot_dbg_cli import data_formatter
-from snapshot_dbg_cli import get_snapshot_command
 from snapshot_dbg_cli.user_output import UserOutput
 
 from snapshot_dbg_cli.exceptions import SilentlyExitError
@@ -127,14 +128,6 @@ class GetSnapshotTests(unittest.TestCase):
   """
 
   def setUp(self):
-    common_parsers = cli_common_arguments.CommonArgumentParsers()
-    required_parsers = cli_common_arguments.RequiredArgumentParsers().parsers
-
-    self.args_parser = argparse.ArgumentParser()
-    self.args_subparsers = self.args_parser.add_subparsers()
-    self.get_snapshot = get_snapshot_command.GetSnapshotCommand()
-    self.get_snapshot.register(self.args_subparsers, required_parsers,
-                               common_parsers)
     self.cli_services = MagicMock()
 
     self.data_formatter = data_formatter.DataFormatter()
@@ -153,53 +146,78 @@ class GetSnapshotTests(unittest.TestCase):
     self.cli_services.get_snapshot_debugger_rtdb_service = MagicMock(
         return_value=self.rtdb_service_mock)
 
+  def run_cmd(self, testargs, expected_exception=None):
+    args = ['cli-test', 'get_snapshot'] + testargs
+    with patch.object(sys, 'argv', args), \
+          patch('sys.stdout', new_callable=StringIO) as out, \
+          patch('sys.stderr', new_callable=StringIO) as err:
+      if expected_exception is not None:
+        with self.assertRaises(expected_exception):
+          cli_run.run(self.cli_services)
+      else:
+        cli_run.run(self.cli_services)
+
+    return out, err
+
   def test_validate_debuggee_id_called_as_expected(self):
-    args = self.args_parser.parse_args(
-        ['get_snapshot', 'b-111', '--debuggee-id=123'])
+    testargs = ['b-111', '--debuggee-id=123']
     self.rtdb_service_mock.validate_debuggee_id = MagicMock(
         side_effect=Exception())
 
-    with self.assertRaises(Exception):
-      self.get_snapshot.cmd(args, self.cli_services)
+    self.run_cmd(testargs, expected_exception=Exception)
 
     self.rtdb_service_mock.validate_debuggee_id.assert_called_once_with('123')
     self.rtdb_service_mock.get_snapshot.assert_not_called()
 
+  def test_get_snapshot_called_as_expected(self):
+    testargs = ['b-111', '--debuggee-id=123']
+    self.rtdb_service_mock.validate_debuggee_id = MagicMock(return_value=None)
+    self.rtdb_service_mock.get_snapshot = MagicMock(
+        return_value=SNAPSHOT_ACTIVE)
+
+    self.run_cmd(testargs)
+
+    self.rtdb_service_mock.get_snapshot.assert_called_once_with('123', 'b-111')
+
   def test_snapshot_not_found_works_as_expected(self):
-    args = self.args_parser.parse_args(
-        ['get_snapshot', 'b-111', '--debuggee-id=123'])
+    testargs = ['b-111', '--debuggee-id=123']
     self.rtdb_service_mock.validate_debuggee_id = MagicMock(return_value=None)
     self.rtdb_service_mock.get_snapshot = MagicMock(return_value=None)
 
-    with self.assertRaises(SilentlyExitError):
-      self.get_snapshot.cmd(args, self.cli_services)
+    out, err = self.run_cmd(testargs, expected_exception=SilentlyExitError)
 
-    self.user_output_mock.error.assert_called_once_with(
-        'Snapshot ID not found: b-111')
+    self.user_output_mock.error.assert_called_once()
+    self.assertEqual("Snapshot ID not found: b-111\n", err.getvalue())
+    self.assertEqual("", out.getvalue())
 
   def test_output_format_json(self):
-    args = self.args_parser.parse_args([
-        'get_snapshot', SNAPSHOT_COMPLETE['id'], '--debuggee-id=123',
-        '--format=json'
-    ])
+    testargs = [SNAPSHOT_COMPLETE['id'], '--debuggee-id=123', '--format=json']
     self.rtdb_service_mock.validate_debuggee_id = MagicMock(return_value=None)
     self.rtdb_service_mock.get_snapshot = MagicMock(
         return_value=SNAPSHOT_COMPLETE)
-    self.get_snapshot.cmd(args, self.cli_services)
+
+    out, err = self.run_cmd(testargs)
+
     self.user_output_mock.json_format.assert_called_once_with(
         SNAPSHOT_COMPLETE, pretty=False)
+    self.assertEqual("", err.getvalue())
+    self.assertEqual(SNAPSHOT_COMPLETE, json.loads(out.getvalue()))
 
   def test_output_format_pretty_json(self):
-    args = self.args_parser.parse_args([
-        'get_snapshot', SNAPSHOT_COMPLETE['id'], '--debuggee-id=123',
-        '--format=pretty-json'
-    ])
+    testargs = [
+        SNAPSHOT_COMPLETE['id'], '--debuggee-id=123', '--format=pretty-json'
+    ]
     self.rtdb_service_mock.validate_debuggee_id = MagicMock(return_value=None)
     self.rtdb_service_mock.get_snapshot = MagicMock(
         return_value=SNAPSHOT_COMPLETE)
-    self.get_snapshot.cmd(args, self.cli_services)
+
+    out, err = self.run_cmd(testargs)
+
     self.user_output_mock.json_format.assert_called_once_with(
         SNAPSHOT_COMPLETE, pretty=True)
+
+    self.assertEqual("", err.getvalue())
+    self.assertEqual(SNAPSHOT_COMPLETE, json.loads(out.getvalue()))
 
   def test_summary_summary_section(self):
     snapshot_active = SNAPSHOT_ACTIVE
@@ -300,23 +318,21 @@ class GetSnapshotTests(unittest.TestCase):
         ('Failed', snapshot_failed, expected_failed_summary, OutputType.FULL),
     ]
 
-    args = self.args_parser.parse_args(
-        ['get_snapshot', SNAPSHOT_ACTIVE['id'], '--debuggee-id=123'])
     self.rtdb_service_mock.validate_debuggee_id = MagicMock(return_value=None)
 
     for test_name, snapshot, expected_summary, output_type in testcases:
       with self.subTest(test_name):
         self.rtdb_service_mock.get_snapshot = MagicMock(return_value=snapshot)
 
-        with patch(
-            'sys.stdout', new_callable=StringIO) as out, patch(
-                'sys.stderr', new_callable=StringIO) as err:
-          self.get_snapshot.cmd(args, self.cli_services)
+        testargs = [snapshot['id'], '--debuggee-id=123']
+        out, err = self.run_cmd(testargs)
 
         if output_type == OutputType.PARTIAL:
           self.assertIn(expected_summary, err.getvalue())
         else:
           self.assertEqual(expected_summary, err.getvalue())
+
+        self.assertEqual("", out.getvalue())
 
   def test_evaluated_expressions_section(self):
 
@@ -347,45 +363,36 @@ class GetSnapshotTests(unittest.TestCase):
          expected_without_expressions),
     ]
 
-    args = self.args_parser.parse_args(
-        ['get_snapshot', SNAPSHOT_ACTIVE['id'], '--debuggee-id=123'])
     self.rtdb_service_mock.validate_debuggee_id = MagicMock(return_value=None)
 
     for test_name, snapshot, expected_expressions_section in testcases:
       with self.subTest(test_name):
         self.rtdb_service_mock.get_snapshot = MagicMock(return_value=snapshot)
 
-        with patch(
-            'sys.stdout', new_callable=StringIO) as out, patch(
-                'sys.stderr', new_callable=StringIO) as err:
-          self.get_snapshot.cmd(args, self.cli_services)
+        testargs = [snapshot['id'], '--debuggee-id=123']
+        out, err = self.run_cmd(testargs)
 
         self.assertIn(expected_expressions_section, err.getvalue())
+        self.assertEqual("", out.getvalue())
 
   def test_selected_index_out_of_range(self):
-    args = self.args_parser.parse_args([
-        'get_snapshot', SNAPSHOT_ACTIVE['id'], '--debuggee-id=123',
-        '--frame-index=2'
-    ])
     self.rtdb_service_mock.validate_debuggee_id = MagicMock(return_value=None)
 
     self.rtdb_service_mock.get_snapshot = MagicMock(
         return_value=SNAPSHOT_COMPLETE)
 
-    with patch(
-        'sys.stdout', new_callable=StringIO) as out, patch(
-            'sys.stderr', new_callable=StringIO) as err:
-      with self.assertRaises(SilentlyExitError):
-        self.get_snapshot.cmd(args, self.cli_services)
+    testargs = [SNAPSHOT_COMPLETE['id'], '--debuggee-id=123', '--frame-index=2']
+    out = None
+    err = None
+
+    out, err = self.run_cmd(testargs, SilentlyExitError)
 
     self.assertEqual(
         'Stack frame index 2 too big, there are only 2 stack frames.\n',
         err.getvalue())
+    self.assertEqual("", out.getvalue())
 
   def test_local_variables_default_frame_index(self):
-    # By not specifying a frame index in the args, it defaults to 0.
-    args = self.args_parser.parse_args(
-        ['get_snapshot', SNAPSHOT_ACTIVE['id'], '--debuggee-id=123'])
     self.rtdb_service_mock.validate_debuggee_id = MagicMock(return_value=None)
 
     self.rtdb_service_mock.get_snapshot = MagicMock(
@@ -404,12 +411,12 @@ class GetSnapshotTests(unittest.TestCase):
 
     expected_output = ''.join([expected_header, expected_locals])
 
-    with patch(
-        'sys.stdout', new_callable=StringIO) as out, patch(
-            'sys.stderr', new_callable=StringIO) as err:
-      self.get_snapshot.cmd(args, self.cli_services)
+    # By not specifying a frame index in the args, it defaults to 0.
+    testargs = [SNAPSHOT_COMPLETE['id'], '--debuggee-id=123']
+    out, err = self.run_cmd(testargs)
 
     self.assertIn(expected_output, err.getvalue())
+    self.assertEqual("", out.getvalue())
 
   def test_selected_index_non_zero(self):
     """Tests the case of the selecting a different frame than the first one.
@@ -417,10 +424,6 @@ class GetSnapshotTests(unittest.TestCase):
     In this case only the local variables for the frame in question are
     displayed, no other sections.
     """
-    args = self.args_parser.parse_args([
-        'get_snapshot', SNAPSHOT_ACTIVE['id'], '--debuggee-id=123',
-        '--frame-index=1'
-    ])
     self.rtdb_service_mock.validate_debuggee_id = MagicMock(return_value=None)
 
     self.rtdb_service_mock.get_snapshot = MagicMock(
@@ -442,18 +445,15 @@ class GetSnapshotTests(unittest.TestCase):
 
     expected_output = ''.join([expected_header, expected_locals, '\n'])
 
-    with patch(
-        'sys.stdout', new_callable=StringIO) as out, patch(
-            'sys.stderr', new_callable=StringIO) as err:
-      self.get_snapshot.cmd(args, self.cli_services)
+    testargs = [SNAPSHOT_ACTIVE['id'], '--debuggee-id=123', '--frame-index=1']
+    out, err = self.run_cmd(testargs)
 
     # Use 'assertEqual', ensure the entire output is only the local variables
     # for frame 1.
     self.assertEqual(expected_output, err.getvalue())
+    self.assertEqual("", out.getvalue())
 
   def test_callstack(self):
-    args = self.args_parser.parse_args(
-        ['get_snapshot', SNAPSHOT_ACTIVE['id'], '--debuggee-id=123'])
     self.rtdb_service_mock.validate_debuggee_id = MagicMock(return_value=None)
 
     self.rtdb_service_mock.get_snapshot = MagicMock(
@@ -468,9 +468,8 @@ class GetSnapshotTests(unittest.TestCase):
 
     expected_output = ''.join([expected_header, expected_callstack])
 
-    with patch(
-        'sys.stdout', new_callable=StringIO) as out, patch(
-            'sys.stderr', new_callable=StringIO) as err:
-      self.get_snapshot.cmd(args, self.cli_services)
+    testargs = [SNAPSHOT_ACTIVE['id'], '--debuggee-id=123']
+    out, err = self.run_cmd(testargs)
 
     self.assertIn(expected_output, err.getvalue())
+    self.assertEqual("", out.getvalue())

@@ -31,7 +31,7 @@ from snapshot_dbg_cli.list_snapshots_command import ListSnapshotsCommand
 from snapshot_dbg_cli.set_snapshot_command import SetSnapshotCommand
 
 
-def run():
+def run(cli_services=None):
   cli_commands = [
       DeleteSnapshotsCommand(),
       GetSnapshotCommand(),
@@ -62,7 +62,8 @@ def run():
 
     raise SilentlyExitError
 
-  cli_services = CliServices(args)
+  if cli_services is None:
+    cli_services = CliServices(args)
 
   # This will run the appropriate command.
   args.func(args=args, cli_services=cli_services)
