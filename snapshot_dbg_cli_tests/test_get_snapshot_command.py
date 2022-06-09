@@ -15,7 +15,6 @@
 """
 
 import sys
-import argparse
 import json
 import unittest
 from enum import Enum
@@ -75,8 +74,18 @@ SNAPSHOT_COMPLETE =  {
     }
   ],
   'variableTable': [
-      {'members': [{'name': 'c1', 'value': '1'}, {'name': 'c2',  'value': '2'}]},
-      {'members': [{'name': 'd1', 'value': '11'}, {'name': 'd2',  'value': '22'}]},
+    {
+      'members': [
+         {'name': 'c1', 'value': '1'},
+         {'name': 'c2',  'value': '2'}
+      ]
+    },
+    {
+      'members': [
+        {'name': 'd1', 'value': '11'},
+        {'name': 'd2',  'value': '22'}
+      ]
+    }
   ],
   'userEmail': 'foo@bar.com',
   'createTime': '2022-04-14T18:50:15.852000Z',
@@ -187,8 +196,8 @@ class GetSnapshotTests(unittest.TestCase):
     out, err = self.run_cmd(testargs, expected_exception=SilentlyExitError)
 
     self.user_output_mock.error.assert_called_once()
-    self.assertEqual("Snapshot ID not found: b-111\n", err.getvalue())
-    self.assertEqual("", out.getvalue())
+    self.assertEqual('Snapshot ID not found: b-111\n', err.getvalue())
+    self.assertEqual('', out.getvalue())
 
   def test_output_format_json(self):
     testargs = [SNAPSHOT_COMPLETE['id'], '--debuggee-id=123', '--format=json']
@@ -200,7 +209,7 @@ class GetSnapshotTests(unittest.TestCase):
 
     self.user_output_mock.json_format.assert_called_once_with(
         SNAPSHOT_COMPLETE, pretty=False)
-    self.assertEqual("", err.getvalue())
+    self.assertEqual('', err.getvalue())
     self.assertEqual(SNAPSHOT_COMPLETE, json.loads(out.getvalue()))
 
   def test_output_format_pretty_json(self):
@@ -216,7 +225,7 @@ class GetSnapshotTests(unittest.TestCase):
     self.user_output_mock.json_format.assert_called_once_with(
         SNAPSHOT_COMPLETE, pretty=True)
 
-    self.assertEqual("", err.getvalue())
+    self.assertEqual('', err.getvalue())
     self.assertEqual(SNAPSHOT_COMPLETE, json.loads(out.getvalue()))
 
   def test_summary_summary_section(self):
@@ -264,7 +273,7 @@ class GetSnapshotTests(unittest.TestCase):
     expected_summary_without_expressions = (
         expected_header + 'Location:    index.js:26\n'
         'Condition:   a == 3\n'
-        "Expressions: No expressions set.\n"
+        'Expressions: No expressions set.\n'
         'Status:      Active\n'
         'Create Time: 2022-04-14T18:50:15.852000Z\n'
         'Final Time:  \n')
@@ -279,7 +288,7 @@ class GetSnapshotTests(unittest.TestCase):
 
     expected_expired_summary = (
         expected_header + 'Location:    index.js:26\n'
-        "Condition:   a == 3\n"
+        'Condition:   a == 3\n'
         "Expressions: ['a', 'b', 'a+b']\n"
         'Status:      The snapshot has expired\n'
         'Create Time: 2022-04-14T18:50:15.852000Z\n'
@@ -298,7 +307,7 @@ class GetSnapshotTests(unittest.TestCase):
     # only expected output from the test. Since the condition/expressions tests
     # are using an active snaphsot, they will all be tagged as complete.
     class OutputType(Enum):
-      PARTIAL = 1,
+      PARTIAL = 1
       FULL = 2
 
     testcases = [
@@ -332,7 +341,7 @@ class GetSnapshotTests(unittest.TestCase):
         else:
           self.assertEqual(expected_summary, err.getvalue())
 
-        self.assertEqual("", out.getvalue())
+        self.assertEqual('', out.getvalue())
 
   def test_evaluated_expressions_section(self):
 
@@ -346,7 +355,7 @@ class GetSnapshotTests(unittest.TestCase):
 
     formatter = data_formatter.DataFormatter()
 
-    expressions_data = [{"a": "3"}, {"b": "7"}, {"a+b": "10"}]
+    expressions_data = [{'a': '3'}, {'b': '7'}, {'a+b': '10'}]
 
     expected_with_expressions = ''.join([
         expected_header,
@@ -373,7 +382,7 @@ class GetSnapshotTests(unittest.TestCase):
         out, err = self.run_cmd(testargs)
 
         self.assertIn(expected_expressions_section, err.getvalue())
-        self.assertEqual("", out.getvalue())
+        self.assertEqual('', out.getvalue())
 
   def test_selected_index_out_of_range(self):
     self.rtdb_service_mock.validate_debuggee_id = MagicMock(return_value=None)
@@ -390,7 +399,7 @@ class GetSnapshotTests(unittest.TestCase):
     self.assertEqual(
         'Stack frame index 2 too big, there are only 2 stack frames.\n',
         err.getvalue())
-    self.assertEqual("", out.getvalue())
+    self.assertEqual('', out.getvalue())
 
   def test_local_variables_default_frame_index(self):
     self.rtdb_service_mock.validate_debuggee_id = MagicMock(return_value=None)
@@ -405,7 +414,7 @@ class GetSnapshotTests(unittest.TestCase):
 
     formatter = data_formatter.DataFormatter()
 
-    locals_data = [{"a": "3"}, {"b": "7"}]
+    locals_data = [{'a': '3'}, {'b': '7'}]
 
     expected_locals = formatter.to_json_string(locals_data, pretty=True)
 
@@ -416,7 +425,7 @@ class GetSnapshotTests(unittest.TestCase):
     out, err = self.run_cmd(testargs)
 
     self.assertIn(expected_output, err.getvalue())
-    self.assertEqual("", out.getvalue())
+    self.assertEqual('', out.getvalue())
 
   def test_selected_index_non_zero(self):
     """Tests the case of the selecting a different frame than the first one.
@@ -437,8 +446,8 @@ class GetSnapshotTests(unittest.TestCase):
     formatter = data_formatter.DataFormatter()
 
     locals_data = [
-        {"c": {"c1": "1", "c2": "2"}},
-        {"d": {"d1": "11", "d2": "22"}}
+        {'c': {'c1': '1', 'c2': '2'}},
+        {'d': {'d1': '11', 'd2': '22'}}
     ] # yapf: disable
 
     expected_locals = formatter.to_json_string(locals_data, pretty=True)
@@ -451,7 +460,7 @@ class GetSnapshotTests(unittest.TestCase):
     # Use 'assertEqual', ensure the entire output is only the local variables
     # for frame 1.
     self.assertEqual(expected_output, err.getvalue())
-    self.assertEqual("", out.getvalue())
+    self.assertEqual('', out.getvalue())
 
   def test_callstack(self):
     self.rtdb_service_mock.validate_debuggee_id = MagicMock(return_value=None)
@@ -472,4 +481,4 @@ class GetSnapshotTests(unittest.TestCase):
     out, err = self.run_cmd(testargs)
 
     self.assertIn(expected_output, err.getvalue())
-    self.assertEqual("", out.getvalue())
+    self.assertEqual('', out.getvalue())
