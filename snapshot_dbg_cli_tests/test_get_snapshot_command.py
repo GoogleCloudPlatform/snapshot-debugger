@@ -171,9 +171,9 @@ class GetSnapshotTests(unittest.TestCase):
   def test_validate_debuggee_id_called_as_expected(self):
     testargs = ['b-111', '--debuggee-id=123']
     self.rtdb_service_mock.validate_debuggee_id = MagicMock(
-        side_effect=Exception())
+        side_effect=SilentlyExitError())
 
-    self.run_cmd(testargs, expected_exception=Exception)
+    self.run_cmd(testargs, expected_exception=SilentlyExitError)
 
     self.rtdb_service_mock.validate_debuggee_id.assert_called_once_with('123')
     self.rtdb_service_mock.get_snapshot.assert_not_called()
@@ -352,13 +352,11 @@ class GetSnapshotTests(unittest.TestCase):
     expected_header = ''.join(
         ['-' * 80, '\n', '| Evaluated Expressions\n', '-' * 80, '\n\n'])
 
-    formatter = data_formatter.DataFormatter()
-
     expressions_data = [{'a': '3'}, {'b': '7'}, {'a+b': '10'}]
 
     expected_with_expressions = ''.join([
         expected_header,
-        formatter.to_json_string(expressions_data, pretty=True)
+        self.data_formatter.to_json_string(expressions_data, pretty=True)
     ])
 
     expected_without_expressions = (
@@ -411,11 +409,10 @@ class GetSnapshotTests(unittest.TestCase):
         '-' * 80, '\n\n'
     ])
 
-    formatter = data_formatter.DataFormatter()
-
     locals_data = [{'a': '3'}, {'b': '7'}]
 
-    expected_locals = formatter.to_json_string(locals_data, pretty=True)
+    expected_locals = self.data_formatter.to_json_string(
+        locals_data, pretty=True)
 
     expected_output = ''.join([expected_header, expected_locals])
 
@@ -442,14 +439,13 @@ class GetSnapshotTests(unittest.TestCase):
         '-' * 80, '\n\n'
     ])
 
-    formatter = data_formatter.DataFormatter()
-
     locals_data = [
         {'c': {'c1': '1', 'c2': '2'}},
         {'d': {'d1': '11', 'd2': '22'}}
     ] # yapf: disable
 
-    expected_locals = formatter.to_json_string(locals_data, pretty=True)
+    expected_locals = self.data_formatter.to_json_string(
+        locals_data, pretty=True)
 
     expected_output = ''.join([expected_header, expected_locals, '\n'])
 
