@@ -302,7 +302,5 @@ class ListSnapshotTests(unittest.TestCase):
 
         out, err = self.run_cmd(testargs)
 
-        #print("JCB O:", expected_output)
-        #print("JCB ERR:", err.getvalue())
         self.assertEqual(expected_output, err.getvalue())
         self.assertEqual('', out.getvalue())
