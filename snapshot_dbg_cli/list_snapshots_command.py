@@ -18,6 +18,7 @@ target (debuggee).
 """
 
 from snapshot_dbg_cli import breakpoint_utils
+from snapshot_dbg_cli.status_message import StatusMessage
 
 DESCRIPTION = """
 Used to display the debug snapshots for a debug target (debuggee). By default
@@ -34,10 +35,26 @@ If set, display snapshots from all users, rather than only the current user.
 SUMMARY_HEADERS = ['Status', 'Location', 'Condition', 'CompletedTime', 'ID']
 
 
+def get_snapshot_state(snapshot):
+  if not snapshot['isFinalState']:
+    return 'ACTIVE'
+
+  status_message = StatusMessage(snapshot)
+
+  if not status_message.is_error:
+    return 'COMPLETED'
+
+  refers_to = status_message.refers_to
+  if refers_to == 'BREAKPOINT_AGE':
+    return 'EXPIRED'
+
+  return 'FAILED'
+
+
 def transform_to_snapshot_summary(snapshot):
   # Match the fields from SUMMARY_HEADERS
   return [
-      'COMPLETED' if snapshot['isFinalState'] else 'ACTIVE',
+      get_snapshot_state(snapshot),
       breakpoint_utils.transform_location_to_file_line(snapshot['location']),
       snapshot['condition'] if 'condition' in snapshot else '',
       snapshot['finalTime'] if 'finalTime' in snapshot else '', snapshot['id']
@@ -76,9 +93,10 @@ class ListSnapshotsCommand:
 
     user_email = None if args.all_users is True else cli_services.account
 
-    snapshots = debugger_rtdb_service.get_snapshots(args.debuggee_id,
-                                                    args.include_inactive,
-                                                    user_email)
+    snapshots = debugger_rtdb_service.get_snapshots(
+        debuggee_id=args.debuggee_id,
+        include_inactive=args.include_inactive,
+        user_email=user_email)
 
     if args.format in ('json', 'pretty-json'):
       user_output.json_format(snapshots, pretty=(args.format == 'pretty-json'))
