@@ -36,16 +36,16 @@ SUMMARY_HEADERS = ['Status', 'Location', 'Condition', 'CompletedTime', 'ID']
 
 
 def get_snapshot_state(snapshot):
-  if snapshot['isFinalState'] is False:
+  if not snapshot['isFinalState']:
     return 'ACTIVE'
 
   status_message = StatusMessage(snapshot)
 
-  if status_message.is_error is not True:
+  if not status_message.is_error:
     return 'COMPLETED'
 
   refers_to = status_message.refers_to
-  if refers_to is not None and refers_to == 'BREAKPOINT_AGE':
+  if refers_to == 'BREAKPOINT_AGE':
     return 'EXPIRED'
 
   return 'FAILED'
