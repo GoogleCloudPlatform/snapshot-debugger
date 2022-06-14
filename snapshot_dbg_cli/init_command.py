@@ -210,12 +210,15 @@ class InitCommand:
     parent_parsers = required_parsers
     parser = args_subparsers.add_parser(
         'init', description=CMD_DESCRIPTION, parents=parent_parsers)
-    parser.add_argument(
+
+    mutually_exclusive = parser.add_mutually_exclusive_group(required=False)
+    mutually_exclusive.add_argument(
         '--use-default-rtdb', help=USE_DEFAULT_RTDB_HELP, action='store_true')
-    parser.add_argument(
+    mutually_exclusive.add_argument(
         '--database-id',
         help=DATABASE_ID_HELP.format(
             default_database_id=SNAPSHOT_DEBUGGER_DEFAULT_DB_ID))
+
     parser.set_defaults(func=self.cmd)
 
     # Only some locations are supported, see:
