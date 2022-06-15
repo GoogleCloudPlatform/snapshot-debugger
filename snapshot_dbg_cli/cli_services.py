@@ -22,6 +22,7 @@ from snapshot_dbg_cli.firebase_types import FirebaseProject
 from snapshot_dbg_cli.firebase_management_rest_service import FirebaseManagementRestService
 from snapshot_dbg_cli.firebase_rtdb_rest_service import FirebaseRtdbRestService
 from snapshot_dbg_cli.gcloud_cli_service import GcloudCliService
+#import snapshot_dbg_cli.gcloud_cli_service
 from snapshot_dbg_cli.http_service import HttpService
 from snapshot_dbg_cli.permissions_rest_service import PermissionsRestService
 from snapshot_dbg_cli.snapshot_debugger_rtdb_service import SnapshotDebuggerRtdbService
@@ -41,7 +42,7 @@ FIREBASE_DEFAULT_RTDB_ID = '{project_id}-default-rtdb'
 
 CHECK_CONFIGURATION_MSG = """
 Confirm the correct project has been configured and that the 'init' command has
-been run.  See https://github.com/GoogleCloudPlatform/snapshot-debugger#readme
+been run. See https://github.com/GoogleCloudPlatform/snapshot-debugger#readme
 for more information.
 """
 
@@ -106,7 +107,7 @@ class CliServices:
     """
     if self._firebase_rtdb_rest_service is None:
       if database_url is None:
-        database_url = self.get_database_url(self.args)
+        database_url = self.get_database_url()
 
       self._firebase_rtdb_rest_service = FirebaseRtdbRestService(
           http_service=self.http_service,
@@ -162,7 +163,7 @@ class CliServices:
 
     return default_rtdb
 
-  def get_database_url(self, args):
+  def get_database_url(self):
     """Determines the database URL to use.
 
      The URLs for Firebase RTDBs come in two flavours:
@@ -175,9 +176,6 @@ class CliServices:
     and https://firebase.google.com/docs/projects/locations#rtdb-locations for
     more information.
 
-    Args:
-      args: These are the parsed command line arguments.
-
     Returns:
       The appropriate database URL for the caller to use.
 
@@ -185,17 +183,18 @@ class CliServices:
       SilentlyExitError: When no database URL could be found or another unexpted
         error occurred.
     """
+    if 'database_url' in self.args and self.args.database_url is not None:
+      self.user_output.debug('Using user specified database '
+                             f'{self.args.database_url}')
+      return self.args.database_url
+
     if not self.gcloud_service.is_api_enabled(
         FIREBASE_RTDB_MANAGMENT_API_SERVICE):
       self.user_output.error(
-          f'The {FIREBASE_RTDB_MANAGMENT_API_SERVICE} API service is '
+          f"The '{FIREBASE_RTDB_MANAGMENT_API_SERVICE}' API service is "
           f"disabled on project '{self.project_id}'.")
       self.user_output.error(CHECK_CONFIGURATION_MSG)
       raise SilentlyExitError
-
-    if 'database_url' in args and args.database_url is not None:
-      self.output.debug(f'Using user specified database {args.datbase_url}')
-      return args.database_url
 
     is_db_configured, db_url = self.get_database_url_from_id(
         self.get_snapshot_debugger_default_database_id())
@@ -229,7 +228,7 @@ class CliServices:
         database_id)
 
     if instance_response.status != DatabaseGetStatus.EXISTS:
-      self.user_output.debug(f'Database ID: {database_id} does not exist')
+      self.user_output.debug(f"Database ID: '{database_id}' does not exist")
       return (False, None)
 
     db_url = instance_response.database_instance.database_url
