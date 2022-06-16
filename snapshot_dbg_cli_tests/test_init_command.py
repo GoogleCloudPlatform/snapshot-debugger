@@ -465,7 +465,7 @@ class InitCommandTests(unittest.TestCase):
 
     self.rtdb_service_mock.set_schema_version.assert_called_once_with('1')
 
-  def test_db_info_ouput_after_successful_run(self):
+  def test_db_info_output_after_successful_run(self):
     database_instance = DatabaseInstance({
         'name': ('projects/1111111111/locations/us-central1/instances'
                  '/cli-test-project-cdbg'),
