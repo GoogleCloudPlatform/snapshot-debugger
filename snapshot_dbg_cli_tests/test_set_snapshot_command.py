@@ -120,6 +120,16 @@ class SetSnapshotCommandTests(unittest.TestCase):
     self.assertIn('Location must be in the format file:line', err.getvalue())
     self.assertEqual('', out.getvalue())
 
+  def test_validate_debuggee_id_called_as_expected(self):
+    testargs = ['foo.py:10', '--debuggee-id=123']
+    self.rtdb_service_mock.validate_debuggee_id = MagicMock(
+        side_effect=SilentlyExitError())
+
+    self.run_cmd(testargs, expected_exception=SilentlyExitError)
+
+    self.rtdb_service_mock.validate_debuggee_id.assert_called_once_with('123')
+    self.rtdb_service_mock.set_breakpoint.assert_not_called()
+
   def test_snapshot_data_is_correct(self):
     # (Test Name, CLI Args, account, breakpoint ID),
     testcases = [
