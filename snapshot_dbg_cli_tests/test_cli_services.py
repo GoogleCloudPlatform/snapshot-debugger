@@ -213,6 +213,27 @@ class CliServicesTests(unittest.TestCase):
     self.snapshot_debugger_rtdb_service_class_mock.assert_called_once_with(
         self.firebase_rtdb_service_mock, ANY, self.user_output_mock)
 
+  def test_get_snapshot_debugger_rtdb_service_caching_works(self):
+    args = argparse.Namespace()
+
+    # Internally the code will need to call get_database_url since we are not
+    # passing a url into get_snapshot_debugger_rtdb_service(). To minimize
+    # extra mocking, the simples way to specify what get_database_url() should
+    # return is by using the explicit database-url cli parameter.
+    args.database_url = 'https://url-from-cli-args.firebaseio.com'
+
+    cli_services = CliServices(args)
+    service1 = cli_services.get_snapshot_debugger_rtdb_service()
+    service2 = cli_services.get_snapshot_debugger_rtdb_service()
+
+    self.assertIs(service1, service2)
+
+    # get_snapshot_debugger_rtdb_service() was called twice, the services should
+    # have only been instantiated once however, the second call should have
+    # simply retrieved the cached value.
+    self.firebase_rtdb_service_class_mock.assert_called_once()
+    self.snapshot_debugger_rtdb_service_class_mock.assert_called_once()
+
   def test_get_snapshot_debugger_default_database_id(self):
     args = argparse.Namespace()
     self.gcloud_service_mock.config_get_project = MagicMock(
