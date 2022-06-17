@@ -17,6 +17,8 @@ The set_snapshot command is used to create a snapshot on a debug target
 (Debuggee).
 """
 
+import argparse
+
 from snapshot_dbg_cli import breakpoint_utils
 from snapshot_dbg_cli.exceptions import SilentlyExitError
 
@@ -57,7 +59,7 @@ CREATE_SUCCESS_MESSAGE = ('Successfully created snapshot with id: '
                           '{breakpoint_id}')
 
 CREATE_FAILED_MESSAGE = ('An unexpected error occurred while trying to set '
-                         'the  snapshot.')
+                         'the snapshot.')
 
 
 class SetSnapshotCommand:
@@ -80,7 +82,16 @@ class SetSnapshotCommand:
     parser = args_subparsers.add_parser(
         'set_snapshot', description=DESCRIPTION, parents=parent_parsers)
     parser.set_defaults(func=self.cmd)
-    parser.add_argument('location', help=LOCATION_HELP)
+
+    def location(location_arg):
+      loc = breakpoint_utils.parse_and_validate_location(location_arg)
+
+      if loc is None:
+        raise argparse.ArgumentTypeError(breakpoint_utils.LOCATION_ERROR_MSG)
+
+      return loc
+
+    parser.add_argument('location', help=LOCATION_HELP, type=location)
     parser.add_argument('--condition', help=CONDITION_HELP)
     parser.add_argument('--expression', action='append', help=EXPRESSION_HELP)
     self.args_parser = parser
@@ -91,13 +102,10 @@ class SetSnapshotCommand:
 
     debugger_rtdb_service.validate_debuggee_id(args.debuggee_id)
 
-    location = breakpoint_utils.parse_and_validate_location(args.location)
-
-    if location is None:
-      self.args_parser.error(breakpoint_utils.LOCATION_ERROR_MSG)
-      return
-
-    snapshot_data = {'location': location, 'userEmail': cli_services.account}
+    snapshot_data = {
+        'location': args.location,
+        'userEmail': cli_services.account
+    }
 
     # This is a magic Server Value, createTime will get set to the time since
     # UNIX epoch, in milliseconds.
@@ -112,9 +120,6 @@ class SetSnapshotCommand:
 
     breakpoint_id = debugger_rtdb_service.get_new_breakpoint_id(
         args.debuggee_id)
-
-    if breakpoint_id is None:
-      return
 
     snapshot_data['id'] = breakpoint_id
     bp = debugger_rtdb_service.set_breakpoint(args.debuggee_id, snapshot_data)

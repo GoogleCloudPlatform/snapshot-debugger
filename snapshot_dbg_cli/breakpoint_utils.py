@@ -27,10 +27,8 @@ LOCATION_REGEX = '^[^:]+:[1-9][0-9]*$'
 # anywhere and is more than enough for a file's line number.
 MAX_LINE_NUMBER = 2147483647
 
-LOCATION_ERROR_MSG = f"""
-Location must be in the format file:line, with the maximum line number being
-{MAX_LINE_NUMBER}
-"""
+LOCATION_ERROR_MSG = ('Location must be in the format file:line, with the '
+                      f'maximum line number being {MAX_LINE_NUMBER}')
 
 
 # Returns dict containing {'path': string, 'line:' int} on success.
