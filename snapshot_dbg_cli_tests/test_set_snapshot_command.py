@@ -157,7 +157,7 @@ class SetSnapshotCommandTests(unittest.TestCase):
              'createTimeUnixMsec': {'.sv': 'timestamp'},
          }
         ),
-        ('Breakpoint', ['foo.py:10'], 'foo@bar.com', 'b-1651111111',
+        ('Breakpoint ID', ['foo.py:10'], 'foo@bar.com', 'b-1651111111',
          {
              'id': 'b-1651111111',
              'location': {'path': 'foo.py', 'line': 10},
