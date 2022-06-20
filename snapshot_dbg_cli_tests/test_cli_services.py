@@ -46,11 +46,33 @@ class CliServicesTests(unittest.TestCase):
   """
 
   def setUp(self):
+    # The following sets up Mocks for the classes that the CliServices depends
+    # on/instantiates by using the patch feature of the mocking framework.
+    #
+    # For each dependent class we have:
+    #   <class_name>_patcher
+    #     Handle for the patch setup.
+    #
+    #   <class_name>_class_mock:
+    #     The mock for the class itself. Instantiations of the class by
+    #     CliServices can be checked against calls to this mock.  When the class
+    #     is called to instantiate an instance, the field 'return_value' is what
+    #     gets returned.  It will be Mock instance as well.
+    #
+    #  <class_name>_mock:
+    #    This is a mock representing the actual instance of the class.
+
     self.data_formatter_patcher = patch(
         'snapshot_dbg_cli.cli_services.DataFormatter', autospec=True)
     self.data_formatter_class_mock = self.data_formatter_patcher.start()
     self.data_formatter_mock = self.data_formatter_class_mock.return_value
     self.addCleanup(self.data_formatter_patcher.stop)
+
+    self.user_input_patcher = patch(
+        'snapshot_dbg_cli.cli_services.UserInput', autospec=True)
+    self.user_input_class_mock = self.user_input_patcher.start()
+    self.user_input_mock = self.user_input_class_mock.return_value
+    self.addCleanup(self.user_input_patcher.stop)
 
     self.user_output_patcher = patch(
         'snapshot_dbg_cli.cli_services.UserOutput', autospec=True)
@@ -105,8 +127,22 @@ class CliServicesTests(unittest.TestCase):
     self.addCleanup(self.snapshot_debugger_rtdb_service_patcher.stop)
 
   def test_constructor_works_as_expected(self):
+    """Ensure the CliServices class sets things up as expected.
+
+    The CliServices class gathers together the required for the CLI to carry out
+    the commands. It retrieves the project id, account, access token etc, and
+    instantiates the required services that the commands depend on.
+
+    Here we to ensure the expected values get installed to the public fields of
+    the class. We also ensure of the services that the instances have been
+    instantiated with the expected values.
+    """
     args = argparse.Namespace()
 
+    # It's expected the CliServices constructor will retrieve the configured
+    # account, project_id and the user's access token via gcloud. Set up the
+    # response to ensure the constructor is doing the right thing.
+    # and get the user's access token for use in REST calls.
     self.gcloud_service_mock.config_get_account = MagicMock(
         return_value='foo@bar.com')
     self.gcloud_service_mock.config_get_project = MagicMock(
@@ -118,19 +154,29 @@ class CliServicesTests(unittest.TestCase):
 
     cli_services = CliServices(args)
 
+    # Ensure the fields end up with the expected values. The commands will be
+    # relying on these being set correctly.
     self.assertEqual(args, cli_services.args)
     self.assertEqual('foo@bar.com', cli_services.account)
     self.assertEqual('cli-test-project', cli_services.project_id)
-    self.assertEqual('cli-test-access-token', cli_services.access_token)
-    self.assertEqual(self.http_service_mock, cli_services.http_service)
+
+    # Ensure the service fields end up populated with the expected Class
+    # instances, by checking the expected <class_name>_mock instance is assigned
+    # to the correct fields.
+    self.assertEqual(self.data_formatter_mock, cli_services.data_formatter)
+    self.assertEqual(self.user_input_mock, cli_services.user_input)
+    self.assertEqual(self.user_output_mock, cli_services.user_output)
+    self.assertEqual(self.gcloud_service_mock, cli_services.gcloud_service)
     self.assertEqual(self.permissions_service_mock,
                      cli_services.permissions_service)
     self.assertEqual(self.firebase_management_service_mock,
                      cli_services.firebase_management_service)
 
-    self.data_formatter_class_mock.assert_called_once()
+    # Ensure the service instantiations were called with the expected arguments
+    # to ensure they are configured correctly.
     self.user_output_class_mock.assert_called_once_with(
         expected_is_debug_enabled, self.data_formatter_mock)
+
     self.gcloud_service_class_mock.assert_called_once_with(
         self.user_output_mock)
 
@@ -150,10 +196,13 @@ class CliServicesTests(unittest.TestCase):
         project_id='cli-test-project',
         user_output=self.user_output_mock)
 
-    self.firebase_rtdb_service_class_mock.assert_not_called()
-    self.snapshot_debugger_rtdb_service_class_mock.assert_not_called()
-
   def test_constructor_debug_works_as_expected(self):
+    """Ensure the --debug CLI argument is processed correctly.
+
+    The UserOutput class handles all the user output, and gates whether debug
+    message are emitted to the user or not.  Here we ensure the CliServices
+    class passes the correct is_debug_enabled value into it.
+    """
     args_debug_not_set = argparse.Namespace()
 
     args_debug_set_false = argparse.Namespace()
@@ -163,6 +212,7 @@ class CliServicesTests(unittest.TestCase):
     args_debug_set_true.debug = True
 
     testcases = [
+        # (Test name, args, expected is_debug_enabled)
         ('Not set', args_debug_not_set, False),
         ('Set false', args_debug_set_false, False),
         ('Set true', args_debug_set_true, True),
@@ -174,9 +224,15 @@ class CliServicesTests(unittest.TestCase):
         CliServices(args)
 
         self.user_output_class_mock.assert_called_once_with(
-            expected_is_debug_enabled, self.data_formatter_mock)
+            expected_is_debug_enabled, ANY)
 
-  def test_get_snapshot_debugger_rtdb_service_url_provided(self):
+  def test_get_snapshot_debugger_rtdb_service_uses_expected_mocks(self):
+    """Verifies get_snapshot_debugger_rtdb_service() used services are correct.
+
+    This test focuses on ensuring the services created by the method are created
+    correctly with the expected dependent services instances.
+    """
+
     args = argparse.Namespace()
 
     service = CliServices(args).get_snapshot_debugger_rtdb_service(
@@ -186,18 +242,32 @@ class CliServicesTests(unittest.TestCase):
 
     self.firebase_rtdb_service_class_mock.assert_called_once_with(
         http_service=self.http_service_mock,
-        database_url='https://fake-url.firebaseio.com',
+        database_url=ANY,
         user_output=self.user_output_mock)
 
     self.snapshot_debugger_rtdb_service_class_mock.assert_called_once_with(
         self.firebase_rtdb_service_mock, ANY, self.user_output_mock)
+
+  def test_get_snapshot_debugger_rtdb_service_url_provided(self):
+    args = argparse.Namespace()
+
+    service = CliServices(args).get_snapshot_debugger_rtdb_service(
+        database_url='https://fake-url.firebaseio.com')
+
+    self.assertEqual(service, self.snapshot_debugger_rtdb_service_mock)
+
+    # Using ANY for the other parameters as the url is the focus of this test.
+    self.firebase_rtdb_service_class_mock.assert_called_once_with(
+        http_service=ANY,
+        database_url='https://fake-url.firebaseio.com',
+        user_output=ANY)
 
   def test_get_snapshot_debugger_rtdb_service_url_not_provided(self):
     args = argparse.Namespace()
 
     # Internally the code will need to call get_database_url since we are not
     # passing a url into get_snapshot_debugger_rtdb_service(). To minimize
-    # extra mocking, the simples way to specify what get_database_url() should
+    # extra mocking, the simplest way to specify what get_database_url() should
     # return is by using the explicit database-url cli parameter.
     args.database_url = 'https://url-from-cli-args.firebaseio.com'
 
@@ -205,13 +275,11 @@ class CliServicesTests(unittest.TestCase):
 
     self.assertEqual(service, self.snapshot_debugger_rtdb_service_mock)
 
+    # Using ANY for the other parameters as the url is the focusof this test.
     self.firebase_rtdb_service_class_mock.assert_called_once_with(
-        http_service=self.http_service_mock,
+        http_service=ANY,
         database_url='https://url-from-cli-args.firebaseio.com',
-        user_output=self.user_output_mock)
-
-    self.snapshot_debugger_rtdb_service_class_mock.assert_called_once_with(
-        self.firebase_rtdb_service_mock, ANY, self.user_output_mock)
+        user_output=ANY)
 
   def test_get_snapshot_debugger_rtdb_service_caching_works(self):
     args = argparse.Namespace()
@@ -245,11 +313,18 @@ class CliServicesTests(unittest.TestCase):
                      cli_services.get_snapshot_debugger_default_database_id())
 
   def test_get_firebase_default_rtdb_id_project_provided(self):
+    """Verifies the method does not need to retrieve the project information.
+
+    This test verifies that by providing the get_firebase_default_rtdb_id method
+    with the project instance, it makes use of it as expected and does not issue
+    a firebase_management_service_mock.project_get call.
+    """
     args = argparse.Namespace()
     self.gcloud_service_mock.config_get_project = MagicMock(
         return_value='cli-test-project')
 
     testcases = [
+        # (Test Name, Provided Project Info, Expected default RTDB Name)
         ('Default RTDB In Project',
          build_firebase_project(defaut_rtdb_name='provided-rtdb-id'),
          'provided-rtdb-id'),
@@ -270,11 +345,19 @@ class CliServicesTests(unittest.TestCase):
         self.firebase_management_service_mock.project_get.assert_not_called()
 
   def test_get_firebase_default_rtdb_id_project_not_provided(self):
+    """Verifies the method does make a call to retrieve the project information.
+
+    This test verifies that when the get_firebase_default_rtdb_id method is not
+    called with the project information, it must make a
+    firebase_management_service_mock.project_get call to retrieve it, and that
+    the response is correctly used in determining the default_rtdb_id.
+    """
     args = argparse.Namespace()
     self.gcloud_service_mock.config_get_project = MagicMock(
         return_value='cli-test-project')
 
     testcases = [
+        # (Test Name, Project Get Response, Expected default RTDB Name)
         ('Project Found, RTDB Set',
          build_firebase_project(defaut_rtdb_name='found-rtdb-id'),
          'found-rtdb-id'),
@@ -288,7 +371,10 @@ class CliServicesTests(unittest.TestCase):
       with self.subTest(test_name):
         status = FirebaseProjectStatus.ENABLED if project is not None \
                  else FirebaseProjectStatus.NOT_ENABLED
+
         project_response = FirebaseProjectGetResponse(status, project)
+
+        # It will need to make a projct_get reques, so setup the response.
         self.firebase_management_service_mock.project_get = MagicMock(
             return_value=project_response)
 
@@ -351,10 +437,6 @@ class CliServicesTests(unittest.TestCase):
     self.assertEqual('https://cli-test-project-cdbg.firebaseio.com',
                      obtained_url)
 
-    self.user_output_mock.debug.assert_called_with(
-        'Using configured database '
-        'https://cli-test-project-cdbg.firebaseio.com')
-
   def test_get_database_url_must_fall_back_to_default_rtdb(self):
     args = argparse.Namespace()
     self.gcloud_service_mock.config_get_project = MagicMock(
@@ -403,10 +485,6 @@ class CliServicesTests(unittest.TestCase):
 
         self.assertEqual('https://cli-test-project-default-rtdb.firebaseio.com',
                          obtained_url)
-
-        self.user_output_mock.debug.assert_called_with(
-            'Using configured database '
-            'https://cli-test-project-default-rtdb.firebaseio.com')
 
   def test_get_database_url_not_found(self):
     args = argparse.Namespace()
@@ -502,6 +580,9 @@ class CliServicesTests(unittest.TestCase):
 
         rtdb_instance_get_mock.assert_called_once_with('fake-id')
 
+        # To verify the DB instance is configured for use with the Snapshot
+        # Debugger, the method will need to create temporary services to query
+        # it. Here we verify these services instantiated correctly.
         self.firebase_rtdb_service_class_mock.assert_called_once_with(
             http_service=self.http_service_mock,
             database_url='https://fake-url.firebaseio.com',
@@ -509,10 +590,6 @@ class CliServicesTests(unittest.TestCase):
 
         self.snapshot_debugger_rtdb_service_class_mock.assert_called_once_with(
             self.firebase_rtdb_service_mock, ANY, self.user_output_mock)
-
-        self.user_output_mock.debug.assert_called_once_with(
-            'Database ID: fake-id, URL: https://fake-url.firebaseio.com, '
-            f'is configured: {expected_is_configured}')
 
   def test_get_database_url_from_id_instance_does_not_exist(self):
     args = argparse.Namespace()
@@ -532,9 +609,3 @@ class CliServicesTests(unittest.TestCase):
       self.firebase_management_service_mock.rtdb_instance_get
 
     rtdb_instance_get_mock.assert_called_once_with('fake-id')
-
-    self.firebase_rtdb_service_class_mock.assert_not_called()
-    self.snapshot_debugger_rtdb_service_class_mock.assert_not_called()
-
-    self.user_output_mock.debug.assert_called_once_with(
-        "Database ID: 'fake-id' does not exist")

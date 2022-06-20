@@ -22,7 +22,6 @@ from snapshot_dbg_cli.firebase_types import FirebaseProject
 from snapshot_dbg_cli.firebase_management_rest_service import FirebaseManagementRestService
 from snapshot_dbg_cli.firebase_rtdb_rest_service import FirebaseRtdbRestService
 from snapshot_dbg_cli.gcloud_cli_service import GcloudCliService
-#import snapshot_dbg_cli.gcloud_cli_service
 from snapshot_dbg_cli.http_service import HttpService
 from snapshot_dbg_cli.permissions_rest_service import PermissionsRestService
 from snapshot_dbg_cli.snapshot_debugger_rtdb_service import SnapshotDebuggerRtdbService
@@ -60,7 +59,6 @@ class CliServices:
     account: The account to use, which is expected to be the user's email
       address.
     project_id: The project ID to use.
-    access_token: The access token to use in HTTP requests.
     http_service: Service for making HTTP requests.
     permissions_service: Service for checking user permissions.
     firebase_management_service: Service to use for making management/admin
@@ -68,29 +66,30 @@ class CliServices:
   """
 
   def __init__(self, args):
-    self.args = args
     is_debug_enabled = args.debug if 'debug' in args else False
+
+    self.args = args
     self.data_formatter = DataFormatter()
     self.user_input = UserInput()
     self.user_output = UserOutput(is_debug_enabled, self.data_formatter)
     self.gcloud_service = GcloudCliService(self.user_output)
     self.account = self.gcloud_service.config_get_account()
     self.project_id = self.gcloud_service.config_get_project()
-    self.access_token = self.gcloud_service.get_access_token()
 
-    self.http_service = HttpService(
+    access_token = self.gcloud_service.get_access_token()
+    self._http_service = HttpService(
         project_id=self.project_id,
-        access_token=self.access_token,
+        access_token=access_token,
         user_output=self.user_output)
 
     self.permissions_service = PermissionsRestService(
         project_id=self.project_id,
-        http_service=self.http_service,
-        access_token=self.access_token,
+        http_service=self._http_service,
+        access_token=access_token,
         user_output=self.user_output)
 
     self.firebase_management_service = FirebaseManagementRestService(
-        http_service=self.http_service,
+        http_service=self._http_service,
         project_id=self.project_id,
         user_output=self.user_output)
 
@@ -110,7 +109,7 @@ class CliServices:
         database_url = self.get_database_url()
 
       self._firebase_rtdb_rest_service = FirebaseRtdbRestService(
-          http_service=self.http_service,
+          http_service=self._http_service,
           database_url=database_url,
           user_output=self.user_output)
 
@@ -234,7 +233,7 @@ class CliServices:
     db_url = instance_response.database_instance.database_url
 
     rest_service = FirebaseRtdbRestService(
-        http_service=self.http_service,
+        http_service=self._http_service,
         database_url=db_url,
         user_output=self.user_output)
 
