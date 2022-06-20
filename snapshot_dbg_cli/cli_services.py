@@ -41,7 +41,7 @@ FIREBASE_DEFAULT_RTDB_ID = '{project_id}-default-rtdb'
 
 CHECK_CONFIGURATION_MSG = """
 Confirm the correct project has been configured and that the 'init' command has
-been run.  See https://github.com/GoogleCloudPlatform/snapshot-debugger#readme
+been run. See https://github.com/GoogleCloudPlatform/snapshot-debugger#readme
 for more information.
 """
 
@@ -59,7 +59,6 @@ class CliServices:
     account: The account to use, which is expected to be the user's email
       address.
     project_id: The project ID to use.
-    access_token: The access token to use in HTTP requests.
     http_service: Service for making HTTP requests.
     permissions_service: Service for checking user permissions.
     firebase_management_service: Service to use for making management/admin
@@ -67,29 +66,30 @@ class CliServices:
   """
 
   def __init__(self, args):
-    self.args = args
     is_debug_enabled = args.debug if 'debug' in args else False
+
+    self.args = args
     self.data_formatter = DataFormatter()
     self.user_input = UserInput()
     self.user_output = UserOutput(is_debug_enabled, self.data_formatter)
     self.gcloud_service = GcloudCliService(self.user_output)
     self.account = self.gcloud_service.config_get_account()
     self.project_id = self.gcloud_service.config_get_project()
-    self.access_token = self.gcloud_service.get_access_token()
 
-    self.http_service = HttpService(
+    access_token = self.gcloud_service.get_access_token()
+    self._http_service = HttpService(
         project_id=self.project_id,
-        access_token=self.access_token,
+        access_token=access_token,
         user_output=self.user_output)
 
     self.permissions_service = PermissionsRestService(
         project_id=self.project_id,
-        http_service=self.http_service,
-        access_token=self.access_token,
+        http_service=self._http_service,
+        access_token=access_token,
         user_output=self.user_output)
 
     self.firebase_management_service = FirebaseManagementRestService(
-        http_service=self.http_service,
+        http_service=self._http_service,
         project_id=self.project_id,
         user_output=self.user_output)
 
@@ -106,10 +106,10 @@ class CliServices:
     """
     if self._firebase_rtdb_rest_service is None:
       if database_url is None:
-        database_url = self.get_database_url(self.args)
+        database_url = self.get_database_url()
 
       self._firebase_rtdb_rest_service = FirebaseRtdbRestService(
-          http_service=self.http_service,
+          http_service=self._http_service,
           database_url=database_url,
           user_output=self.user_output)
 
@@ -162,7 +162,7 @@ class CliServices:
 
     return default_rtdb
 
-  def get_database_url(self, args):
+  def get_database_url(self):
     """Determines the database URL to use.
 
      The URLs for Firebase RTDBs come in two flavours:
@@ -175,9 +175,6 @@ class CliServices:
     and https://firebase.google.com/docs/projects/locations#rtdb-locations for
     more information.
 
-    Args:
-      args: These are the parsed command line arguments.
-
     Returns:
       The appropriate database URL for the caller to use.
 
@@ -185,17 +182,18 @@ class CliServices:
       SilentlyExitError: When no database URL could be found or another unexpted
         error occurred.
     """
+    if 'database_url' in self.args and self.args.database_url is not None:
+      self.user_output.debug('Using user specified database '
+                             f'{self.args.database_url}')
+      return self.args.database_url
+
     if not self.gcloud_service.is_api_enabled(
         FIREBASE_RTDB_MANAGMENT_API_SERVICE):
       self.user_output.error(
-          f'The {FIREBASE_RTDB_MANAGMENT_API_SERVICE} API service is '
+          f"The '{FIREBASE_RTDB_MANAGMENT_API_SERVICE}' API service is "
           f"disabled on project '{self.project_id}'.")
       self.user_output.error(CHECK_CONFIGURATION_MSG)
       raise SilentlyExitError
-
-    if 'database_url' in args and args.database_url is not None:
-      self.output.debug(f'Using user specified database {args.datbase_url}')
-      return args.database_url
 
     is_db_configured, db_url = self.get_database_url_from_id(
         self.get_snapshot_debugger_default_database_id())
@@ -229,13 +227,13 @@ class CliServices:
         database_id)
 
     if instance_response.status != DatabaseGetStatus.EXISTS:
-      self.user_output.debug(f'Database ID: {database_id} does not exist')
+      self.user_output.debug(f"Database ID: '{database_id}' does not exist")
       return (False, None)
 
     db_url = instance_response.database_instance.database_url
 
     rest_service = FirebaseRtdbRestService(
-        http_service=self.http_service,
+        http_service=self._http_service,
         database_url=db_url,
         user_output=self.user_output)
 
