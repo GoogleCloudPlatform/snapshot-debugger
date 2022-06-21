@@ -14,6 +14,7 @@
 """ Unit test file for the GetSnapshot class.
 """
 
+import os
 import sys
 import json
 import unittest

@@ -26,7 +26,6 @@ from snapshot_dbg_cli.exceptions import SilentlyExitError
 from snapshot_dbg_cli.snapshot_debugger_rtdb_service import SnapshotDebuggerRtdbService
 from snapshot_dbg_cli.user_input import UserInput
 from snapshot_dbg_cli.user_output import UserOutput
-from snapshot_dbg_cli.cli_common_arguments import DEBUGGEE_ID_ENV_VAR_NAME
 
 from io import StringIO
 from unittest.mock import ANY

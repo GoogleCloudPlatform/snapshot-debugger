@@ -14,6 +14,7 @@
 """ Unit test file for the InitCommand class.
 """
 
+import os
 import sys
 import unittest
 from io import StringIO
