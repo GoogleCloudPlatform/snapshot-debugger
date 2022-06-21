@@ -124,9 +124,13 @@ class InitCommandTests(unittest.TestCase):
   def run_cmd(self, testargs, expected_exception=None):
     args = ['cli-test', 'init'] + testargs
 
+    # We patch os.environ as some cli arguments can come from environment
+    # variables, and if they happen to be set in the terminal running the tests
+    # it will affect things.
     # We patch the sleep to speed the tests up as the init command has a sleep,
     # which slows the tests down.
     with patch.object(sys, 'argv', args), \
+         patch.dict(os.environ, {}, clear=True), \
          patch('time.sleep', return_value=None), \
          patch('sys.stdout', new_callable=StringIO) as out, \
          patch('sys.stderr', new_callable=StringIO) as err:

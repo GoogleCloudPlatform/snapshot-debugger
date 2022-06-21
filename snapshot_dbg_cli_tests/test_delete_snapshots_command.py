@@ -99,7 +99,11 @@ class DeleteSnapshotsCommandTests(unittest.TestCase):
   def run_cmd(self, testargs, expected_exception=None):
     args = ['cli-test', 'delete_snapshots'] + testargs
 
+    # We patch os.environ as some cli arguments can come from environment
+    # variables, and if they happen to be set in the terminal running the tests
+    # it will affect things.
     with patch.object(sys, 'argv', args), \
+         patch.dict(os.environ, {}, clear=True), \
          patch('sys.stdout', new_callable=StringIO) as out, \
          patch('sys.stderr', new_callable=StringIO) as err:
       if expected_exception is not None:
@@ -112,9 +116,6 @@ class DeleteSnapshotsCommandTests(unittest.TestCase):
 
   def test_debuggee_id_is_required(self):
     testargs = []
-
-    # If this is set, the test won't work as expected.
-    self.assertFalse(DEBUGGEE_ID_ENV_VAR_NAME in os.environ)
 
     # debuggee-id should be a required parameter, the argparse library should
     # enforce this and use SystemExit if it's not found.
