@@ -14,6 +14,7 @@
 """ Unit test file for the GetSnapshot class.
 """
 
+import os
 import sys
 import json
 import unittest
@@ -159,9 +160,14 @@ class GetSnapshotTests(unittest.TestCase):
 
   def run_cmd(self, testargs, expected_exception=None):
     args = ['cli-test', 'get_snapshot'] + testargs
+
+    # We patch os.environ as some cli arguments can come from environment
+    # variables, and if they happen to be set in the terminal running the tests
+    # it will affect things.
     with patch.object(sys, 'argv', args), \
-          patch('sys.stdout', new_callable=StringIO) as out, \
-          patch('sys.stderr', new_callable=StringIO) as err:
+         patch.dict(os.environ, {}, clear=True), \
+         patch('sys.stdout', new_callable=StringIO) as out, \
+         patch('sys.stderr', new_callable=StringIO) as err:
       if expected_exception is not None:
         with self.assertRaises(expected_exception):
           cli_run.run(self.cli_services)
