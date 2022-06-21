@@ -127,9 +127,11 @@ class DeleteSnapshotsCommand:
         user_output.error('Delete aborted.')
         return
 
-    debugger_rtdb_service.delete_breakpoints(args.debuggee_id, snapshots)
+      debugger_rtdb_service.delete_breakpoints(args.debuggee_id, snapshots)
 
-    # Status output goes to stderr
+    # The status is output regardless of the requested output format. It should
+    # go to stderr, and if json output is requested, that should end up on
+    # stdout.
     user_output.normal(f'Deleted {len(snapshots)} snapshots.')
 
     if args.format in ('json', 'pretty-json'):
