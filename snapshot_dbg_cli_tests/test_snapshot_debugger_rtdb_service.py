@@ -595,12 +595,12 @@ class SnapshotDebuggerRtdbServiceTests(unittest.TestCase):
             [call(self.schema.get_path_breakpoints_active('123'))]
         ),
         (
-            # To note in practise this scenario may not be possible. E.g. if a
-            # debuggee has no active breakpoints, e.g. the last one was
-            # deleted, the path would cease to exist and so queries to it would
-            # instead return None, which is the test scenario that follows this
-            # one. That said the code should be able to handle an empty response
-            # and so we check for it.
+            # To note in practise this scenario may not be possible. If a
+            # debuggee has no active breakpoints, e.g. the last one was deleted,
+            # the path would cease to exist and so queries to it would instead
+            # return None, which is its own test scenario one. That said the
+            # code should be able to handle an empty response and so we check
+            # for it.
             'Empty responses on path queries',
             True, # include_inactive
             'user1@foo.com',
@@ -611,7 +611,7 @@ class SnapshotDebuggerRtdbServiceTests(unittest.TestCase):
              call(self.schema.get_path_breakpoints_final('123'))]
         ),
         (
-            # This scenario happen if the debuggee has no breakpoints and the
+            # This scenario happens if the debuggee has no breakpoints and the
             # path doesn't actually exist. None will be returned for the get
             # query on the path in this case.
             'None responses on path queries',

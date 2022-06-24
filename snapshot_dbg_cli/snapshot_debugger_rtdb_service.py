@@ -206,7 +206,7 @@ class SnapshotDebuggerRtdbService:
     Returns:
       The snapshots (list of dicts). If no snapshots were found this list will
       simply be empty. All returned snapshots will have the
-      breakpoint_utils.normalize_breakpoint function applied to it to ensure all
+      breakpoint_utils.normalize_breakpoint function applied to ensure all
       expected fields are set.
     """
     return self._get_breakpoints(debuggee_id, include_inactive, 'CAPTURE',
