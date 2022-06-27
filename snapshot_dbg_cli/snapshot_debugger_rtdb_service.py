@@ -132,14 +132,14 @@ class SnapshotDebuggerRtdbService:
 
     To note, if the breakpoint ID refers to a snapshot which has completed, the
     capture data is expressly not returned via this call. To retrieve the full
-    snapshot data the get_snapshot() method should be used instead.
+    snapshot data the get_snapshot_detailed() method should be used instead.
 
     Args:
       debuggee_id: The debuggee to retrieve the breakpoint from.
       breakpoint_id: The ID of the breakpoint to retrieve.
       shallow: Boolean flag passed to the RTDB Rest call. When true it will cut
-        down on the data returned. In the case of a breakopint, only the keys, all
-        mapped to True will be returned.
+        down on the data returned. In the case of a breakpoint, only the keys,
+        all mapped to True will be returned.
 
     Returns:
       The breakpoint (in dict form) if found, None otherwise. If the breakpoint
@@ -159,7 +159,7 @@ class SnapshotDebuggerRtdbService:
 
     return normalize_breakpoint(bp, breakpoint_id)
 
-  def get_snapshot(self, debuggee_id, breakpoint_id):
+  def get_snapshot_detailed(self, debuggee_id, breakpoint_id):
     """Retrieves the snapshot data for the given debuggee and breakpoint ID.
 
     To note, if the breakpoint ID refers to a snapshot which has completed, the
@@ -193,7 +193,7 @@ class SnapshotDebuggerRtdbService:
 
     To note, for any snapshots that have completed, no capture data is retrieved
     via this call. To get the full capture data an individual call to
-    get_snapshot is required.
+    get_snapshot_detailed() is required.
 
     Args:
       debuggee_id: The debuggee to retrieve the snapshots from.
@@ -218,13 +218,13 @@ class SnapshotDebuggerRtdbService:
                        action,
                        user_email=None):
     breakpoints = self._get_breakpoints_by_path_and_filter(
-        self.schema.get_path_breakpoints_active(debuggee_id),
-        action, user_email)
+        self.schema.get_path_breakpoints_active(debuggee_id), action,
+        user_email)
 
     if include_inactive:
       breakpoints += self._get_breakpoints_by_path_and_filter(
-          self.schema.get_path_breakpoints_final(debuggee_id),
-          action, user_email)
+          self.schema.get_path_breakpoints_final(debuggee_id), action,
+          user_email)
 
     return breakpoints
 

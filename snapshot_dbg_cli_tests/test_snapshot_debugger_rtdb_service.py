@@ -92,7 +92,6 @@ class SnapshotDebuggerRtdbServiceTests(unittest.TestCase):
   """
 
   def setUp(self):
-
     self.firebase_rtdb_service_mock = MagicMock(spec=FirebaseRtdbRestService)
 
     self.schema = SnapshotDebuggerSchema()
@@ -237,7 +236,7 @@ class SnapshotDebuggerRtdbServiceTests(unittest.TestCase):
             shallow=True),
     ], self.firebase_rtdb_service_mock.get.mock_calls)
 
-  def test_get_new_breakpoint_id_eventually_raises_and_emtis_error(self):
+  def test_get_new_breakpoint_id_eventually_raises_and_emits_error(self):
     # Just need to return a snapshot to indicate the ID is not available.
     self.firebase_rtdb_service_mock.get = MagicMock(
         return_value=SNAPSHOT_ACTIVE)
@@ -415,7 +414,7 @@ class SnapshotDebuggerRtdbServiceTests(unittest.TestCase):
     self.assertIn('action', obtained_snapshot)
     self.assertEqual('CAPTURE', obtained_snapshot['action'])
 
-  def test_get_snapshot_works_as_expected(self):
+  def test_get_snapshot_detailed_works_as_expected(self):
     testcases = [
         # (Test name, Get side_effects, Expected Snapshot, Expected get calls)
         (
@@ -453,7 +452,7 @@ class SnapshotDebuggerRtdbServiceTests(unittest.TestCase):
       with self.subTest(test_name):
         self.firebase_rtdb_service_mock.get = MagicMock(side_effect=side_effect)
 
-        obtained_snapshot = self.debugger_rtdb_service.get_snapshot(
+        obtained_snapshot = self.debugger_rtdb_service.get_snapshot_detailed(
             '123', 'b-1650000000')
 
         self.assertEqual(expected_snapshot, obtained_snapshot)
@@ -461,10 +460,10 @@ class SnapshotDebuggerRtdbServiceTests(unittest.TestCase):
         self.assertEqual(expected_calls,
                          self.firebase_rtdb_service_mock.get.mock_calls)
 
-  def test_get_snapshot_normalizes_bp(self):
+  def test_get_snapshot_detailed_normalizes_bp(self):
     """This test focuses solely on ensuring the snapshot gets normalized.
 
-    The snapshot returned by get_snapshot() should have the
+    The snapshot returned by get_snapshot_detailed() should have the
     breakpoint_utils.normalize_breakpoint function applied to it. This
     ensures all expected fields are set and calling code can assume they exist.
     """
@@ -479,7 +478,8 @@ class SnapshotDebuggerRtdbServiceTests(unittest.TestCase):
 
     self.firebase_rtdb_service_mock.get = MagicMock(return_value=bp)
 
-    obtained_snapshot = self.debugger_rtdb_service.get_snapshot('123', 'b-123')
+    obtained_snapshot = self.debugger_rtdb_service.get_snapshot_detailed(
+        '123', 'b-123')
 
     # This field will have been set by the call to normalize_breakpoint which
     # ensures it was called as expected.
