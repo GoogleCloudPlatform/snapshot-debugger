@@ -130,7 +130,6 @@ def normalize_breakpoint(bp, bpid=None):
 
   Returns:
     The normalized breakpoint on success, None on failure.
-
   """
   if bp is None:
     return None
