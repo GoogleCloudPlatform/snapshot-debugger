@@ -184,22 +184,23 @@ class GetSnapshotTests(unittest.TestCase):
     self.run_cmd(testargs, expected_exception=SilentlyExitError)
 
     self.rtdb_service_mock.validate_debuggee_id.assert_called_once_with('123')
-    self.rtdb_service_mock.get_snapshot.assert_not_called()
+    self.rtdb_service_mock.get_snapshot_detailed.assert_not_called()
 
-  def test_get_snapshot_called_as_expected(self):
+  def test_get_snapshot_detailed_called_as_expected(self):
     testargs = ['b-111', '--debuggee-id=123']
     self.rtdb_service_mock.validate_debuggee_id = MagicMock(return_value=None)
-    self.rtdb_service_mock.get_snapshot = MagicMock(
+    self.rtdb_service_mock.get_snapshot_detailed = MagicMock(
         return_value=SNAPSHOT_ACTIVE)
 
     self.run_cmd(testargs)
 
-    self.rtdb_service_mock.get_snapshot.assert_called_once_with('123', 'b-111')
+    self.rtdb_service_mock.get_snapshot_detailed.assert_called_once_with(
+        '123', 'b-111')
 
   def test_snapshot_not_found_works_as_expected(self):
     testargs = ['b-111', '--debuggee-id=123']
     self.rtdb_service_mock.validate_debuggee_id = MagicMock(return_value=None)
-    self.rtdb_service_mock.get_snapshot = MagicMock(return_value=None)
+    self.rtdb_service_mock.get_snapshot_detailed = MagicMock(return_value=None)
 
     out, err = self.run_cmd(testargs, expected_exception=SilentlyExitError)
 
@@ -210,7 +211,7 @@ class GetSnapshotTests(unittest.TestCase):
   def test_output_format_json(self):
     testargs = [SNAPSHOT_COMPLETE['id'], '--debuggee-id=123', '--format=json']
     self.rtdb_service_mock.validate_debuggee_id = MagicMock(return_value=None)
-    self.rtdb_service_mock.get_snapshot = MagicMock(
+    self.rtdb_service_mock.get_snapshot_detailed = MagicMock(
         return_value=SNAPSHOT_COMPLETE)
 
     out, err = self.run_cmd(testargs)
@@ -225,7 +226,7 @@ class GetSnapshotTests(unittest.TestCase):
         SNAPSHOT_COMPLETE['id'], '--debuggee-id=123', '--format=pretty-json'
     ]
     self.rtdb_service_mock.validate_debuggee_id = MagicMock(return_value=None)
-    self.rtdb_service_mock.get_snapshot = MagicMock(
+    self.rtdb_service_mock.get_snapshot_detailed = MagicMock(
         return_value=SNAPSHOT_COMPLETE)
 
     out, err = self.run_cmd(testargs)
@@ -339,7 +340,8 @@ class GetSnapshotTests(unittest.TestCase):
 
     for test_name, snapshot, expected_summary, output_type in testcases:
       with self.subTest(test_name):
-        self.rtdb_service_mock.get_snapshot = MagicMock(return_value=snapshot)
+        self.rtdb_service_mock.get_snapshot_detailed = MagicMock(
+            return_value=snapshot)
 
         testargs = [snapshot['id'], '--debuggee-id=123']
         out, err = self.run_cmd(testargs)
@@ -381,7 +383,8 @@ class GetSnapshotTests(unittest.TestCase):
 
     for test_name, snapshot, expected_expressions_section in testcases:
       with self.subTest(test_name):
-        self.rtdb_service_mock.get_snapshot = MagicMock(return_value=snapshot)
+        self.rtdb_service_mock.get_snapshot_detailed = MagicMock(
+            return_value=snapshot)
 
         testargs = [snapshot['id'], '--debuggee-id=123']
         out, err = self.run_cmd(testargs)
@@ -392,7 +395,7 @@ class GetSnapshotTests(unittest.TestCase):
   def test_selected_index_out_of_range(self):
     self.rtdb_service_mock.validate_debuggee_id = MagicMock(return_value=None)
 
-    self.rtdb_service_mock.get_snapshot = MagicMock(
+    self.rtdb_service_mock.get_snapshot_detailed = MagicMock(
         return_value=SNAPSHOT_COMPLETE)
 
     testargs = [SNAPSHOT_COMPLETE['id'], '--debuggee-id=123', '--frame-index=2']
@@ -409,7 +412,7 @@ class GetSnapshotTests(unittest.TestCase):
   def test_local_variables_default_frame_index(self):
     self.rtdb_service_mock.validate_debuggee_id = MagicMock(return_value=None)
 
-    self.rtdb_service_mock.get_snapshot = MagicMock(
+    self.rtdb_service_mock.get_snapshot_detailed = MagicMock(
         return_value=SNAPSHOT_COMPLETE)
 
     expected_header = ''.join([
@@ -439,7 +442,7 @@ class GetSnapshotTests(unittest.TestCase):
     """
     self.rtdb_service_mock.validate_debuggee_id = MagicMock(return_value=None)
 
-    self.rtdb_service_mock.get_snapshot = MagicMock(
+    self.rtdb_service_mock.get_snapshot_detailed = MagicMock(
         return_value=SNAPSHOT_COMPLETE)
 
     expected_header = ''.join([
@@ -468,7 +471,7 @@ class GetSnapshotTests(unittest.TestCase):
   def test_callstack(self):
     self.rtdb_service_mock.validate_debuggee_id = MagicMock(return_value=None)
 
-    self.rtdb_service_mock.get_snapshot = MagicMock(
+    self.rtdb_service_mock.get_snapshot_detailed = MagicMock(
         return_value=SNAPSHOT_COMPLETE)
 
     expected_header = ''.join(

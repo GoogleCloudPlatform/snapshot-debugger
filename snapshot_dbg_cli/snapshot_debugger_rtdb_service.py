@@ -90,17 +90,12 @@ class SnapshotDebuggerRtdbService:
 
     for i in range(0, 10):
       breakpoint_id = f'b-{time_secs + i}'
-      active_path = self.schema.get_path_breakpoints_active_for_id(
-          debuggee_id, breakpoint_id)
-      final_path = self.schema.get_path_breakpoints_final_for_id(
-          debuggee_id, breakpoint_id)
 
-      bp_active = self.rest_service.get(active_path, shallow=True)
-      bp_final = self.rest_service.get(final_path, shallow=True)
+      bp = self.get_breakpoint(debuggee_id, breakpoint_id, shallow=True)
 
       # This case means there no breakpoints were found with that id, which
       # means the id is free to use.
-      if bp_active is None and bp_final is None:
+      if bp is None:
         found = True
         break
 
@@ -120,32 +115,69 @@ class SnapshotDebuggerRtdbService:
       snapshot_path = self.schema.get_path_breakpoints_snapshot_for_id(
           debuggee_id, b['id'])
 
-      self.rest_service.delete(active_path)
+      if not b['isFinalState']:
+        self.rest_service.delete(active_path)
+
+      # Given usually on delete we prompt the user before continuing with the
+      # delete, it's possible that the breakpoint has finialized in the
+      # intervening seconds, so we always attempt to delete final paths. If
+      # there is no breakpoint at the path there is no harm, nothing fails etc.
       self.rest_service.delete(final_path)
 
       if b['action'] == 'CAPTURE':
         self.rest_service.delete(snapshot_path)
 
-  def get_breakpoint(self, debuggee_id, breakpoint_id):
+  def get_breakpoint(self, debuggee_id, breakpoint_id, shallow=False):
+    """Retrieves breakpoint data for the given debuggee and breakpoint ID.
+
+    To note, if the breakpoint ID refers to a snapshot which has completed, the
+    capture data is expressly not returned via this call. To retrieve the full
+    snapshot data the get_snapshot_detailed() method should be used instead.
+
+    Args:
+      debuggee_id: The debuggee to retrieve the breakpoint from.
+      breakpoint_id: The ID of the breakpoint to retrieve.
+      shallow: Boolean flag passed to the RTDB Rest call. When true it will cut
+        down on the data returned. In the case of a breakpoint, only the keys,
+        all mapped to True will be returned.
+
+    Returns:
+      The breakpoint (in dict form) if found, None otherwise. If the breakpoint
+      was found it will have the breakpoint_utils.normalize_breakpoint function
+      applied to it to ensure all expected fields are set.
+    """
     active_path = self.schema.get_path_breakpoints_active_for_id(
         debuggee_id, breakpoint_id)
-    final_path = self.schema.get_path_breakpoints_snapshot_for_id(
-        debuggee_id, breakpoint_id)
-
-    bp = self.rest_service.get(active_path)
+    bp = self.rest_service.get(active_path, shallow=shallow)
 
     # If it wasn't active, the response will be None, so then try the final
     # path.
     if bp is None:
-      bp = self.rest_service.get(final_path)
+      final_path = self.schema.get_path_breakpoints_final_for_id(
+          debuggee_id, breakpoint_id)
+      bp = self.rest_service.get(final_path, shallow=shallow)
 
     return normalize_breakpoint(bp, breakpoint_id)
 
-  def get_snapshot(self, debuggee_id, snapshot_id):
+  def get_snapshot_detailed(self, debuggee_id, breakpoint_id):
+    """Retrieves the snapshot data for the given debuggee and breakpoint ID.
+
+    To note, if the breakpoint ID refers to a snapshot which has completed, the
+    full capture data (if any) is returned via this call.
+
+    Args:
+      debuggee_id: The debuggee to retrieve the snapshots from.
+      breakpoint_id: The ID of the snapshot to retrieve.
+
+    Returns:
+      The snapshot (in dict form) if found, None otherwise. If the snapshot
+      was found it will have the breakpoint_utils.normalize_breakpoint function
+      applied to it to ensure all expected fields are set.
+    """
     active_path = self.schema.get_path_breakpoints_active_for_id(
-        debuggee_id, snapshot_id)
+        debuggee_id, breakpoint_id)
     snapshot_path = self.schema.get_path_breakpoints_snapshot_for_id(
-        debuggee_id, snapshot_id)
+        debuggee_id, breakpoint_id)
 
     bp = self.rest_service.get(active_path)
 
@@ -154,38 +186,53 @@ class SnapshotDebuggerRtdbService:
     if bp is None:
       bp = self.rest_service.get(snapshot_path)
 
-    return normalize_breakpoint(bp, snapshot_id)
+    return normalize_breakpoint(bp, breakpoint_id)
 
-  def get_active_breakpoints(self, debuggee_id, action, user_email):
-    path = self.schema.get_path_breakpoints_active(debuggee_id)
-    return self._get_breakpoints(path, action, user_email)
+  def get_snapshots(self, debuggee_id, include_inactive, user_email=None):
+    """Retrieves all the snapshots matching the search criteria.
 
-  def get_final_breakpoints(self, debuggee_id, action, user_email):
-    path = self.schema.get_path_breakpoints_final(debuggee_id)
-    return self._get_breakpoints(path, action, user_email)
+    To note, for any snapshots that have completed, no capture data is retrieved
+    via this call. To get the full capture data an individual call to
+    get_snapshot_detailed() is required.
 
-  def get_breakpoints(self,
-                      debuggee_id,
-                      include_inactive,
-                      action,
-                      user_email=None):
-    breakpoints = self.get_active_breakpoints(debuggee_id, action, user_email)
+    Args:
+      debuggee_id: The debuggee to retrieve the snapshots from.
+      include_inactive: Boolean flag that when true will return both active and
+        completed snapshots. When false, only active snapshots will be returned.
+      user_email: A filter that when set to a string value, will only return
+        snapshots whose 'userEmail' matches. When this value is None, snapshots
+        from all users are returned.
+
+    Returns:
+      The snapshots (list of dicts). If no snapshots were found this list will
+      simply be empty. All returned snapshots will have the
+      breakpoint_utils.normalize_breakpoint function applied to ensure all
+      expected fields are set.
+    """
+    return self._get_breakpoints(debuggee_id, include_inactive, 'CAPTURE',
+                                 user_email)
+
+  def _get_breakpoints(self,
+                       debuggee_id,
+                       include_inactive,
+                       action,
+                       user_email=None):
+    breakpoints = self._get_breakpoints_by_path_and_filter(
+        self.schema.get_path_breakpoints_active(debuggee_id), action,
+        user_email)
 
     if include_inactive:
-      breakpoints += self.get_final_breakpoints(debuggee_id, action, user_email)
+      breakpoints += self._get_breakpoints_by_path_and_filter(
+          self.schema.get_path_breakpoints_final(debuggee_id), action,
+          user_email)
 
     return breakpoints
 
-  def get_snapshots(self, debuggee_id, include_inactive, user_email=None):
-    return self.get_breakpoints(debuggee_id, include_inactive, 'CAPTURE',
-                                user_email)
-
-  def _get_breakpoints(self, path, action, user_email):
+  def _get_breakpoints_by_path_and_filter(self, path, action, user_email):
     breakpoints = self.rest_service.get(path) or {}
 
     # We want the breakpoints to be in list form, they will be in dict form
     # after the firebase call.
-
     breakpoints = [
         bp for bpid, bp in breakpoints.items()
         if normalize_breakpoint(bp, bpid) and bp['action'] == action and
@@ -198,4 +245,5 @@ class SnapshotDebuggerRtdbService:
     path = self.schema.get_path_breakpoints_active_for_id(
         debuggee_id, breakpoint_data['id'])
     bp = self.rest_service.set(path, data=breakpoint_data)
+
     return normalize_breakpoint(bp)

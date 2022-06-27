@@ -133,8 +133,8 @@ class GetSnapshotCommand:
     debugger_rtdb_service = cli_services.get_snapshot_debugger_rtdb_service()
 
     debugger_rtdb_service.validate_debuggee_id(args.debuggee_id)
-    snapshot = debugger_rtdb_service.get_snapshot(args.debuggee_id,
-                                                  args.snapshot_id)
+    snapshot = debugger_rtdb_service.get_snapshot_detailed(
+        args.debuggee_id, args.snapshot_id)
 
     if snapshot is None:
       self.user_output.error(f'Snapshot ID not found: {args.snapshot_id}')
