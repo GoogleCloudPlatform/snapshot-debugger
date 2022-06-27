@@ -228,6 +228,7 @@ class SnapshotDebuggerBreakpointUtilsTests(unittest.TestCase):
         ('Final Time Unix Msec', 'finalTimeUnixMsec', 0),
         ('Create Time', 'createTime', SNAPSHOT_COMPLETE['createTime']),
         ('Final Time', 'finalTime', SNAPSHOT_COMPLETE['finalTime']),
+        ('User Email', 'userEmail', 'unknown'),
     ]
 
     for test_name, missing_field, expected_field_value in testcases:
