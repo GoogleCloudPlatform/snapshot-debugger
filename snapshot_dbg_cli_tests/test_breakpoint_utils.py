@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-""" Unit test file for the snapshot_debugger_rtdb_service module.
+""" Unit test file for the breakpoint_utils module.
 """
 
 import copy
