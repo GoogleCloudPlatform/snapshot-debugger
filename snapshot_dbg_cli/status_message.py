@@ -29,7 +29,6 @@ class StatusMessage:
     parsed_message: Human readable version of the message. It will be None if
       there was no StatusMessage present or it could not be parsed for some
       reason.
-    status: The raw StatusMessage if present, None otherwise.
     is_error: Flag indicating of the StatusMessage represents an error or not.
       It will be None if there was no StatusMessage present.
     refers_to: If not None, indicates what the message refers to. Expected
@@ -39,36 +38,35 @@ class StatusMessage:
         VARIABLE_NAME
         VARIABLE_VALUE
         BREAKPOINT_SOURCE_LOCATION
-        BREAKPOIT_AGE
+        BREAKPOINT_AGE
         UNSPECIFIED
   """
 
   def __init__(self, parent):
     self.parsed_message = None
-    self.status = None
-    self.decription = None
     self.is_error = None
     self.refers_to = None
 
-    if 'status' not in parent or 'description' not in parent['status']:
+    if 'status' not in parent:
       return
 
-    self.status = parent['status']
-    self.description = self.status['description']
-    self.parsed_message = self.parse_message()
-    self.is_error = self.status.get('isError', False)
-    self.refers_to = self.status.get('refersTo', 'UNKNOWN')
+    status = parent['status']
+    description = status.get('description', {})
 
-  def parse_message(self):
-    if 'format' not in self.description:
+    self.parsed_message = self._parse_message(description)
+    self.is_error = status.get('isError', False)
+    self.refers_to = status.get('refersTo', None)
+
+  def _parse_message(self, description):
+    if 'format' not in description:
       return None
 
     # Get the formatting string such as "Failed to load '$0' which
     # helps debug $1"
-    format_string = self.description['format']
+    format_string = description['format']
 
     # Get the number of parameters to replace '$' prefixed vars.
-    parameters = self.description.get('parameters', [])
+    parameters = description.get('parameters', [])
     total_parameters = len(parameters)
 
     dollar_index = None
@@ -98,7 +96,7 @@ class StatusMessage:
           # FormatMessage with too many arguments, unclear what to do from
           # the spec, will just keep it verbatim.
           output_string += '$'
-          format_string = format_string.substr(dollar_index + 1)
+          format_string = format_string[(dollar_index + 1):]
       else:
         # A '$' was the last value add it back.
         output_string += '$'
