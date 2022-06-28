@@ -68,7 +68,7 @@ class SnapshotParser:
     return call_stack
 
   def parse_expressions(self):
-    return self.resolve_variables(self._evaluated_expressions)
+    return self._resolve_variables(self._evaluated_expressions)
 
   def parse_locals(self, stack_frame_index):
     local_variables = []
@@ -77,20 +77,20 @@ class SnapshotParser:
         self.stack_frames) and 'locals' in self.stack_frames[stack_frame_index]:
       local_variables = self.stack_frames[stack_frame_index]['locals']
 
-    return self.resolve_variables(local_variables)
+    return self._resolve_variables(local_variables)
 
-  def resolve_variables(self, variables):
+  def _resolve_variables(self, variables):
     parsed_variables = []
 
     for v in variables:
-      name, value, message = self.resolve_variable(v, 0, {})
+      name, value, message = self._resolve_variable(v, 0, {})
       parsed_variables.append({name: value})
       if message is not None:
-        parsed_variables.append({f'{name} - DGB_MSG': message})
+        parsed_variables.append({f'{name} - DBG_MSG': message})
 
     return parsed_variables
 
-  def resolve_variable(self, variable, current_level, parents):
+  def _resolve_variable(self, variable, current_level, parents):
     var_table_index = variable.get('varTableIndex', None)
 
     if current_level > self._max_expansion_level:
@@ -119,11 +119,11 @@ class SnapshotParser:
     if members:
       value = {}
       for m in members:
-        m_name, m_value, m_message = self.resolve_variable(
+        m_name, m_value, m_message = self._resolve_variable(
             m, current_level + 1, parents)
         value[m_name] = m_value
         if m_message is not None:
-          value[f'{m_name} - DGB_MSG'] = m_message
+          value[f'{m_name} - DBG_MSG'] = m_message
     else:
       if 'value' in variable:
         value = variable['value']
@@ -137,9 +137,9 @@ class SnapshotParser:
     name_and_type = variable.get('name', '')
 
     if 'type' in variable:
-      name_and_type += f" ({variable['type']}) "
+      name_and_type += f" ({variable['type']})"
     elif 'value' in variable and members:
       # The Node.js agent seems to include the type as 'value'
-      name_and_type += f" ({variable['value']}) "
+      name_and_type += f" ({variable['value']})"
 
     return name_and_type
