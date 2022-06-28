@@ -24,9 +24,9 @@ class UserInput:
   """
 
   def prompt_user_to_continue(self):
-    answer = input('Do you want to continue (Y/n)? ')
+    answer = input('Do you want to continue (Y/n)? ').lower()
 
-    while answer and answer.lower() not in ['y', 'n']:
-      answer = input("Please enter 'y' or 'n': ")
+    while answer and answer not in ['y', 'n']:
+      answer = input("Please enter 'y' or 'n': ").lower()
 
     return answer != 'n'
