@@ -110,6 +110,11 @@ class SnapshotDebuggerBreakpointUtilsTests(unittest.TestCase):
                      convert_unix_msec_to_rfc3339(1649962215100))
     self.assertEqual('2022-04-14T18:50:15.426000Z',
                      convert_unix_msec_to_rfc3339(1649962215426))
+
+    # For any invalid input, the function will default to using a value of 0,
+    # which represents the epoch (1970-01-01). This way the function can still
+    # return a properly formatting string, and the value is recognizable as
+    # indicating there was an issue and the actual time is not known.
     self.assertEqual('1970-01-01T00:00:00.000000Z',
                      convert_unix_msec_to_rfc3339(999999999999999))
     self.assertEqual('1970-01-01T00:00:00.000000Z',
