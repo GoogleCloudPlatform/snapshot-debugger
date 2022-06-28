@@ -26,7 +26,7 @@ class StatusMessageTests(unittest.TestCase):
   def test_is_error(self):
     testcases = [
         ('No status', {}, None),
-        ('No Is Error', {
+        ('No isError', {
             'status': {}
         }, False),
         ('Explicit False', {
@@ -48,7 +48,7 @@ class StatusMessageTests(unittest.TestCase):
   def test_refers_to(self):
     testcases = [
         ('No status', {}, None),
-        ('No refers_to', {
+        ('No refersTo', {
             'status': {}
         }, None),
         ('Value set', {
