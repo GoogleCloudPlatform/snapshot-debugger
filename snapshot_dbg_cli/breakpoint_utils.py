@@ -82,11 +82,17 @@ def convert_unix_msec_to_rfc3339(unix_msec):
   Returns:
     An RFC3339 encoded timestamp string in format: "%Y-%m-%dT%H:%M:%S.%fZ".
   """
-  seconds = unix_msec / 1000
-  msec = unix_msec % 1000
-  timestamp = seconds + msec / float(1000)
-  dt = datetime.datetime.utcfromtimestamp(timestamp)
-  return dt.strftime('%Y-%m-%dT%H:%M:%S.%f') + 'Z'
+  try:
+    seconds = unix_msec / 1000
+    msec = unix_msec % 1000
+    timestamp = seconds
+    dt = datetime.datetime.fromtimestamp(timestamp, tz=datetime.timezone.utc)
+    return dt.strftime(f'%Y-%m-%dT%H:%M:%S.{msec:03}000') + 'Z'
+  except (OverflowError, OSError, TypeError, ValueError):
+    # By using 0, we'll still get the expected formatted string, and the value
+    # will be '1970-01-01...', which visually will be recognizable as beginning
+    # of epoch and that the value was not known.
+    return convert_unix_msec_to_rfc3339(0)
 
 
 def set_converted_timestamps(bp):
@@ -102,6 +108,29 @@ def set_converted_timestamps(bp):
 
 # Returns None if there's an issue
 def normalize_breakpoint(bp, bpid=None):
+  """Validates and normalizes a breakpoint.
+
+  This method ensures all required and expected fields are set. If any required
+  field is not set, and cannot be filled in, None will be returned.
+
+  If a breakpoint is returned, the following fields are guaranteed to
+  be populated:
+
+  id
+  location
+    path
+    line
+  action
+  isFinalState
+  createTime
+  createTimeUnixMsec
+  finalTime
+  finalTimeUnixMsec
+  userEmail
+
+  Returns:
+    The normalized breakpoint on success, None on failure.
+  """
   if bp is None:
     return None
 
