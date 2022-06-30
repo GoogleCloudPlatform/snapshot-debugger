@@ -32,7 +32,7 @@ TEST_PROJECT_ID = 'cli-test-project'
 
 
 class PermissionsRestServiceTests(unittest.TestCase):
-  """ Contains the unit tests for the FirebaseRtdbRestService class.
+  """ Contains the unit tests for the PermissionsRestService class.
   """
 
   def setUp(self):
@@ -48,7 +48,9 @@ class PermissionsRestServiceTests(unittest.TestCase):
     self.permissions_rest_service = PermissionsRestService(
         self.http_service_mock, TEST_PROJECT_ID, self.user_output_mock)
 
-    # By default return a happy response, tests can customize when needed.
+    # By default return a happy response, tests can customize when needed.  Here
+    # happy means that all of the permissions being queried are sent back
+    # indicating the user has those permissions on the project.
     def happy_response(method, url, data):
       del method
       del url
