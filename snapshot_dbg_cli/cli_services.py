@@ -85,7 +85,6 @@ class CliServices:
     self.permissions_service = PermissionsRestService(
         project_id=self.project_id,
         http_service=self._http_service,
-        access_token=access_token,
         user_output=self.user_output)
 
     self.firebase_management_service = FirebaseManagementRestService(
