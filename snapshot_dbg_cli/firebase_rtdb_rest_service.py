@@ -30,9 +30,9 @@ class FirebaseRtdbRestService:
   """
 
   def __init__(self, http_service, database_url, user_output):
-    self.http_service = http_service
-    self.database_url = database_url
-    self.user_output = user_output
+    self._http_service = http_service
+    self._database_url = database_url
+    self._user_output = user_output
 
   def get(self, db_path, shallow=None):
     """Gets the value at the specified path.
@@ -47,11 +47,11 @@ class FirebaseRtdbRestService:
     """
     url = self.build_rtdb_url(db_path)
     parameters = ["shallow=true"] if shallow else []
-    return self.http_service.send_request("GET", url, parameters=parameters)
+    return self._http_service.send_request("GET", url, parameters=parameters)
 
   def set(self, db_path, data):
     url = self.build_rtdb_url(db_path)
-    return self.http_service.send_request("PUT", url, data=data, max_retries=0)
+    return self._http_service.send_request("PUT", url, data=data, max_retries=0)
 
   def delete(self, db_path):
     url = self.build_rtdb_url(db_path)
@@ -61,11 +61,12 @@ class FirebaseRtdbRestService:
     #
     # A successful DELETE request is indicated by a 200 OK HTTP status code with
     # a response containing JSON null.
-    # Based on experimentation, even if the node didn't exists, this will be the
-    # response. Basically it seems the response is success if after the code the
-    # specified path does not exist.
-    return self.http_service.send_request("DELETE", url, max_retries=5)
+    # Based on experimentation, even if the node didn't exist, this will be the
+    # response. It seems the response is success if after the call the specified
+    # path does not exist, as long as the database the call referenced did
+    # exist.
+    return self._http_service.send_request("DELETE", url, max_retries=5)
 
   def build_rtdb_url(self, db_path):
     return FULL_REQUEST_URL.format(
-        database_url=self.database_url, db_path=db_path)
+        database_url=self._database_url, db_path=db_path)
