@@ -38,8 +38,8 @@ class DataFormatter:
         also match the length of the headers tuple.
     """
     widths = [
-        max(len(headers[i]), max([len(v[i])
-                                  for v in values], default=0))
+        max(len(headers[i]), max((len(v[i])
+                                  for v in values), default=0))
         for i in range(len(headers))
     ]
 
