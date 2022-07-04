@@ -107,7 +107,7 @@ class DatabaseInstance:
   https://firebase.google.com/docs/reference/rest/database/database-management/rest/v1beta/projects.locations.instances#resource:-databaseinstance
   """
 
-  def __init__(self, database_instance):
+  def __init__(self, database_instance, user_output=None):
     try:
       self.name = database_instance['name']
       self.project = database_instance['project']
@@ -116,9 +116,10 @@ class DatabaseInstance:
       self.state = database_instance['state']
     except KeyError as e:
       missing_key = e.args[0]
-      error_message = ('DatabaseInstance is missing expected field '
-                       f"'{missing_key}' instance: {database_instance}")
-      print(error_message)
+      if user_output is not None:
+        error_message = ('DatabaseInstance is missing expected field '
+                         f"'{missing_key}' instance: {database_instance}")
+        user_output.error(error_message)
       raise SilentlyExitError from e
 
 
