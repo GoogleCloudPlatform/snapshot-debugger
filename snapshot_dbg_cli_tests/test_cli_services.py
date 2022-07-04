@@ -188,7 +188,6 @@ class CliServicesTests(unittest.TestCase):
     self.permissions_service_class_mock.assert_called_once_with(
         project_id='cli-test-project',
         http_service=self.http_service_mock,
-        access_token='cli-test-access-token',
         user_output=self.user_output_mock)
 
     self.firebase_management_service_class_mock.assert_called_once_with(
