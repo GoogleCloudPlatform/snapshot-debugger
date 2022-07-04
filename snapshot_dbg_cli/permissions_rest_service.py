@@ -22,8 +22,7 @@ TEST_IAM_PERMSSIONS_URL = "https://cloudresourcemanager.googleapis.com/v1/" \
                           "projects/{project_id}:testIamPermissions"
 
 TEST_IAM_PERMISSIONS_PARSE_FAILURE = """
-  ERROR. The testIamPermissions did not return the expected response. The URL
-  was:
+  ERROR. TestIamPermissions did not return the expected response. The URL was:
 
   {url}
 
