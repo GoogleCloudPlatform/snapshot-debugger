@@ -16,7 +16,6 @@
 The types here help work with the data and response messages from Firebase.
 """
 
-from snapshot_dbg_cli.exceptions import SilentlyExitError
 from enum import Enum
 
 FIREBASE_MANAGMENT_API_SERVICE = 'firebase.googleapis.com'
@@ -107,7 +106,17 @@ class DatabaseInstance:
   https://firebase.google.com/docs/reference/rest/database/database-management/rest/v1beta/projects.locations.instances#resource:-databaseinstance
   """
 
-  def __init__(self, database_instance, user_output=None):
+  def __init__(self, database_instance):
+    """Initializes a DatabaseInstance with a dict of database_instance data.
+
+    Args:
+      database_instance: A DatabaseInstance REST resource. See class docstring
+        for link to relevant documentation.
+
+    Raises:
+      ValueError: If the provided database_instance is missing required fields.
+        It will contain a message describing the error.
+    """
     try:
       self.name = database_instance['name']
       self.project = database_instance['project']
@@ -116,11 +125,9 @@ class DatabaseInstance:
       self.state = database_instance['state']
     except KeyError as e:
       missing_key = e.args[0]
-      if user_output is not None:
-        error_message = ('DatabaseInstance is missing expected field '
-                         f"'{missing_key}' instance: {database_instance}")
-        user_output.error(error_message)
-      raise SilentlyExitError from e
+      error_message = ('DatabaseInstance is missing expected field '
+                       f"'{missing_key}' instance: {database_instance}")
+      raise ValueError(error_message) from e
 
 
 class DatabaseCreateResponse:

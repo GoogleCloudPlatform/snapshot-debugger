@@ -73,7 +73,7 @@ class FirebaseManagementRestService:
     self._user_output = user_output
 
   def project_get(self):
-    """Retrieve's the configured project's status.
+    """Retrieves the configured project's status.
 
       Returns:
         A value of type FirebaseProjectStatus representing the project's status.
@@ -162,14 +162,27 @@ class FirebaseManagementRestService:
     #
     # Command documentation at:
     # https://firebase.google.com/docs/reference/rest/database/database-management/rest/v1beta/projects.locations.instances/get
-    url = RTDB_INSTANCE_GET_URL.format(
-        project_id=self._project_id, database_id=database_id)
-    request = self._http_service.build_request(
-        "GET", url, include_project_header=True)
-    response = None
-
     try:
+      url = RTDB_INSTANCE_GET_URL.format(
+          project_id=self._project_id, database_id=database_id)
+      request = self._http_service.build_request(
+          "GET", url, include_project_header=True)
+
       response = self._http_service.send(request, handle_http_error=False)
+      database_instance = DatabaseInstance(response)
+
+      # The documention specifies the following values for state
+      # ACTIVE, DISABLED, DELETED and LIFECYCLE_STATE_UNSPECIFIED
+      #
+      # For our purposes we want to see 'ACTIVE', otherwise we're in an
+      # unexpected state we don't handle and we will exit with an error.
+      if database_instance.state != "ACTIVE":
+        self._user_output.error(
+            RTDB_INSTANCE_GET_STATE_ERROR_MSG.format(response=response))
+        raise SilentlyExitError
+
+      return DatabaseGetResponse(
+          status=DatabaseGetStatus.EXISTS, database_instance=database_instance)
     except HTTPError as err:
       if err.code == 404:
         print_http_error(self._user_output, request, err, is_debug_message=True)
@@ -178,21 +191,9 @@ class FirebaseManagementRestService:
 
       print_http_error(self._user_output, request, err)
       raise SilentlyExitError from err
-
-    database_instance = DatabaseInstance(response, self._user_output)
-
-    # The documention specifies the following values for state
-    # ACTIVE, DISABLED, DELETED and LIFECYCLE_STATE_UNSPECIFIED
-    #
-    # For our purposes we want to see 'ACTIVE', otherwise we're in an
-    # unexpected state we don't handle and we will exit with an error.
-    if database_instance.state != "ACTIVE":
-      self._user_output.error(
-          RTDB_INSTANCE_GET_STATE_ERROR_MSG.format(response=response))
-      raise SilentlyExitError
-
-    return DatabaseGetResponse(
-        status=DatabaseGetStatus.EXISTS, database_instance=database_instance)
+    except ValueError as e:
+      self._user_output.error(e.args)
+      raise SilentlyExitError from e
 
   def rtdb_instance_create(self, database_id, location):
     """Creates the database instance.
@@ -226,10 +227,7 @@ class FirebaseManagementRestService:
     #
     # Command documentation at:
     # https://firebase.google.com/docs/reference/rest/database/database-management/rest/v1beta/projects.locations.instances/create
-    url = RTDB_INSTANCE_CREATE_URL.format(
-        project_id=self._project_id, location=location)
-    parameters = [f"databaseId={database_id}"]
-
+    #
     # NOTE: There is the possibility when using DEFAULT_DATABASE (though very
     # unlikely) that the standard default rtdb name isn't available and the
     # backend will suggest one that will work. In this case the response
@@ -251,21 +249,29 @@ class FirebaseManagementRestService:
     #
     # Currently we simply fail out on this case.
 
-    use_default_db = database_id.endswith("-default-rtdb")
-    data = {"type": "DEFAULT_DATABASE" if use_default_db else "USER_DATABASE"}
-
-    request = self._http_service.build_request(
-        "POST",
-        url,
-        include_project_header=True,
-        parameters=parameters,
-        data=data)
-
-    response = None
-
     try:
+      url = RTDB_INSTANCE_CREATE_URL.format(
+          project_id=self._project_id, location=location)
+      parameters = [f"databaseId={database_id}"]
+
+      use_default_db = database_id.endswith("-default-rtdb")
+      data = {"type": "DEFAULT_DATABASE" if use_default_db else "USER_DATABASE"}
+
+      request = self._http_service.build_request(
+          "POST",
+          url,
+          include_project_header=True,
+          parameters=parameters,
+          data=data)
+
       response = self._http_service.send(
           request, max_retries=0, handle_http_error=False)
+
+      database_instance = DatabaseInstance(response)
+
+      return DatabaseCreateResponse(
+          status=DatabaseCreateStatus.SUCCESS,
+          database_instance=database_instance)
     except HTTPError as err:
       error_message = err.read().decode()
 
@@ -282,7 +288,6 @@ class FirebaseManagementRestService:
       print_http_error(
           self._user_output, request, err, error_message=error_message)
       raise SilentlyExitError from err
-
-    return DatabaseCreateResponse(
-        status=DatabaseCreateStatus.SUCCESS,
-        database_instance=DatabaseInstance(response, self._user_output))
+    except ValueError as e:
+      self._user_output.error(e.args)
+      raise SilentlyExitError from e
