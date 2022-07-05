@@ -86,12 +86,12 @@ class FirebaseManagementRestServiceTests(unittest.TestCase):
 
   def test_project_get_calls_http_send_with_expected_parameters(self):
     self.http_service_mock.send.return_value = VALID_PROJECT_RESPONSE
-    self.http_service_mock.build_request.return_value = 'http request'
+    self.http_service_mock.build_request.return_value = 'http request object'
 
     self.firebase_management_rest_service.project_get()
 
     self.http_service_mock.send.assert_called_once_with(
-        'http request', handle_http_error=False)
+        'http request object', handle_http_error=False)
 
   def test_project_get_returns_status_not_enabled_on_404(self):
     http_error = HTTPError('https://foo.com', 404, 'Not Found', {}, None)
@@ -181,6 +181,15 @@ class FirebaseManagementRestServiceTests(unittest.TestCase):
         call('GET', expected_url1, include_project_header=True),
         call('GET', expected_url2, include_project_header=True),
     ], self.http_service_mock.build_request.mock_calls)
+
+  def test_rtdb_instance_get_calls_http_send_with_expected_parameters(self):
+    self.http_service_mock.send.return_value = VALID_DB_RESPONSE
+    self.http_service_mock.build_request.return_value = 'http request object'
+
+    self.firebase_management_rest_service.rtdb_instance_get('db-name')
+
+    self.http_service_mock.send.assert_called_once_with(
+        'http request object', handle_http_error=False)
 
   def test_rtdb_instance_get_returns_status_not_enabled_on_404(self):
     http_error = HTTPError('https://foo.com', 404, 'Not Found', {},
@@ -293,6 +302,16 @@ class FirebaseManagementRestServiceTests(unittest.TestCase):
             parameters=['databaseId=db2-default-rtdb'],
             data={'type': 'DEFAULT_DATABASE'}),
     ], self.http_service_mock.build_request.mock_calls)
+
+  def test_rtdb_instance_create_calls_http_send_with_expected_parameters(self):
+    self.http_service_mock.send.return_value = VALID_DB_RESPONSE
+    self.http_service_mock.build_request.return_value = 'http request object'
+
+    self.firebase_management_rest_service.rtdb_instance_create(
+        'db-name', 'test-loc')
+
+    self.http_service_mock.send.assert_called_once_with(
+        'http request object', max_retries=0, handle_http_error=False)
 
   def test_rtdb_instance_create_returns_status_failed_precondition(self):
     error_message = json.dumps({'error': {'status': 'FAILED_PRECONDITION'}})
