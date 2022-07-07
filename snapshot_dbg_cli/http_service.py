@@ -46,6 +46,8 @@ Sending the following REST request (attempt {attempt_count}):
 
 RETRIABLE_HTTP_CODES = [429, 500, 502, 503, 504]
 
+DEFAULT_MAX_RETRIES = 4
+
 
 def get_scrubbed_headers(headers):
   scrubbed_headers = headers.copy()
@@ -87,9 +89,9 @@ class HttpService:
   """
 
   def __init__(self, project_id, access_token, user_output):
-    self.project_id = project_id
-    self.access_token = access_token
-    self.user_output = user_output
+    self._project_id = project_id
+    self._access_token = access_token
+    self._user_output = user_output
 
   def send_request(self,
                    method,
@@ -97,9 +99,45 @@ class HttpService:
                    parameters=None,
                    data=None,
                    include_project_header=False,
-                   max_retries=3,
+                   max_retries=DEFAULT_MAX_RETRIES,
                    handle_http_error=True):
+    """ Sends an HTTP request based on the passed in arguments.
 
+    On success, the json decoded body from the HTTP response will be returned,
+    otherwise an error is raised. By default the method will suppress HTTPErrors
+    and simply raise SilentlyExitError. To instead let it propagate the
+    HTTPError out set handle_http_error to False.
+
+    Args:
+      method: The HTTP method for the request, e.g. 'GET', 'PUT' etc.
+      url: The URL for the request.
+      parameters: A list of url parameters to add to the URL. e.g.
+        ['user=foo', 'databaseId=db1-cdbg']. This field is optioal, by default
+        none are added.
+      data: This is the body to use for the request. The format is a data
+        representation that can be converted to a json string representation via
+        json.dumps(). This field is optional, by default no body is included.
+      include_project_header: Boolean flag, that when true will add the
+        'X-Goog-User-Project' header to the request. This field is optional,
+        by default this header is not included.
+      max_retries: How many times to retry the request in case of failure. By
+        default it will attempt retries, so for cases where a retry is not
+        safe, the caller should set the value to 0.
+      handle_http_errror: Flag to tell the method if it should handle HTTPError
+        exceptions on its own. Callers that want to receive the error, in order
+        to check the error code or message, should set this flag to False. It
+        defaults to True.
+
+    Returns:
+      The json decoded body of the HTTP response, meaning this value will be a
+      python dict, array, string etc depending on the returned json.
+
+    Raises:
+      HTTPError: If the caller set handle_http_error to False and an HTTPError
+        occurs.
+      SilentlyExitError: If error occurs with the HTTP call, unless it's an
+        HTTPError and handle_http_error was set to False.
+    """
     request = self.build_request(
         method=method,
         url=url,
@@ -116,6 +154,24 @@ class HttpService:
                     parameters=None,
                     data=None,
                     include_project_header=False):
+    """ Creates a urllib.request.Request instance.
+
+    Args:
+      method: The HTTP method for the request, e.g. 'GET', 'PUT' etc.
+      url: The URL for the request.
+      parameters: A list of url parameters to add to the URL. e.g.
+        ['user=foo', 'databaseId=db1-cdbg']. This field is optioal, by default
+        none are added.
+      data: This is the body to use for the request. The format is a data
+        representation that can be converted to a json string representation via
+        json.dumps(). This field is optional, by default no body is included.
+      include_project_header: Boolean flag, that when true will add the
+        'X-Goog-User-Project' header to the request. This field is optional,
+        by default this header is not included.
+
+    Returns:
+      The appropriately configured urllib.request.Request instance.
+    """
 
     if parameters is not None:
       first_param = True
@@ -123,10 +179,10 @@ class HttpService:
         url += f"{'?' if first_param else '&'}{p}"
         first_param = False
 
-    headers = {"Authorization": f"Bearer {self.access_token}"}
+    headers = {"Authorization": f"Bearer {self._access_token}"}
 
     if include_project_header:
-      headers["X-Goog-User-Project"] = self.project_id
+      headers["X-Goog-User-Project"] = self._project_id
 
     data_json = None
 
@@ -138,7 +194,39 @@ class HttpService:
 
     return request
 
-  def send(self, request, max_retries=4, handle_http_error=True):
+  def send(self,
+           request,
+           max_retries=DEFAULT_MAX_RETRIES,
+           handle_http_error=True):
+    """ Sends an HTTP request using the passed in request.
+
+    On success, the json decoded body from the HTTP response will be returned,
+    otherwise an error is raised. By default the method will suppress HTTPErrors
+    and simply raise SilentlyExitError. To instead let it propagate the
+    HTTPError out set handle_http_error to False.
+
+    Args:
+      request: The urllib.request.Request instance to use for the call to
+        urlopen. Callers can use the build_request() method of this class to
+        obtain an appropriatly configured instance.
+      max_retries: How many times to retry the request in case of failure. By
+        default it will attempt retries, so for cases where a retry is not
+        safe, the caller should set the value to 0.
+      handle_http_errror: Flag to tell the method if it should handle HTTPError
+        exceptions on its own. Callers that want to receive the error, in order
+        to check the error code or message, should set this flag to False. It
+        defaults to True.
+
+    Returns:
+      The json decoded body of the HTTP response, meaning this value will be a
+      python dict, array, string etc depending on the returned json.
+
+    Raises:
+      HTTPError: If the caller set handle_http_error to False and an HTTPError
+        occurs.
+      SilentlyExitError: If error occurs with the HTTP call, unless it's an
+        HTTPError and handle_http_error was set to False.
+    """
     retry_count = 0
 
     while True:
@@ -149,7 +237,7 @@ class HttpService:
           data=request.data,
           headers=get_scrubbed_headers(request.headers))
 
-      self.user_output.debug(send_msg)
+      self._user_output.debug(send_msg)
 
       try:
         with urlopen(request, timeout=10) as response:
@@ -158,37 +246,37 @@ class HttpService:
       except HTTPError as err:
         if retry_count == max_retries or err.code not in RETRIABLE_HTTP_CODES:
           if not handle_http_error:
-            # This means the caller wants to the HTTPError and will handle it on
+            # This means the caller wants the HTTPError and will handle it on
             # their own.
             raise
 
-          print_http_error(self.user_output, request, err)
+          print_http_error(self._user_output, request, err)
           raise SilentlyExitError from err
         else:
           print_http_error(
-              self.user_output, request, err, is_debug_message=True)
+              self._user_output, request, err, is_debug_message=True)
       except URLError as error:
         if retry_count == max_retries:
-          self.user_output.error("ERROR:", error.reason)
+          self._user_output.error("ERROR:", error.reason)
           raise SilentlyExitError from error
         else:
-          self.user_output.debug("ERROR:", error.reason)
+          self._user_output.debug("ERROR:", error.reason)
       except TimeoutError as error:
         if retry_count == max_retries:
-          self.user_output.error("ERROR The REST request timed out")
+          self._user_output.error("ERROR The REST request timed out")
           raise SilentlyExitError from error
         else:
-          self.user_output.debug("ERROR The REST request timed out")
+          self._user_output.debug("ERROR The REST request timed out")
       except json.JSONDecodeError as error:
-        self.user_output.error(
+        self._user_output.error(
             "ERROR Failure occured parsing the response as json", error)
         raise SilentlyExitError from error
 
-      retry_count += 1
       sleep_secs = 2**(retry_count)
-      self.user_output.debug(
+      self._user_output.debug(
           f"Sleeping for {sleep_secs} seconds before retrying")
       time.sleep(sleep_secs)
+      retry_count += 1
 
-    self.user_output.debug("Successful REST response: ", body_parsed)
+    self._user_output.debug("Successful REST response: ", body_parsed)
     return body_parsed
