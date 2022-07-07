@@ -147,11 +147,12 @@ class HttpServiceSendRequestTests(unittest.TestCase):
 
     # Setup patching of the 'urllib.request.urlopen' function, which the
     # HttpService class depends on.
-    self.urlopen_patcher = patch('snapshot_dbg_cli.http_service.urlopen')
+    self.urlopen_patcher = patch(
+        'snapshot_dbg_cli.http_service.urlopen', autospec=True)
     self.urlopen_mock = self.urlopen_patcher.start()
     self.addCleanup(self.urlopen_patcher.stop)
 
-    self.sleep_patcher = patch('time.sleep')
+    self.sleep_patcher = patch('time.sleep', autospec=True)
     self.sleep_mock = self.sleep_patcher.start()
     self.addCleanup(self.sleep_patcher.stop)
 
@@ -299,11 +300,12 @@ class HttpServiceSendTests(unittest.TestCase):
 
     # Setup patching of the 'urllib.request.urlopen' function, which the
     # HttpService class depends on.
-    self.urlopen_patcher = patch('snapshot_dbg_cli.http_service.urlopen')
+    self.urlopen_patcher = patch(
+        'snapshot_dbg_cli.http_service.urlopen', autospec=True)
     self.urlopen_mock = self.urlopen_patcher.start()
     self.addCleanup(self.urlopen_patcher.stop)
 
-    self.sleep_patcher = patch('time.sleep')
+    self.sleep_patcher = patch('time.sleep', autospec=True)
     self.sleep_mock = self.sleep_patcher.start()
     self.addCleanup(self.sleep_patcher.stop)
 
