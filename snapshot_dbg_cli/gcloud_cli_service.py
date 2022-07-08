@@ -134,7 +134,7 @@ class GcloudCliService:
   """
 
   def __init__(self, user_output):
-    self.user_output = user_output
+    self._user_output = user_output
 
   def config_get_account(self):
     account = self.run(["config", "get-value", "account"])
@@ -142,7 +142,7 @@ class GcloudCliService:
     # This is a sanity check, if the command succeeded and the json parsing
     # passed, we should have non zero length string.
     if not isinstance(account, str) or not account:
-      self.user_output.error(
+      self._user_output.error(
           PARSE_CONFIGURED_ACCOUNT_ERROR_MSG.format(gcloud_output=account))
       raise SilentlyExitError
 
@@ -154,7 +154,7 @@ class GcloudCliService:
     # This is a sanity check, if the command succeeded and the json parsing
     # passed, we should have non zero length string.
     if not isinstance(project_id, str) or not project_id:
-      self.user_output.error(
+      self._user_output.error(
           PARSE_CONFIGURED_PROJECT_ERROR_MSG.format(gcloud_output=project_id))
       raise SilentlyExitError
 
@@ -167,7 +167,7 @@ class GcloudCliService:
               if isinstance(gcloud_output, dict) else None
 
     if not token:
-      self.user_output.error(
+      self._user_output.error(
           PARSE_ACCESS_TOKEN_ERROR_MSG.format(gcloud_output=gcloud_output))
       raise SilentlyExitError
 
@@ -178,7 +178,7 @@ class GcloudCliService:
         ["services", "list", "--enabled", f"--filter=config.name={api_name}"])
 
     if not isinstance(services_response, list):
-      self.user_output.error(
+      self._user_output.error(
           PARSE_SERVICES_ERROR_MSG.format(
               gcloud_output=services_response, api_name=api_name))
       raise SilentlyExitError
@@ -195,7 +195,7 @@ class GcloudCliService:
     result = None
 
     try:
-      self.user_output.debug(f"Running command: '{' '.join(command_array)}'")
+      self._user_output.debug(f"Running command: '{' '.join(command_array)}'")
 
       # Notes:
       #   - The 'stdout/stderr' arguments are used here instead of
@@ -213,10 +213,10 @@ class GcloudCliService:
           universal_newlines=True,
           check=False)
     except FileNotFoundError as err:
-      self.user_output.error(GCLOUD_CMD_NOT_FOUND_ERROR_MSG)
+      self._user_output.error(GCLOUD_CMD_NOT_FOUND_ERROR_MSG)
       raise SilentlyExitError from err
     except OSError as err:
-      self.user_output.error(GCLOUD_OS_ERROR_MSG.format(err=err))
+      self._user_output.error(GCLOUD_OS_ERROR_MSG.format(err=err))
       raise SilentlyExitError from err
     # SubprocessError is used as base class for most exceptions in the
     # subprocess module. ValueError can also be raised if Popen is called with
@@ -224,23 +224,23 @@ class GcloudCliService:
     # happen at dev time. We explicitly list SubproccessError here, and use
     # Exception as a blanket catch all, these are all unexpected errors.
     except (subprocess.SubprocessError, Exception) as err:
-      self.user_output.error(UNEXPECTED_ERROR_MSG.format(err=err))
+      self._user_output.error(UNEXPECTED_ERROR_MSG.format(err=err))
       raise SilentlyExitError from err
 
     if result.returncode != 0:
-      self.user_output.error(
+      self._user_output.error(
           GCLOUD_COMMAND_FAILED_MSG.format(
               command=" ".join(command_array),
               stdout=result.stdout,
               stderr=result.stderr))
       raise SilentlyExitError
 
-    self.user_output.debug("Result:", result)
+    self._user_output.debug("Result:", result)
 
     try:
       return json.loads(result.stdout)
     except json.JSONDecodeError as err:
-      self.user_output.error(
+      self._user_output.error(
           PARSE_GCLOUD_OUTPUT_AS_JSON_FAILED_MSG.format(
               command=" ".join(command_array), gcloud_output=result.stdout),
           err)
