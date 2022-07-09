@@ -51,8 +51,7 @@ class CommonArgumentParsersTests(unittest.TestCase):
 
     for test_name, testargs, envp, expected_database_url in testcases:
       with self.subTest(test_name), patch.dict(os.environ, envp, clear=True):
-        args = self.parse_args(
-            CommonArgumentParsers().database_url, testargs=testargs)
+        args = self.parse_args(CommonArgumentParsers().database_url, testargs)
         self.assertEqual(expected_database_url, args.database_url)
 
   def test_debuggee_id_arg_works_as_expected(self):
@@ -69,8 +68,7 @@ class CommonArgumentParsersTests(unittest.TestCase):
 
     for test_name, testargs, envp, expected_debuggee_id in testcases:
       with self.subTest(test_name), patch.dict(os.environ, envp, clear=True):
-        args = self.parse_args(
-            CommonArgumentParsers().debuggee_id, testargs=testargs)
+        args = self.parse_args(CommonArgumentParsers().debuggee_id, testargs)
         self.assertEqual(expected_debuggee_id, args.debuggee_id)
 
   def test_debuggee_id_is_required(self):
