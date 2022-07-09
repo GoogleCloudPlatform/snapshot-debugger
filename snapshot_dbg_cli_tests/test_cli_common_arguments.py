@@ -15,7 +15,6 @@
 """
 
 import argparse
-import os
 import sys
 import unittest
 
@@ -55,38 +54,33 @@ class CommonArgumentParsersTests(unittest.TestCase):
   """Contains the unit tests for the CommonArgumentParsers class.
   """
 
-  def setUp(self):
-    self.common_parsers = CommonArgumentParsers()
-
-  def parse_args(self, parsers, testargs, envp=None):
-    args_parser = argparse.ArgumentParser(parents=parsers)
+  def parse_args(self, parser, testargs):
+    args_parser = argparse.ArgumentParser(parents=[parser])
     argv = ['prog'] + testargs
-    envp = {} if envp is None else envp
 
-    with patch.object(sys, 'argv', argv), \
-         patch.dict(os.environ, envp, clear=True):
+    with patch.object(sys, 'argv', argv):
       return args_parser.parse_args()
 
   def test_format_arg_works_as_expected(self):
-    args_not_specified = self.parse_args([self.common_parsers.format],
-                                         testargs=[])
-    args_default = self.parse_args([self.common_parsers.format],
-                                   testargs=['--format', 'default'])
-    args_json = self.parse_args([self.common_parsers.format],
-                                testargs=['--format', 'json'])
-    args_pretty_json = self.parse_args([self.common_parsers.format],
-                                       testargs=['--format', 'pretty-json'])
+    testcases = [
+        # (test_name, testargs, expected_format)
+        ('Not Set', [], OutputFormat.DEFAULT),
+        ('Set Default', ['--format', 'default'], OutputFormat.DEFAULT),
+        ('Set JSON', ['--format', 'json'], OutputFormat.JSON),
+        ('Set Pretty JSON', ['--format',
+                             'pretty-json'], OutputFormat.PRETTY_JSON),
+    ]
 
-    self.assertIs(OutputFormat.DEFAULT, args_not_specified.format)
-    self.assertIs(OutputFormat.DEFAULT, args_default.format)
-    self.assertIs(OutputFormat.DEFAULT.JSON, args_json.format)
-    self.assertIs(OutputFormat.DEFAULT.PRETTY_JSON, args_pretty_json.format)
+    for test_name, testargs, expected_format in testcases:
+      with self.subTest(test_name):
+        args = self.parse_args(CommonArgumentParsers().format, testargs)
+        self.assertEqual(expected_format, args.format)
 
   def test_format_arg_raises_system_exit_on_bad_format(self):
     with self.assertRaises(SystemExit), \
          patch('sys.stderr', new_callable=StringIO) as err:
-      self.parse_args([self.common_parsers.format],
-                      testargs=['--format', 'foo-invalid'])
+      self.parse_args(
+          CommonArgumentParsers().format, testargs=['--format', 'foo-invalid'])
 
     self.assertIn(
         'argument --format: Invalid format argument provided: foo-invalid',
