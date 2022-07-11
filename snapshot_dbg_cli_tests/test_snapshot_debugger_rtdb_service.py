@@ -171,7 +171,7 @@ class SnapshotDebuggerRtdbServiceTests(unittest.TestCase):
     # cdbg/breakpoints/123/active/b-1650000000
     # cdbg/breakpoints/123/final/b-1650000000
     def get_response(path, shallow):
-      unused_shallow = shallow  # for pylint
+      del shallow  # Unused
       if 'active' in path and 'b-1650000000' in path:
         # Just need to return a snapshot to indicate the ID is not available.
         return SNAPSHOT_ACTIVE
@@ -204,7 +204,7 @@ class SnapshotDebuggerRtdbServiceTests(unittest.TestCase):
     # cdbg/breakpoints/123/active/b-1650000000
     # cdbg/breakpoints/123/final/b-1650000000
     def get_response(path, shallow):
-      unused_shallow = shallow  # for pylint
+      del shallow  # Unused
       if 'final' in path and 'b-1650000000' in path:
         # Just need to return a snapshot to indicate the ID is not available.
         return SNAPSHOT_ACTIVE
