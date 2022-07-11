@@ -20,21 +20,22 @@ import sys
 import unittest
 
 from snapshot_dbg_cli.cli_common_arguments import CommonArgumentParsers
+from snapshot_dbg_cli.cli_common_arguments import RequiredArgumentParsers
 
 from io import StringIO
 from unittest.mock import patch
+
+def parse_args(parsers, testargs):
+  args_parser = argparse.ArgumentParser(parents=parsers)
+  argv = ['prog'] + testargs
+
+  with patch.object(sys, 'argv', argv):
+    return args_parser.parse_args()
 
 
 class CommonArgumentParsersTests(unittest.TestCase):
   """Contains the unit tests for the CommonArgumentParsers class.
   """
-
-  def parse_args(self, parser, testargs):
-    args_parser = argparse.ArgumentParser(parents=[parser])
-    argv = ['prog'] + testargs
-
-    with patch.object(sys, 'argv', argv):
-      return args_parser.parse_args()
 
   def test_database_url_arg_works_as_expected(self):
     testcases = [
@@ -51,7 +52,7 @@ class CommonArgumentParsersTests(unittest.TestCase):
 
     for test_name, testargs, envp, expected_database_url in testcases:
       with self.subTest(test_name), patch.dict(os.environ, envp, clear=True):
-        args = self.parse_args(CommonArgumentParsers().database_url, testargs)
+        args = parse_args([CommonArgumentParsers().database_url], testargs)
         self.assertEqual(expected_database_url, args.database_url)
 
   def test_debuggee_id_arg_works_as_expected(self):
@@ -68,14 +69,23 @@ class CommonArgumentParsersTests(unittest.TestCase):
 
     for test_name, testargs, envp, expected_debuggee_id in testcases:
       with self.subTest(test_name), patch.dict(os.environ, envp, clear=True):
-        args = self.parse_args(CommonArgumentParsers().debuggee_id, testargs)
+        args = parse_args([CommonArgumentParsers().debuggee_id], testargs)
         self.assertEqual(expected_debuggee_id, args.debuggee_id)
 
   def test_debuggee_id_is_required(self):
     with self.assertRaises(SystemExit), \
          patch.dict(os.environ, {}, clear=True), \
          patch('sys.stderr', new_callable=StringIO) as err:
-      self.parse_args(CommonArgumentParsers().debuggee_id, testargs=[])
+      parse_args([CommonArgumentParsers().debuggee_id], testargs=[])
 
     self.assertIn('error: the following arguments are required: --debuggee-id',
                   err.getvalue())
+
+class RequiredArgumentParsersTests(unittest.TestCase):
+  """Contains the unit tests for the RequiredArgumentParsers class.
+  """
+  def test_debug_arg_works_as_expected(self):
+    parsers = RequiredArgumentParsers().parsers
+
+    self.assertEqual(False, parse_args(parsers, []).debug)
+    self.assertEqual(True, parse_args(parsers, ['--debug']).debug)
