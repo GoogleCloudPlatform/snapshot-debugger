@@ -128,8 +128,8 @@ class SetSnapshotCommand:
       user_output.error(CREATE_FAILED_MESSAGE)
       raise SilentlyExitError
 
-    if args.format in ('json', 'pretty-json'):
-      user_output.json_format(bp, pretty=(args.format == 'pretty-json'))
+    if args.format.is_a_json_value():
+      user_output.json_format(bp, pretty=args.format.is_pretty_json())
     else:
       user_output.normal(
           CREATE_SUCCESS_MESSAGE.format(breakpoint_id=breakpoint_id))

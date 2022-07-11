@@ -20,8 +20,47 @@ grouped here so they can be reused.
 import argparse
 import os
 
+from enum import Enum
+
 DATABASE_URL_ENV_VAR_NAME = 'SNAPSHOT_DEBUGGER_DATABASE_URL'
 DEBUGGEE_ID_ENV_VAR_NAME = 'SNAPSHOT_DEBUGGER_DEBUGGEE_ID'
+
+
+class OutputFormat(Enum):
+  """ Enum that represents the type of the user output to use for the command.
+  """
+
+  # Indicates default human readable output should be used.
+  DEFAULT = 1
+
+  # Indicates JSON output is desired. No special formatting will be used and so
+  # this format is simply  meant to be machine readable.
+  JSON = 2
+
+  # Indicates JSON output is desired, but that pretty printing should be used.
+  PRETTY_JSON = 3
+
+  def is_a_json_value(self):
+    return self in [self.JSON, self.PRETTY_JSON]
+
+  def is_pretty_json(self):
+    return self is self.PRETTY_JSON
+
+  @staticmethod
+  def parse_arg(format_arg):
+    mappings = {
+        'default': OutputFormat.DEFAULT,
+        'json': OutputFormat.JSON,
+        'pretty-json': OutputFormat.PRETTY_JSON
+    }
+    enum_val = mappings.get(format_arg, None)
+
+    if enum_val is None:
+      raise argparse.ArgumentTypeError(
+          f'Invalid format argument provided: {format_arg}')
+
+    return enum_val
+
 
 DATABASE_URL_HELP = f"""
 Specify the database URL for the CLI to use. This should only be used as an
@@ -83,7 +122,11 @@ class CommonArgumentParsers:
   @staticmethod
   def create_format_parser():
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument('--format', help=FORMAT_HELP, default='default')
+    parser.add_argument(
+        '--format',
+        help=FORMAT_HELP,
+        default='default',
+        type=OutputFormat.parse_arg)
     return parser
 
   @staticmethod

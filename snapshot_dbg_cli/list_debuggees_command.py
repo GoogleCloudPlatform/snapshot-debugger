@@ -65,8 +65,8 @@ class ListDebuggeesCommand:
     # which is a required field.
     debuggees = list(filter(validate_debuggee, debuggees.values()))
 
-    if args.format in ('json', 'pretty-json'):
-      user_output.json_format(debuggees, pretty=(args.format == 'pretty-json'))
+    if args.format.is_a_json_value():
+      user_output.json_format(debuggees, pretty=args.format.is_pretty_json())
     else:
       headers = ['Name', 'ID', 'Description']
 

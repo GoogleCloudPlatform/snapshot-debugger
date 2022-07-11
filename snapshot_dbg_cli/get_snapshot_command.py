@@ -140,9 +140,9 @@ class GetSnapshotCommand:
       self.user_output.error(f'Snapshot ID not found: {args.snapshot_id}')
       raise SilentlyExitError
 
-    if args.format in ('json', 'pretty-json'):
+    if args.format.is_a_json_value():
       self.user_output.json_format(
-          snapshot, pretty=(args.format == 'pretty-json'))
+          snapshot, pretty=args.format.is_pretty_json())
       return
 
     snapshot_parser = SnapshotParser(snapshot, args.max_level)
