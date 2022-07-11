@@ -26,12 +26,14 @@ from snapshot_dbg_cli.cli_common_arguments import OutputFormat
 from io import StringIO
 from unittest.mock import patch
 
+
 def parse_args(parsers, testargs):
   args_parser = argparse.ArgumentParser(parents=parsers)
   argv = ['prog'] + testargs
 
   with patch.object(sys, 'argv', argv):
     return args_parser.parse_args()
+
 
 class OutputFormatTests(unittest.TestCase):
   """Contains the unit tests for the OutputFormat class.
@@ -130,12 +132,13 @@ class CommonArgumentParsersTests(unittest.TestCase):
         'argument --format: Invalid format argument provided: foo-invalid',
         err.getvalue())
 
+
 class RequiredArgumentParsersTests(unittest.TestCase):
   """Contains the unit tests for the RequiredArgumentParsers class.
   """
+
   def test_debug_arg_works_as_expected(self):
     parsers = RequiredArgumentParsers().parsers
 
     self.assertEqual(False, parse_args(parsers, []).debug)
     self.assertEqual(True, parse_args(parsers, ['--debug']).debug)
-
