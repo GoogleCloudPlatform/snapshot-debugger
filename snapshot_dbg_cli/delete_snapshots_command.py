@@ -134,5 +134,5 @@ class DeleteSnapshotsCommand:
     # stdout.
     user_output.normal(f'Deleted {len(snapshots)} snapshots.')
 
-    if args.format in ('json', 'pretty-json'):
-      user_output.json_format(snapshots, pretty=(args.format == 'pretty-json'))
+    if args.format.is_a_json_value():
+      user_output.json_format(snapshots, pretty=args.format.is_pretty_json())
