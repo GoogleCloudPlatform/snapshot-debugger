@@ -98,8 +98,8 @@ class ListSnapshotsCommand:
         include_inactive=args.include_inactive,
         user_email=user_email)
 
-    if args.format in ('json', 'pretty-json'):
-      user_output.json_format(snapshots, pretty=(args.format == 'pretty-json'))
+    if args.format.is_a_json_value():
+      user_output.json_format(snapshots, pretty=args.format.is_pretty_json())
     else:
       values = list(map(transform_to_snapshot_summary, snapshots))
       user_output.tabular(SUMMARY_HEADERS, values)
