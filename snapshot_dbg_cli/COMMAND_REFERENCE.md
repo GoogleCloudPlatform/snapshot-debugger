@@ -3,7 +3,7 @@
 ## init
 
 ```
-python3 -m snapshot_cdb_cli init
+snapshot-cdbg-cli init
 ```
 
 Usage: `__main__.py init [-h] [--use-default-rtdb] [--debug] [--database-id
@@ -27,7 +27,7 @@ perform a requested action and then rerun the command to make progress.
 ## list_debuggees
 
 ```
-python3 -m snapshot_cdb_cli list_debuggees
+snapshot-cdbg-cli list_debuggees
 ```
 
 
@@ -50,7 +50,7 @@ Snapshot Debugger.
 ## set_snapshot
 
 ```
-python3 -m snapshot_cdb_cli set_snapshot
+snapshot-cdbg-cli set_snapshot
 ```
 
 Usage: `__main__.py set_snapshot [-h] [--database-url DATABASE_URL]
@@ -87,7 +87,7 @@ again. It is also possible to inspect snapshot results with the
 ## list_snapshots
 
 ```
-python3 -m snapshot_cdb_cli list_snapshots
+snapshot-cdbg-cli list_snapshots
 ```
 
 
@@ -114,7 +114,7 @@ all active snapshots are returned. To obtain completed snapshots specify the
 ## get_snapshot
 
 ```
-python3 -m snapshot_cdb_cli get_snapshot
+snapshot-cdbg-cli get_snapshot
 ```
 
 Usage: `__main__.py get_snapshot [-h] [--database-url DATABASE_URL] [--format FORMAT]
@@ -152,7 +152,7 @@ form which is intended to be machine-readable rather than human-readable.
 ## delete_snapshots
 
 ```
-python3 -m snapshot_cdb_cli delete_snapshots
+snapshot-cdbg-cli delete_snapshots
 ```
 
 Usage: `__main__.py delete_snapshots [-h] [--database-url DATABASE_URL] [--format
