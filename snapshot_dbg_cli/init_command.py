@@ -206,7 +206,7 @@ class InitCommand:
     pass
 
   def register(self, args_subparsers, required_parsers, common_parsers):
-    unused_common_parsers = common_parsers
+    del common_parsers  # Unused by this register method.
     parent_parsers = required_parsers
     parser = args_subparsers.add_parser(
         'init', description=CMD_DESCRIPTION, parents=parent_parsers)
