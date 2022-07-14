@@ -62,15 +62,7 @@ Authorize using your account credentials.
 
 There are two options to run the CLI once the pip install has been completed.
 
-### Option 1: Run the package directly
-
-Example running the `list_debuggees` command:
-
-```
-python3 -m snapshot_dbg_cli list_debuggees
-```
-
-### Option 2: Use the installed script
+### Option 1: Use the installed script
 
 As part of the pip install process, a script, `snapshot-dbg-cli` will be
 installed which can be used to run the CLI.
@@ -85,6 +77,14 @@ snapshot-dbg-cli list_debuggees
 script's install directory is in your PATH. Pip should emit a warning if the
 install location is not in the PATH, and also provide the install location in
 this case, so that you can add it to your PATH.
+
+### Option 2: Run the package directly
+
+Example running the `list_debuggees` command:
+
+```
+python3 -m snapshot_dbg_cli list_debuggees
+```
 
 
 ## Before you begin
