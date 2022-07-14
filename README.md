@@ -43,20 +43,49 @@ they wish to maintain it going forward.
 See
 [COMMAND_REFERENCE.md](https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/main/snapshot_dbg_cli/COMMAND_REFERENCE.md).
 
-## Download the Snapshot Debugger CLI
+## Installing the Snapshot Debugger CLI
 
-Clone the debugger to your local environment, or to your Cloud Shell
+Install the debugger CLI in your local environment, or in your Cloud Shell
 $HOME directory. See [Using Cloud
 Shell](https://cloud.google.com/shell/docs/using-cloud-shell) for information on
 using Cloud Shell.
 
-Note: When using the Snapshot Debugger in Cloud Shell you will be asked to
+```
+python3 -m pip install snapshot-dbg-cli
+```
+
+> **Note**: When using the Snapshot Debugger in Cloud Shell you will be asked to
 Authorize using your account credentials.
 
-1. Clone the Snapshot Debugger CLI
+
+## Running the Snapshot Debugger CLI
+
+There are two options to run the CLI once the pip install has been completed.
+
+### Option 1: Use the installed script
+
+As part of the pip install process, a script, `snapshot-dbg-cli` will be
+installed which can be used to run the CLI.
+
+Example running the `list_debuggees` command:
+
 ```
-git clone https://github.com/GoogleCloudPlatform/snapshot-debugger.git
+snapshot-dbg-cli list_debuggees
 ```
+
+> **NOTE**: To run the script this way from any directory, you must ensure the
+script's install directory is in your PATH. Pip should emit a warning if the
+install location is not in the PATH, and also provide the install location in
+this case, so that you can add it to your PATH.
+
+### Option 2: Run the package directly
+
+Example running the `list_debuggees` command:
+
+```
+python3 -m snapshot_dbg_cli list_debuggees
+```
+
 
 ## Before you begin
 
@@ -174,8 +203,7 @@ Where PROJECT_ID is your project ID
 This will instruct the debugger CLI to create and use a database with the name
 `PROJECT_ID-cdbg`
 
-1. Run `python3 -m snapshot_dbg_cli init` in the cloned `snapshot-debugger`
-   directory.
+1. Run `snapshot-dbg-cli init`.
 2. The output resembles the following:
 
 ```
@@ -194,8 +222,8 @@ commands.
 ```
 
 Note: The information printed by the `init` command can be accessed from within
-your Firebase project. It’s safe to run the `python3 -m snapshot_dbg_cli init`
-command multiple times to view this information.
+your Firebase project. It’s safe to run the `snapshot-dbg-cli init` command
+multiple times to view this information.
 
 #### Spark plan RTDB setup
 
@@ -203,7 +231,7 @@ This will instruct the CLI to create and use a database with the name
 `PROJECT_ID-default-rtdb`. It will only be created if it does not currently
 exist.
 
-1. Run `python3 -m snapshot_dbg_cli init --use-default-rtdb`
+1. Run `snapshot-dbg-cli init --use-default-rtdb`
 2. The output resembles the following:
 
 ```
@@ -222,7 +250,7 @@ commands.
 ```
 
 Note: The information printed by the `init` command can be accessed from within
-your Firebase project. It’s safe to run the `python3 -m snapshot_dbg_cli init
+your Firebase project. It’s safe to run the `snapshot-dbg-cli init
 --use-default-rtdb` command multiple times to view this information.
 
 ## Set up Snapshot Debugger in your Google Cloud project
@@ -323,16 +351,12 @@ instances of the running application. In general all instances of the same
 version of the application will have the same debuggee ID, and breakpoints set
 on a debuggee will be installed on all running instances of it.
 
-The following workflow commands are run in the cloned `snapshot-debugger`
-directory unless otherwise specified.
-
 ### List Debuggees
 
-1. Navigate to the cloned `snapshot-debugger` directory
-2. Run the following command
+Run the following command
 
 ```
-python3 -m snapshot_dbg_cli list_debuggees
+snapshot-dbg-cli list_debuggees
 ```
 
 The output resembles the following:
@@ -350,11 +374,10 @@ Snapshots capture local variables and the call stack at a specific line location
 in your app's source code. You can specify certain conditions and locations to
 return a snapshot of your app's data, and view it in detail to debug your app.
 
-1. Navigate to the cloned `snapshot-debugger` directory
-2. Set snapshots with the following command:
+Set snapshots with the following command:
 
 ```
-python3 -m snapshot_dbg_cli set_snapshot index.js:21 --debuggee-id 2054916c4b46c04e04fffa32781bbd2f
+snapshot-dbg-cli set_snapshot index.js:21 --debuggee-id 2054916c4b46c04e04fffa32781bbd2f
 ```
 
 Where:
@@ -377,7 +400,7 @@ command.
 
 Example:
 ```
-python3 -m snapshot_dbg_cli set_snapshot index.js:26 --debuggee-id 2054916c4b46c04e04fffa32781bbd2f --condition="ultimateAnswer <= 42 && foo==bar"
+snapshot-dbg-cli set_snapshot index.js:26 --debuggee-id 2054916c4b46c04e04fffa32781bbd2f --condition="ultimateAnswer <= 42 && foo==bar"
 ```
 
 You can use the following language features to express conditions:
@@ -416,17 +439,16 @@ command.
 
 Example:
 ```
-python3 -m snapshot_dbg_cli set_snapshot index.js:26 --debuggee-id 2054916c4b46c04e04fffa32781bbd2f --expression="histogram.length"
+snapshot-dbg-cli set_snapshot index.js:26 --debuggee-id 2054916c4b46c04e04fffa32781bbd2f --expression="histogram.length"
 ```
 
 
 ### List snapshots
 
-1. Navigate to the cloned `snapshot-debugger` directory
-2. List snapshots with the following command:
+List snapshots with the following command:
 
 ```
-python3 -m snapshot_dbg_cli list_snapshots --debuggee-id 2054916c4b46c04e04fffa32781bbd2f --include-inactive
+snapshot-dbg-cli list_snapshots --debuggee-id 2054916c4b46c04e04fffa32781bbd2f --include-inactive
 ```
 
 Where:
@@ -445,11 +467,10 @@ COMPLETED  index.js:21               2022-03-23T02:52:23.558000Z  b-1648003845
 
 ### Get snapshot
 
-1. Navigate to the cloned `snapshot-debugger` directory
-2. Get a snapshot with the following command:
+Get a snapshot with the following command:
 
 ```
-python3 -m snapshot_dbg_cli get_snapshot b-1649947203 --debuggee-id 2054916c4b46c04e04fffa32781bbd2f
+snapshot-dbg-cli get_snapshot b-1649947203 --debuggee-id 2054916c4b46c04e04fffa32781bbd2f
 ```
 
 Where:
@@ -504,11 +525,10 @@ Function              Location
 
 ### Delete snapshots
 
-1. Navigate to the cloned `snapshot-debugger` directory
-2. Delete snapshots with the following command:
+Delete snapshots with the following command:
 
 ```
-python3 -m snapshot_dbg_cli delete_snapshots --debuggee-id 2054916c4b46c04e04fffa32781bbd2f --include-inactive
+snapshot-dbg-cli delete_snapshots --debuggee-id 2054916c4b46c04e04fffa32781bbd2f --include-inactive
 ```
 
 Where:
