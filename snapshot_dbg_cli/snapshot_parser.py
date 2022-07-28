@@ -73,9 +73,10 @@ class SnapshotParser:
   def parse_locals(self, stack_frame_index):
     local_variables = []
 
-    if stack_frame_index < len(
-        self.stack_frames) and 'locals' in self.stack_frames[stack_frame_index]:
-      local_variables = self.stack_frames[stack_frame_index]['locals']
+    if stack_frame_index < len(self.stack_frames):
+      stack_frame = self.stack_frames[stack_frame_index]
+      for p in ['arguments', 'locals']:
+        local_variables.extend(stack_frame.get(p, []))
 
     return self._resolve_variables(local_variables)
 

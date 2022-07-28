@@ -251,6 +251,73 @@ class SnapshotParserTests(unittest.TestCase):
     self.assertEqual(expected_parsed_frame3, parsed_frame3)
     self.assertEqual(expected_parsed_frame100, parsed_frame100)
 
+  def test_parse_locals_includes_function_locals_and_arguments(self):
+    snapshot =  {
+      'action': 'CAPTURE',
+      'createTimeUnixMsec': 1649962215426,
+      'finalTimeUnixMsec': 1649962230637,
+      'id': 'b-1649962215',
+      'isFinalState': True,
+      'userEmail': 'foo@bar.com',
+      'location': {'line': 26, 'path': 'index.js'},
+      'stackFrames': [
+        {
+          'function': 'func0',
+          'arguments': [
+            {'name': 'a', 'value': 'aaa'},
+            {'name': 'b', 'varTableIndex': 0}
+          ],
+          'locals': [
+            {'name': 'c', 'varTableIndex': 1},
+            {'name': 'd', 'value': 'ddd'}
+          ],
+          'location': {'line': 26, 'path': 'index.js'}
+        },
+      ],
+      'variableTable': [
+        {
+          'members': [
+             {'name': 'd', 'varTableIndex': 1},
+             {'name': 'e',  'value': 99}
+          ]
+        },
+        {
+          'members': [
+             {'name': 'f',  'value': 100}
+          ]
+        },
+      ],
+    } # yapf: disable (Subjectively, more readable hand formatted)
+
+    expected_parsed_locals = [
+        {
+            'a': 'aaa'
+        },
+        {
+            'b': {
+                'd': {
+                    'f': 100
+                },
+                'e': 99
+            },
+        },
+        {
+            'c': {
+                'f': 100
+            },
+        },
+        {
+            'd': 'ddd'
+        },
+    ]
+
+    parsed_locals = SnapshotParser(
+        snapshot, max_expansion_level=10).parse_locals(stack_frame_index=0)
+
+    # Misleading name, but ensures each list contains the same elements,
+    # ignoring order.
+    self.assertCountEqual(expected_parsed_locals, parsed_locals)
+
   def test_parse_locals_works_as_expected_with_no_stack_frames(self):
     snapshot =  {
       'action': 'CAPTURE',
