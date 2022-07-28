@@ -21,7 +21,7 @@ import sys
 import snapshot_dbg_cli.cli_run
 from snapshot_dbg_cli.exceptions import SilentlyExitError
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 
 
 def main():
