@@ -362,10 +362,10 @@ snapshot-dbg-cli list_debuggees
 The output resembles the following:
 
 ```
-Name           ID                                Description
--------------  --------------------------------  ----------------------------------------
-test-app - v1  4a1d08461c8e10cc010b606353389d3e  node index.js module:test-app version:v1
-test-app - v2  2054916c4b46c04e04fffa32781bbd2f  node index.js module:test-app version:v2
+Name           ID          Description
+-------------  ----------  ----------------------------------------
+test-app - v1  d-24abc4f1  node index.js module:test-app version:v1
+test-app - v2  d-8dd7f149  node index.js module:test-app version:v2
 ```
 
 ### Set Snapshots
@@ -377,12 +377,12 @@ return a snapshot of your app's data, and view it in detail to debug your app.
 Set snapshots with the following command:
 
 ```
-snapshot-dbg-cli set_snapshot index.js:21 --debuggee-id 2054916c4b46c04e04fffa32781bbd2f
+snapshot-dbg-cli set_snapshot index.js:21 --debuggee-id d-8dd7f149
 ```
 
 Where:
 *   `index.js:21` is the `file:line` for the snapshot
-*   2054916c4b46c04e04fffa32781bbd2f is the debuggee ID
+*   d-8dd7f149 is the debuggee ID
 
 
 #### Snapshot conditions (optional)
@@ -400,7 +400,7 @@ command.
 
 Example:
 ```
-snapshot-dbg-cli set_snapshot index.js:26 --debuggee-id 2054916c4b46c04e04fffa32781bbd2f --condition="ultimateAnswer <= 42 && foo==bar"
+snapshot-dbg-cli set_snapshot index.js:26 --debuggee-id d-8dd7f149 --condition="ultimateAnswer <= 42 && foo==bar"
 ```
 
 You can use the following language features to express conditions:
@@ -439,7 +439,7 @@ command.
 
 Example:
 ```
-snapshot-dbg-cli set_snapshot index.js:26 --debuggee-id 2054916c4b46c04e04fffa32781bbd2f --expression="histogram.length"
+snapshot-dbg-cli set_snapshot index.js:26 --debuggee-id d-8dd7f149 --expression="histogram.length"
 ```
 
 
@@ -448,11 +448,11 @@ snapshot-dbg-cli set_snapshot index.js:26 --debuggee-id 2054916c4b46c04e04fffa32
 List snapshots with the following command:
 
 ```
-snapshot-dbg-cli list_snapshots --debuggee-id 2054916c4b46c04e04fffa32781bbd2f --include-inactive
+snapshot-dbg-cli list_snapshots --debuggee-id d-8dd7f149 --include-inactive
 ```
 
 Where:
-*   2054916c4b46c04e04fffa32781bbd2f is the debuggee ID
+*   d-8dd7f149 is the debuggee ID
 
 The output resembles the following:
 
@@ -470,12 +470,12 @@ COMPLETED  index.js:21               2022-03-23T02:52:23.558000Z  b-1648003845
 Get a snapshot with the following command:
 
 ```
-snapshot-dbg-cli get_snapshot b-1649947203 --debuggee-id 2054916c4b46c04e04fffa32781bbd2f
+snapshot-dbg-cli get_snapshot b-1649947203 --debuggee-id d-8dd7f149
 ```
 
 Where:
 *   `b-1649947203` is the snapshot ID
-*   2054916c4b46c04e04fffa32781bbd2f is the debuggee ID
+*   d-8dd7f149 is the debuggee ID
 
 The output resembles the following:
 
@@ -528,11 +528,11 @@ Function              Location
 Delete snapshots with the following command:
 
 ```
-snapshot-dbg-cli delete_snapshots --debuggee-id 2054916c4b46c04e04fffa32781bbd2f --include-inactive
+snapshot-dbg-cli delete_snapshots --debuggee-id d-8dd7f149 --include-inactive
 ```
 
 Where:
-*   2054916c4b46c04e04fffa32781bbd2f is the debuggee ID
+*   d-8dd7f149 is the debuggee ID
 
 The output resembles the following:
 
