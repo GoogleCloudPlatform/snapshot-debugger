@@ -194,6 +194,18 @@ class SnapshotDebuggerBreakpointUtilsTests(unittest.TestCase):
       with self.subTest(test_name):
         self.assertEqual(expected_bp, set_converted_timestamps(bp))
 
+  def test_normalize_breakpoint_returns_none_when_breakpoint_not_a_dict(self):
+    self.assertIsNone(normalize_breakpoint(None))
+    self.assertIsNone(normalize_breakpoint(None, 'b-123'))
+    self.assertIsNone(normalize_breakpoint(1))
+    self.assertIsNone(normalize_breakpoint(1, 'b-123'))
+    self.assertIsNone(normalize_breakpoint([1]))
+    self.assertIsNone(normalize_breakpoint([1], 'b-123'))
+    self.assertIsNone(normalize_breakpoint('foo'))
+    self.assertIsNone(normalize_breakpoint('foo', 'b-123'))
+    self.assertIsNone(normalize_breakpoint(['foo']))
+    self.assertIsNone(normalize_breakpoint(['foo'], 'b-123'))
+
   def test_normalize_breakpoint_returns_none_when_missing_required_fields(self):
     """Verify normalize_breakpoint() returns None when required fields missing.
 
