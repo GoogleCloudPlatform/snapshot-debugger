@@ -131,7 +131,7 @@ def normalize_breakpoint(bp, bpid=None):
   Returns:
     The normalized breakpoint on success, None on failure.
   """
-  if type(bp) is not dict:
+  if not isinstance(bp, dict):
     return None
 
   if 'id' not in bp and bpid is not None:
