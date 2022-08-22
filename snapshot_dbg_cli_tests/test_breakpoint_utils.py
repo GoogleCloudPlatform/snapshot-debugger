@@ -288,7 +288,7 @@ class SnapshotDebuggerBreakpointUtilsTests(unittest.TestCase):
   def test_split_log_expressions_no_expressions(self):
     self.assertEqual(split_log_expressions('Hi there.'), ('Hi there.', []))
 
-  def test_split_log_expressions_expressions_simple(self):
+  def test_split_log_expressions_simple(self):
     self.assertEqual(
         split_log_expressions('a={a}, b={b}, c={c}'),
         ('a=$0, b=$1, c=$2', ['a', 'b', 'c']))
