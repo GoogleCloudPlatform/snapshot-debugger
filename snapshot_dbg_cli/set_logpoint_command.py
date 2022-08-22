@@ -201,7 +201,7 @@ class SetLogpointCommand:
     For example, given the input:
       'a={a}, b={b}'
      The return value would be:
-      ('a=$0, b=$1', ['a', 'b'])
+      {'log_message_format': 'a=$0, b=$1', 'expressions': ['a', 'b'])
 
     Args:
       format_string: The string to process.
@@ -211,59 +211,8 @@ class SetLogpointCommand:
     Raises:
       argparse.ArgumentTypeError: If the string has unbalanced braces.
     """
-    expressions = []
-    log_format = ''
-    current_expression = ''
-    brace_count = 0
-    need_separator = False
-    for c in format_string:
-      if need_separator and c.isdigit():
-        log_format += ' '
-      need_separator = False
-      if c == '{':
-        if brace_count:
-          # Nested braces
-          current_expression += c
-        else:
-          # New expression
-          current_expression = ''
-        brace_count += 1
-      elif not brace_count:
-        if c == '}':
-          # Unbalanced left brace.
-          raise argparse.ArgumentTypeError(
-              'There are too many "}" characters in the log format string')
-        elif c == '$':
-          # Escape '$'
-          log_format += '$$'
-        else:
-          # Not in or starting an expression.
-          log_format += c
-      else:
-        # Currently reading an expression.
-        if c != '}':
-          current_expression += c
-          continue
-        brace_count -= 1
-        if brace_count == 0:
-          # Finish processing the expression
-          if current_expression in expressions:
-            i = expressions.index(current_expression)
-          else:
-            i = len(expressions)
-            expressions.append(current_expression)
-          log_format += f'${i}'
-          # If the next character is a digit, we need an extra space to prevent
-          # the agent from combining the positional argument with the subsequent
-          # digits.
-          need_separator = True
-        else:
-          # Closing a nested brace
-          current_expression += c
-
-    if brace_count:
-      # Unbalanced left brace.
-      raise argparse.ArgumentTypeError(
-          'There are too many "{" characters in the log format string')
-
-    return {'log_message_format': log_format, 'expressions': expressions}
+    try:
+      result = breakpoint_utils.split_log_expressions(format_string)
+      return {'log_message_format': result[0], 'expressions': result[1]}
+    except ValueError as err:
+      raise argparse.ArgumentTypeError(str(err))

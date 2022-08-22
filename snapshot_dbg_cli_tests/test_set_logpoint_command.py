@@ -14,7 +14,6 @@
 """ Unit test file for the SetLogpointCommand class.
 """
 
-import argparse
 import json
 import os
 import sys
@@ -23,7 +22,6 @@ import unittest
 from snapshot_dbg_cli import cli_run
 from snapshot_dbg_cli import data_formatter
 from snapshot_dbg_cli.cli_services import CliServices
-from snapshot_dbg_cli.set_logpoint_command import SetLogpointCommand
 from snapshot_dbg_cli.exceptions import SilentlyExitError
 from snapshot_dbg_cli.snapshot_debugger_rtdb_service import SnapshotDebuggerRtdbService
 from snapshot_dbg_cli.user_output import UserOutput
@@ -148,7 +146,9 @@ class SetLogpointCommandTests(unittest.TestCase):
     self.assertEqual('', out.getvalue())
 
   def test_log_level_is_invalid(self):
-    testargs = ['foo.py:10', 'Foo log msg', '--debuggee-id=123', '--log-level=foo']
+    testargs = [
+        'foo.py:10', 'Foo log msg', '--debuggee-id=123', '--log-level=foo'
+    ]
 
     # Log level validation done by the argparse library, when the log-level is
     # invalid it will raise SystemExit.
@@ -433,52 +433,3 @@ class SetLogpointCommandTests(unittest.TestCase):
         TEST_LOGPOINT, pretty=True)
     self.assertEqual('', err.getvalue())
     self.assertEqual(TEST_LOGPOINT, json.loads(out.getvalue()))
-
-class ParseLogFormatStringArgTests(unittest.TestCase):
-  """ Unit tests for SetLogpointCommand.parse_log_format_string_arg()
-  """
-  @staticmethod
-  def parse_log_format_string(log_format_string):
-    """Helper to run the test and return it in easier to test form."""
-    result = SetLogpointCommand.parse_log_format_string_arg(log_format_string)
-    return result['log_message_format'], result['expressions']
-
-  def test_no_expressions(self):
-    self.assertEqual(
-        self.parse_log_format_string('Hi there.'),
-        ('Hi there.', []))
-
-  def test_expressions_simple(self):
-    self.assertEqual(
-        self.parse_log_format_string('a={a}, b={b}, c={c}'),
-        ('a=$0, b=$1, c=$2', ['a', 'b', 'c']))
-
-  def test_escaped_dollar(self):
-    self.assertEqual(
-        self.parse_log_format_string('$ {abc$}$ $0'),
-        ('$$ $0$$ $$0', ['abc$']))
-
-  def test_repeated_field(self):
-    self.assertEqual(
-       self.parse_log_format_string('a={a}, b={b}, a={a}, c={c}, b={b}'),
-       ('a=$0, b=$1, a=$0, c=$2, b=$1', ['a', 'b', 'c']))
-
-  def test_nested_braces(self):
-    self.assertEqual(
-        self.parse_log_format_string('a={{a} and {b}}, b={a{b{{cde}f}}g}'),
-        ('a=$0, b=$1', ['{a} and {b}', 'a{b{{cde}f}}g']))
-
-  def test_trailing_numbers(self):
-    self.assertEqual(
-        self.parse_log_format_string('a={abc}100'),
-        ('a=$0 100', ['abc']))
-
-  def testSplitLogExpressionsUnbalancedRight(self):
-    with self.assertRaisesRegex(argparse.ArgumentTypeError,
-                                'too many'):
-      SetLogpointCommand.parse_log_format_string_arg('a={abc}}')
-
-  def testSplitLogExpressionsUnbalancedLeft(self):
-    with self.assertRaisesRegex(argparse.ArgumentTypeError,
-                                'too many'):
-      SetLogpointCommand.parse_log_format_string_arg('a={{a}')
