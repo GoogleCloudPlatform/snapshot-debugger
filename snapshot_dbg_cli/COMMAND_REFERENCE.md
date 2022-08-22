@@ -184,3 +184,39 @@ confirmation before any snapshots are deleted. To suppress confirmation, use the
 | `--include-inactive`          | If set, also delete snapshots which have been completed. By default, only pending snapshots will be deleted. This flag is not required when specifying the exact ID of an inactive snapshot. |
 | `--quiet`                     | If set, suppresses user confirmation of the command. |
 
+## set_logpoint
+
+```
+snapshot-cdbg-cli set_logpoint
+```
+
+Usage: `__main__.py set_logpoint [-h] [--database-url DATABASE_URL] [--format
+FORMAT] [--debuggee-id DEBUGGEE_ID] [--debug] [--log-level LOG_LEVEL]
+[--condition CONDITION] location log_format_string`
+
+Adds a debug logpoint to a debug target (debuggee). Logpoints add logging to
+your running service without changing your code or restarting your application.
+When you create a logpoint, the message you specify will be added to your logs
+whenever any instance of your service executes the specified line of code. The
+default lifetime of a logpoint is 24 hours from creation, and the output will go
+to the standard log for the programming language of the target (java.logging for
+Java, logging for Python, etc.)
+
+### Positional arguments
+
+| Argument            | Description |
+|---------------------|-------------|
+| `location`          | Specify the location to add the logpoint. Locations are of the form `FILE:LINE`, where `FILE` is the file name, or the file name preceded by enough path components to differentiate it from other files with the same name. If the file name isn't unique in the debuggee, the behavior is unspecified. |
+| `log_format_string` | Specify a format string which will be logged every time the logpoint location is executed. If the string contains curly braces ('{' and '}'), any text within the curly braces will be interpreted as a run-time expression in the debug target's language, which will be evaluated when the logpoint is hit. The value of the expression will then replace the {} expression in the resulting log output. For example, if you specify the format string "a={a}, b={b}", and the logpoint is hit when local variable a is 1 and b is 2, the resulting log output would be "a=1, b=2". |
+
+### Optional arguments
+
+| Argument                      | Description |
+|-------------------------------|-------------|
+| `-h`, `--help`                | Show this help message and exit. |
+| `--debuggee-id DEBUGGEE_ID`   | Specify the debuggee ID. It must be an ID obtained from the `list_debuggees` command. This value is required, it must be specified either via this command line argument or via the `SNAPSHOT_DEBUGGER_DEBUGGEE_ID` environment variable.  When both are specified, the value from the command line takes precedence. |
+| `--database-url DATABASE_URL` | Specify the database URL for the CLI to use. This should only be used as an override to make the CLI talk to a specific instance and isn't expected to be needed. It is only required if the `--database-id` argument was used with the init command.  This value may be specified either via this command line argument or via the `SNAPSHOT_DEBUGGER_DATABASE_URL` environment variable.  When both are specified, the value from the command line takes precedence. |
+| `--debug`                     | Enable CLI debug messages. |
+| `--log-level LOG_LEVEL`       | The logging level to use when producing the log message. `LOG_LEVEL` must be one of: [info, warning, error]. If not specified, `info` is used by default. |
+| `--condition CONDITION`       | Specify a condition to restrict when the log output is generated. When the logpoint is hit, the condition will be evaluated, and the log output will be generated only if the condition is true. |
+
