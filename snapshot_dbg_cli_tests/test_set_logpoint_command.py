@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-""" Unit test file for the SetSnapshotCommand class.
+""" Unit test file for the SetLogpointCommand class.
 """
 
 import argparse
@@ -392,7 +392,7 @@ class SetLogpointCommandTests(unittest.TestCase):
   def test_logpoint_created_success_output_format_default(self):
     testargs = ['foo.py:10', 'Foo log msg', '--debuggee-id=123']
 
-    # For the purpose of this test, the contents of the snapshot returned don't
+    # For the purpose of this test, the contents of the logpoint returned don't
     # matter, as long as it's not None. So an empty dict is sufficient.
     self.rtdb_service_mock.set_breakpoint = MagicMock(return_value={})
     self.rtdb_service_mock.get_new_breakpoint_id = MagicMock(
