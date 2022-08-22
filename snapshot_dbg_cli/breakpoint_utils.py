@@ -186,8 +186,7 @@ def split_log_expressions(format_string):
   Args:
     format_string: The string to process.
   Returns:
-    {log_message_format: string, expressions: [string]) - The new format
-      string and the array of expressions.
+    string, [string]) - The new format string and the array of expressions.
   Raises:
     Error: If the string has unbalanced braces.
   """

@@ -134,11 +134,25 @@ class SetLogpointCommand:
 
       return loc
 
+    def log_format_string(format_string_arg):
+      """Extracts {expression} substrings into a separate array.
+
+      For example, given the input:
+        'a={a}, b={b}'
+       The return value would be:
+        {'log_message_format': 'a=$0, b=$1', 'expressions': ['a', 'b'])
+      """
+      try:
+        result = breakpoint_utils.split_log_expressions(format_string_arg)
+        return {'log_message_format': result[0], 'expressions': result[1]}
+      except ValueError as err:
+        raise argparse.ArgumentTypeError(str(err))
+
     parser.add_argument('location', help=LOCATION_HELP, type=location)
     parser.add_argument(
         'log_format_string',
         help=LOG_FORMAT_STRING_HELP,
-        type=SetLogpointCommand.parse_log_format_string_arg)
+        type=log_format_string)
     parser.add_argument(
         '--log-level',
         help=LOG_LEVEL_HELP,
@@ -188,31 +202,3 @@ class SetLogpointCommand:
     else:
       user_output.normal(
           CREATE_SUCCESS_MESSAGE.format(breakpoint_id=breakpoint_id))
-
-  @staticmethod
-  def parse_log_format_string_arg(format_string):
-    """Extracts {expression} substrings into a separate array.
-
-    Each substring of the form {expression} will be extracted into an array, and
-    each {expression} substring will be replaced with $N, where N is the index
-    of the extraced expression in the array. Any '$' sequence outside an
-    expression will be escaped with '$$'.
-
-    For example, given the input:
-      'a={a}, b={b}'
-     The return value would be:
-      {'log_message_format': 'a=$0, b=$1', 'expressions': ['a', 'b'])
-
-    Args:
-      format_string: The string to process.
-    Returns:
-      {log_message_format: string, expressions: [string]) - The new format
-        string and the array of expressions.
-    Raises:
-      argparse.ArgumentTypeError: If the string has unbalanced braces.
-    """
-    try:
-      result = breakpoint_utils.split_log_expressions(format_string)
-      return {'log_message_format': result[0], 'expressions': result[1]}
-    except ValueError as err:
-      raise argparse.ArgumentTypeError(str(err))
