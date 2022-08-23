@@ -18,8 +18,9 @@ import copy
 import unittest
 
 from snapshot_dbg_cli.breakpoint_utils import convert_unix_msec_to_rfc3339
-from snapshot_dbg_cli.breakpoint_utils import parse_and_validate_location
+from snapshot_dbg_cli.breakpoint_utils import merge_log_expressions
 from snapshot_dbg_cli.breakpoint_utils import normalize_breakpoint
+from snapshot_dbg_cli.breakpoint_utils import parse_and_validate_location
 from snapshot_dbg_cli.breakpoint_utils import set_converted_timestamps
 from snapshot_dbg_cli.breakpoint_utils import transform_location_to_file_line
 
@@ -261,6 +262,41 @@ class SnapshotDebuggerBreakpointUtilsTests(unittest.TestCase):
         self.assertIn(missing_field, obtained_bp)
         self.assertEqual(expected_field_value, obtained_bp[missing_field])
 
+  def test_normalize_breakpoint_fills_in_expected_missing_logpoint_fields(self):
+    """Verify the logpoint specific processing of normalize_breakpoint() works.
+    """
+    logpoint =  {
+      'action': 'LOG',
+      'createTimeUnixMsec': 1649962215426,
+      'id': 'b-1650000003',
+      'isFinalState': True,
+      'location': {'line': 28, 'path': 'index.js'},
+      'userEmail': 'user@foo.com',
+      'logMessageFormat': 'a: $0',
+      'expressions': ['a']
+    } # yapf: disable (Subjectively, more readable hand formatted)
+
+
+    testcases = [
+        # (Test name, missing field, expected fill in value)
+        ('Log Level', 'logLevel', 'INFO'),
+        ('Log Message', 'logMessageFormat', ''),
+        ('User Log Message', 'logMessageFormatString', 'a: {a}'),
+    ]
+
+    for test_name, missing_field, expected_field_value in testcases:
+      with self.subTest(test_name):
+        bp = copy.deepcopy(logpoint)
+        bp.pop(missing_field, None)
+        self.assertNotIn(missing_field, bp)
+
+        obtained_bp = normalize_breakpoint(bp)
+
+        # It's expected the same instance is returned.
+        self.assertIs(obtained_bp, bp)
+        self.assertIn(missing_field, obtained_bp)
+        self.assertEqual(expected_field_value, obtained_bp[missing_field])
+
   def test_normalize_breakpoint_final_time_not_populated_on_active_bp(self):
     bp = copy.deepcopy(SNAPSHOT_ACTIVE)
 
@@ -283,3 +319,22 @@ class SnapshotDebuggerBreakpointUtilsTests(unittest.TestCase):
 
     self.assertIn('id', obtained_bp)
     self.assertEqual('b-123', obtained_bp['id'])
+
+  def test_merge_log_expressions_simple(self):
+    self.assertEqual('a={a}, b={b}, c={c}',
+                     merge_log_expressions('a=$0, b=$1, c=$2', ['a', 'b', 'c']))
+
+  def test_merge_log_expressions_repeated_field(self):
+    self.assertEqual(
+        'a={a}, b={b}, a={a}, c={c}, b={b}',
+        merge_log_expressions('a=$0, b=$1, a=$0, c=$2, b=$1', ['a', 'b', 'c']))
+
+  def test_merge_log_expressions_escaped_dollar(self):
+    self.assertEqual('{a} $0 ${a} {b$} $2',
+                     merge_log_expressions('$0 $$0 $$$0 $1 $2', ['a', 'b$']))
+
+  def test_merge_log_expressions_bad_format(self):
+    self.assertEqual(
+        '}a={a}, b={b}, a={a}, c={c}, b={b}{',
+        merge_log_expressions('}a=$0, b=$1, a=$0, c=$2, b=$1{',
+                              ['a', 'b', 'c']))

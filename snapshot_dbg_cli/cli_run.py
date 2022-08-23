@@ -27,6 +27,7 @@ from snapshot_dbg_cli.delete_snapshots_command import DeleteSnapshotsCommand
 from snapshot_dbg_cli.get_snapshot_command import GetSnapshotCommand
 from snapshot_dbg_cli.init_command import InitCommand
 from snapshot_dbg_cli.list_debuggees_command import ListDebuggeesCommand
+from snapshot_dbg_cli.list_logpoints_command import ListLogpointsCommand
 from snapshot_dbg_cli.list_snapshots_command import ListSnapshotsCommand
 from snapshot_dbg_cli.set_snapshot_command import SetSnapshotCommand
 
@@ -36,6 +37,7 @@ def run(cli_services=None):
       DeleteSnapshotsCommand(),
       GetSnapshotCommand(),
       InitCommand(),
+      ListLogpointsCommand(),
       ListSnapshotsCommand(),
       ListDebuggeesCommand(),
       SetSnapshotCommand()
