@@ -22,7 +22,7 @@ from snapshot_dbg_cli.status_message import StatusMessage
 
 DESCRIPTION = """
 Used to display the debug logpoints for a debug target (debuggee). By default
-all active logpoints are returned. To obtain older, expired logoints, specify
+all active logpoints are returned. To obtain older, expired logpoints, specify
 the --include-inactive option.
 """
 

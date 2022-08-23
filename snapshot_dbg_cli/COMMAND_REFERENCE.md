@@ -196,7 +196,7 @@ FORMAT] [--debuggee-id DEBUGGEE_ID] [--debug] [--include-inactive] [--all-users]
 [--no-all-users]`
 
 Used to display the debug logpoints for a debug target (debuggee). By default
-all active logpoints are returned. To obtain older, expired logoints, specify
+all active logpoints are returned. To obtain older, expired logpoints, specify
 the --include-inactive option.
 
 ### Optional arguments
