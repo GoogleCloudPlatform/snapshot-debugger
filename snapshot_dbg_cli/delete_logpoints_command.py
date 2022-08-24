@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""This module contains the support for the delete_snapshots command.
+"""This module contains the support for the delete_logpoints command.
 
-The delete_snapshots command is used to delete snapshots from a debug target
+The delete_logpoints command is used to delete logpoints from a debug target
 (debuggee).
 """
 
@@ -21,49 +21,53 @@ from snapshot_dbg_cli.exceptions import SilentlyExitError
 from snapshot_dbg_cli import breakpoint_utils
 
 DESCRIPTION = """
-Used to delete snapshots from a debug target (debuggee). You are prompted for
-confirmation before any snapshots are deleted. To suppress confirmation, use the
+Used to delete logpoints from a debug target (debuggee). You are prompted for
+confirmation before any logpoints are deleted. To suppress confirmation, use the
 --quiet option.
 """
 
 ID_HELP = """
-Zero or more snapshot IDs. The specified snapshots will be deleted. By default,
-if no snapshot IDs are specified, all active snapshots created by the user are
+Zero or more logpoint IDs. The specified logpoints will be deleted. By default,
+if no logpoint IDs are specified, all active logpoints created by the user are
 selected for deletion.
 """
 
 ALL_USERS_HELP = """
-If set, snapshots from all users will be deleted, rather than only snapshots
+If set, logpoints from all users will be deleted, rather than only logpoints
 created by the current user. This flag is not required when specifying the exact
-ID of a snapshot.
+ID of a logpoint.
 """
 
 INCLUDE_INACTIVE_HELP = """
-If set, also delete snapshots which have been completed. By default, only
-pending snapshots will be deleted. This flag is not required when specifying the
-exact ID of an inactive snapshot.
+If set, also delete logpoints which have been completed. By default, only
+pending logpoints will be deleted. This flag is not required when specifying the
+exact ID of an inactive logpoint.
 """
 
 QUIET_HELP = 'If set, suppresses user confirmation of the command.'
 
-SUMMARY_HEADERS = ['Status', 'Location', 'Condition', 'ID']
+SUMMARY_HEADERS = [
+    'Location', 'Condition', 'Log Level', 'Log Message Format', 'ID'
+]
 
 
-def transform_to_snapshot_summary(snapshot):
+def transform_to_logpoint_summary(logpoint):
   # Match the fields from SUMMARY_HEADERS
   return [
-      'COMPLETED' if snapshot['isFinalState'] else 'ACTIVE',
-      breakpoint_utils.transform_location_to_file_line(snapshot['location']),
-      snapshot['condition'] if 'condition' in snapshot else '', snapshot['id']
+      breakpoint_utils.transform_location_to_file_line(logpoint['location']),
+      logpoint['condition'] if 'condition' in logpoint else '',
+      logpoint['logLevel'],
+      logpoint['logMessageFormatString'],
+      logpoint['id'],
   ]
 
 
-class DeleteSnapshotsCommand:
-  """This class implements the delete_snapshots command.
+class DeleteLogpointsCommand:
+  """This class implements the delete_logpoints command.
 
   The register() method is called by the CLI startup code to install the
-  delete_snapshots command information, and the cmd() function will be invoked
-  if the delete_snapshots command was specified by the user.
+  delete_logpoints command information, and the cmd() function will be invoked
+  if the delete_logpoints command was specified by the user.
   """
 
   def __init__(self):
@@ -76,7 +80,7 @@ class DeleteSnapshotsCommand:
     ]
     parent_parsers += required_parsers
     parser = args_subparsers.add_parser(
-        'delete_snapshots', description=DESCRIPTION, parents=parent_parsers)
+        'delete_logpoints', description=DESCRIPTION, parents=parent_parsers)
     parser.add_argument('ID', help=ID_HELP, nargs='*')
     parser.add_argument('--all-users', help=ALL_USERS_HELP, action='store_true')
     parser.add_argument(
@@ -93,33 +97,33 @@ class DeleteSnapshotsCommand:
 
     # This will be a list, if no IDs were specified it will be empty. If any IDs
     # are specified those are the only ones that will be deleted.
-    snapshot_ids = args.ID
+    logpoint_ids = args.ID
 
     user_email = None if args.all_users is True else cli_services.account
 
-    snapshots = []
+    logpoints = []
 
-    if snapshot_ids:
+    if logpoint_ids:
       ids_not_found = []
 
-      for bp_id in snapshot_ids:
-        snapshot = debugger_rtdb_service.get_breakpoint(args.debuggee_id, bp_id)
-        if snapshot is None:
+      for bp_id in logpoint_ids:
+        logpoint = debugger_rtdb_service.get_breakpoint(args.debuggee_id, bp_id)
+        if logpoint is None or logpoint['action'] != 'LOG':
           ids_not_found.append(bp_id)
         else:
-          snapshots.append(snapshot)
+          logpoints.append(logpoint)
 
       if ids_not_found:
-        user_output.error(f"Snapshot ID not found: {', '.join(ids_not_found)}")
+        user_output.error(f"Logpoint ID not found: {', '.join(ids_not_found)}")
         raise SilentlyExitError
     else:
-      snapshots = debugger_rtdb_service.get_snapshots(args.debuggee_id,
+      logpoints = debugger_rtdb_service.get_logpoints(args.debuggee_id,
                                                       args.include_inactive,
                                                       user_email)
 
-    if snapshots:
-      user_output.normal('This command will delete the following snapshots:\n')
-      values = list(map(transform_to_snapshot_summary, snapshots))
+    if logpoints:
+      user_output.normal('This command will delete the following logpoints:\n')
+      values = list(map(transform_to_logpoint_summary, logpoints))
       user_output.tabular(SUMMARY_HEADERS, values)
       user_output.normal('\n')
 
@@ -127,12 +131,12 @@ class DeleteSnapshotsCommand:
         user_output.error('Delete aborted.')
         return
 
-      debugger_rtdb_service.delete_breakpoints(args.debuggee_id, snapshots)
+      debugger_rtdb_service.delete_breakpoints(args.debuggee_id, logpoints)
 
     # The status is output regardless of the requested output format. It should
     # go to stderr, and if json output is requested, that should end up on
     # stdout.
-    user_output.normal(f'Deleted {len(snapshots)} snapshots.')
+    user_output.normal(f'Deleted {len(logpoints)} logpoints.')
 
     if args.format.is_a_json_value():
-      user_output.json_format(snapshots, pretty=args.format.is_pretty_json())
+      user_output.json_format(logpoints, pretty=args.format.is_pretty_json())
