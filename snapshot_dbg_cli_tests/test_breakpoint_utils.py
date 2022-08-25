@@ -432,3 +432,60 @@ class SnapshotDebuggerBreakpointUtilsTests(unittest.TestCase):
     self.assertEqual(
         get_logpoint_short_status(logpoint),
         'SOURCE_LOCATION: No code found at line 29')
+
+  def test_logpoint_get_short_status_data_incomplete(self):
+    logpoint =  {
+      'action': 'LOG',
+      'logMessageFormat': 'd: $0',
+      'expressions': ['d'],
+      'logMessageFormatString': 'd: {d}',
+      'logLevel': 'INFO',
+      'createTimeUnixMsec': 1649962218426,
+      'condition': '',
+      'id': 'b-1649962218',
+      'isFinalState': True,
+      'location': {'line': 29, 'path': 'index.js'},
+      'userEmail': 'user_d@foo.com',
+      'createTime': '2022-04-14T18:50:18.852000Z',
+      'finalTime': '2022-04-14T18:50:31.274000Z',
+      'status': {
+        'description': {
+            'format': 'No code found at line 29'
+        },
+        'isError': True,
+        'refersTo': 'BREAKPOINT_SOURCE_LOCATION'
+      },
+    } # yapf: disable (Subjectively, more readable hand formatted)
+
+    logpoint_status_missing = copy.deepcopy(logpoint)
+    logpoint_is_error_missing = copy.deepcopy(logpoint)
+    logpoint_refers_to_missing = copy.deepcopy(logpoint)
+    logpoint_description_missing = copy.deepcopy(logpoint)
+    logpoint_format_missing = copy.deepcopy(logpoint)
+    logpoint_description_and_refers_to_missing = copy.deepcopy(logpoint)
+
+    del logpoint_status_missing['status']
+    del logpoint_is_error_missing['status']['isError']
+    del logpoint_refers_to_missing['status']['refersTo']
+    del logpoint_description_missing['status']['description']
+    del logpoint_format_missing['status']['description']['format']
+    del logpoint_description_and_refers_to_missing['status']['description']
+    del logpoint_description_and_refers_to_missing['status']['refersTo']
+
+    testcases = [
+        ('Status Missing', logpoint_status_missing, 'COMPLETED'),
+        ('IsError Missing', logpoint_is_error_missing, 'COMPLETED'),
+        ('RefersTo Missing', logpoint_refers_to_missing,
+         'FAILED: No code found at line 29'),
+        ('Description Missing', logpoint_description_missing,
+         'SOURCE_LOCATION: Unknown failure reason'),
+        ('Format Missing', logpoint_format_missing,
+         'SOURCE_LOCATION: Unknown failure reason'),
+        ('Desc and RefersTo Missing',
+         logpoint_description_and_refers_to_missing,
+         'FAILED: Unknown failure reason'),
+    ]
+
+    for testname, logpoint, expected_status in testcases:
+      with self.subTest(testname):
+        self.assertEqual(get_logpoint_short_status(logpoint), expected_status)

@@ -224,16 +224,26 @@ def get_logpoint_short_status(logpoint):
 
   status_message = StatusMessage(logpoint)
 
-  # This would be unexpected, as logpoint expire, which is classified as an
+  # This would be unexpected, as logpoints expire, which is classified as an
   # error.
   if not status_message.is_error:
     return 'COMPLETED'
 
   refers_to = status_message.refers_to
+
+  if refers_to is None or len(refers_to) == 0:
+    refers_to = 'FAILED'
+
   if refers_to == 'BREAKPOINT_AGE':
     return 'EXPIRED'
 
   # The refers_to is expected to always starts with 'BREAKPOINT_', so here we
   # strip it off to shorten the output.
-  short_refers_to = status_message.refers_to.replace('BREAKPOINT_', '')
-  return f'{short_refers_to}: {status_message.parsed_message}'
+  short_refers_to = refers_to.replace('BREAKPOINT_', '')
+
+  message = status_message.parsed_message
+
+  if message is None or len(message) == 0:
+    message = 'Unknown failure reason'
+
+  return f'{short_refers_to}: {message}'
