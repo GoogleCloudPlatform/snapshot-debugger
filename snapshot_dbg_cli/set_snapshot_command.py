@@ -91,7 +91,8 @@ class SetSnapshotCommand:
 
       return loc
 
-    parser.add_argument('location', help=LOCATION_HELP, type=location)
+    parser.add_argument(
+        'location', metavar='LOCATION', help=LOCATION_HELP, type=location)
     parser.add_argument('--condition', help=CONDITION_HELP)
     parser.add_argument('--expression', action='append', help=EXPRESSION_HELP)
     self.args_parser = parser

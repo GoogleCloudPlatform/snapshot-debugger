@@ -148,9 +148,11 @@ class SetLogpointCommand:
       except ValueError as err:
         raise argparse.ArgumentTypeError(str(err))
 
-    parser.add_argument('location', help=LOCATION_HELP, type=location)
+    parser.add_argument(
+        'location', metavar='LOCATION', help=LOCATION_HELP, type=location)
     parser.add_argument(
         'log_format_string',
+        metavar='LOG_FORMAT_STRING',
         help=LOG_FORMAT_STRING_HELP,
         type=log_format_string)
     parser.add_argument(

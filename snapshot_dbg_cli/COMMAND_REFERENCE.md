@@ -55,7 +55,7 @@ snapshot-cdbg-cli set_snapshot
 
 Usage: `__main__.py set_snapshot [-h] [--database-url DATABASE_URL]
 [--debug] [--condition CONDITION] [--expression EXPRESSION]
-[--debuggee-id DEBUGGEE_ID] location`
+[--debuggee-id DEBUGGEE_ID] LOCATION`
 
 Creates a snapshot on a debug target (Debuggee). Snapshots allow you to capture
 stack traces and local variables from your running service without interfering
@@ -71,7 +71,7 @@ again. It is also possible to inspect snapshot results with the
 
 | Argument      | Description |
 |---------------|-------------|
-| `location`    | Specify the location to take a snapshot. Locations are of the form `FILE:LINE`, where `FILE` is the file name, or the file name preceded by enough path components to differentiate it from other files with the same name. If the file name isn't unique in the debuggee, the behavior is unspecified. |
+| `LOCATION`    | Specify the location to take a snapshot. Locations are of the form `FILE:LINE`, where `FILE` is the file name, or the file name preceded by enough path components to differentiate it from other files with the same name. If the file name isn't unique in the debuggee, the behavior is unspecified. |
 
 ### Optional arguments
 
@@ -192,7 +192,7 @@ snapshot-cdbg-cli set_logpoint
 
 Usage: `__main__.py set_logpoint [-h] [--database-url DATABASE_URL] [--format
 FORMAT] [--debuggee-id DEBUGGEE_ID] [--debug] [--log-level LOG_LEVEL]
-[--condition CONDITION] location log_format_string`
+[--condition CONDITION] LOCATION LOG_FORMAT_STRING`
 
 Adds a debug logpoint to a debug target (debuggee). Logpoints add logging to
 your running service without changing your code or restarting your application.
@@ -206,8 +206,8 @@ Java, logging for Python, etc.)
 
 | Argument            | Description |
 |---------------------|-------------|
-| `location`          | Specify the location to add the logpoint. Locations are of the form `FILE:LINE`, where `FILE` is the file name, or the file name preceded by enough path components to differentiate it from other files with the same name. If the file name isn't unique in the debuggee, the behavior is unspecified. |
-| `log_format_string` | Specify a format string which will be logged every time the logpoint location is executed. If the string contains curly braces ('{' and '}'), any text within the curly braces will be interpreted as a run-time expression in the debug target's language, which will be evaluated when the logpoint is hit. The value of the expression will then replace the {} expression in the resulting log output. For example, if you specify the format string "a={a}, b={b}", and the logpoint is hit when local variable a is 1 and b is 2, the resulting log output would be "a=1, b=2". |
+| `LOCATION`          | Specify the location to add the logpoint. Locations are of the form `FILE:LINE`, where `FILE` is the file name, or the file name preceded by enough path components to differentiate it from other files with the same name. If the file name isn't unique in the debuggee, the behavior is unspecified. |
+| `LOG_FORMAT_STRING` | Specify a format string which will be logged every time the logpoint location is executed. If the string contains curly braces ('{' and '}'), any text within the curly braces will be interpreted as a run-time expression in the debug target's language, which will be evaluated when the logpoint is hit. The value of the expression will then replace the {} expression in the resulting log output. For example, if you specify the format string "a={a}, b={b}", and the logpoint is hit when local variable a is 1 and b is 2, the resulting log output would be "a=1, b=2". |
 
 ### Optional arguments
 
