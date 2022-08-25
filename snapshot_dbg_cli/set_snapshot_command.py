@@ -33,7 +33,7 @@ there is no condition), the instance captures the current thread state and
 reports it back to Cloud Debugger. Once any instance captures a snapshot,
 the snapshot is marked as completed, and it will not be captured again.
 
-It is also possible to inspect snapshot results with the "describe_snapshots"
+It is also possible to inspect snapshot results with the "get_snapshot"
 command.
 """
 
