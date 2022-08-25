@@ -136,8 +136,8 @@ def normalize_breakpoint(bp, bpid=None):
   Additionally, if the breakpoint represents a logpoint (action is 'LOG'), the
   following fields will be present:
 
-    logMessageFormat
-    logMessageFormatString
+    logMessageFormat        - Form of 'a: $0, b: $1', used by the agents
+    logMessageFormatString  - Form of 'a: {a}, b: {b}', friendly user version
     logLevel
 
   Returns:
