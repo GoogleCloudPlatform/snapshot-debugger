@@ -19,6 +19,8 @@ These utilities are useful in multiple snapshot and logpoint commands.
 import datetime
 import re
 
+from snapshot_dbg_cli.status_message import StatusMessage
+
 # Regex that can be used to validate a user inputted location which should be in
 # the format file:line.
 LOCATION_REGEX = '^[^:]+:[1-9][0-9]*$'
@@ -214,3 +216,24 @@ def merge_log_expressions(log_format, expressions):
 
   parts = log_format.split('$$')
   return '$'.join(re.sub(r'\$\d+', get_expression, part) for part in parts)
+
+
+def get_logpoint_short_status(logpoint):
+  if not logpoint['isFinalState']:
+    return 'ACTIVE'
+
+  status_message = StatusMessage(logpoint)
+
+  # This would be unexpected, as logpoint expire, which is classified as an
+  # error.
+  if not status_message.is_error:
+    return 'COMPLETED'
+
+  refers_to = status_message.refers_to
+  if refers_to == 'BREAKPOINT_AGE':
+    return 'EXPIRED'
+
+  # The refers_to is expected to always starts with 'BREAKPOINT_', so here we
+  # strip it off to shorten the output.
+  short_refers_to = status_message.refers_to.replace('BREAKPOINT_', '')
+  return f'{short_refers_to}: {status_message.parsed_message}'

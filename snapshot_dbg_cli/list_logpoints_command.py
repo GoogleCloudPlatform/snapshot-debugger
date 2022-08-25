@@ -18,7 +18,6 @@ target (debuggee).
 """
 
 from snapshot_dbg_cli import breakpoint_utils
-from snapshot_dbg_cli.status_message import StatusMessage
 
 DESCRIPTION = """
 Used to display the debug logpoints for a debug target (debuggee). By default
@@ -43,27 +42,6 @@ SUMMARY_HEADERS = [
 ]
 
 
-def get_logpoint_status(logpoint):
-  if not logpoint['isFinalState']:
-    return 'ACTIVE'
-
-  status_message = StatusMessage(logpoint)
-
-  # This would be unexpected, as logpoint expire, which is classified as an
-  # error.
-  if not status_message.is_error:
-    return 'COMPLETED'
-
-  refers_to = status_message.refers_to
-  if refers_to == 'BREAKPOINT_AGE':
-    return 'EXPIRED'
-
-  # The refers_to is expected to always starts with 'BREAKPOINT_', so here we
-  # strip it off to shorten the output.
-  short_refers_to = status_message.refers_to.replace('BREAKPOINT_', '')
-  return f'{short_refers_to}: {status_message.parsed_message}'
-
-
 def transform_to_logpoint_summary(logpoint):
   # Match the fields from SUMMARY_HEADERS
   return [
@@ -73,7 +51,7 @@ def transform_to_logpoint_summary(logpoint):
       logpoint['logLevel'],
       logpoint['logMessageFormatString'],
       logpoint['id'],
-      get_logpoint_status(logpoint),
+      breakpoint_utils.get_logpoint_short_status(logpoint),
   ]
 
 
