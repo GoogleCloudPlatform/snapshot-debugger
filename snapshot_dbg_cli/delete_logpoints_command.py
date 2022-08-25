@@ -17,8 +17,8 @@ The delete_logpoints command is used to delete logpoints from a debug target
 (debuggee).
 """
 
-from snapshot_dbg_cli.exceptions import SilentlyExitError
 from snapshot_dbg_cli import breakpoint_utils
+from snapshot_dbg_cli import delete_breakpoints
 
 DESCRIPTION = """
 Used to delete logpoints from a debug target (debuggee). You are prompted for
@@ -89,54 +89,4 @@ class DeleteLogpointsCommand:
     parser.set_defaults(func=self.cmd)
 
   def cmd(self, args, cli_services):
-    user_input = cli_services.user_input
-    user_output = cli_services.user_output
-    debugger_rtdb_service = cli_services.get_snapshot_debugger_rtdb_service()
-
-    debugger_rtdb_service.validate_debuggee_id(args.debuggee_id)
-
-    # This will be a list, if no IDs were specified it will be empty. If any IDs
-    # are specified those are the only ones that will be deleted.
-    logpoint_ids = args.ID
-
-    user_email = None if args.all_users is True else cli_services.account
-
-    logpoints = []
-
-    if logpoint_ids:
-      ids_not_found = []
-
-      for bp_id in logpoint_ids:
-        logpoint = debugger_rtdb_service.get_breakpoint(args.debuggee_id, bp_id)
-        if logpoint is None or logpoint['action'] != 'LOG':
-          ids_not_found.append(bp_id)
-        else:
-          logpoints.append(logpoint)
-
-      if ids_not_found:
-        user_output.error(f"Logpoint ID not found: {', '.join(ids_not_found)}")
-        raise SilentlyExitError
-    else:
-      logpoints = debugger_rtdb_service.get_logpoints(args.debuggee_id,
-                                                      args.include_inactive,
-                                                      user_email)
-
-    if logpoints:
-      user_output.normal('This command will delete the following logpoints:\n')
-      values = list(map(transform_to_logpoint_summary, logpoints))
-      user_output.tabular(SUMMARY_HEADERS, values)
-      user_output.normal('\n')
-
-      if not args.quiet and not user_input.prompt_user_to_continue():
-        user_output.error('Delete aborted.')
-        return
-
-      debugger_rtdb_service.delete_breakpoints(args.debuggee_id, logpoints)
-
-    # The status is output regardless of the requested output format. It should
-    # go to stderr, and if json output is requested, that should end up on
-    # stdout.
-    user_output.normal(f'Deleted {len(logpoints)} logpoints.')
-
-    if args.format.is_a_json_value():
-      user_output.json_format(logpoints, pretty=args.format.is_pretty_json())
+    delete_breakpoints.run_cmd('LOG', args, cli_services, SUMMARY_HEADERS, transform_to_logpoint_summary)

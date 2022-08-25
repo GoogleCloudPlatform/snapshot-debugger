@@ -65,6 +65,20 @@ SNAPSHOT_COMPLETED =  {
   'createTime': '2022-04-14T18:50:15.852000Z',
 } # yapf: disable (Subjectively, more readable hand formatted)
 
+LOGPOINT_ACTIVE =  {
+  'action': 'LOG',
+  'logMessageFormat': 'a: $0',
+  'expressions': ['a'],
+  'logMessageFormatString': 'a: {a}',
+  'logLevel': 'INFO',
+  'createTimeUnixMsec': 1649962215426,
+  'id': 'b-1649962215',
+  'isFinalState': False,
+  'location': {'line': 26, 'path': 'index.js'},
+  'userEmail': 'user_a@foo.com',
+  'createTime': '2022-04-14T18:50:15.852000Z',
+} # yapf: disable (Subjectively, more readable hand formatted)
+
 class DeleteSnapshotsCommandTests(unittest.TestCase):
   """ Contains the unit tests for the DeleteSnapshotsCommand class.
   """
@@ -146,6 +160,22 @@ class DeleteSnapshotsCommandTests(unittest.TestCase):
         '123', 'b-1650000000')
     self.rtdb_service_mock.delete_breakpoints.assert_called_once_with(
         '123', [SNAPSHOT_ACTIVE])
+
+  def test_id_specified_matches_logpoint_and_not_snapshot(self):
+    """Verifies users can't delete logpoints through this command.
+    """
+    testargs = ['--debuggee-id=123', 'b-1649962215']
+
+    self.rtdb_service_mock.get_breakpoint = MagicMock(
+        return_value=LOGPOINT_ACTIVE)
+
+    out, err = self.run_cmd(testargs, expected_exception=SilentlyExitError)
+
+    self.rtdb_service_mock.get_breakpoint.assert_called_once_with(
+        '123', 'b-1649962215')
+    self.rtdb_service_mock.delete_breakpoints.assert_not_called()
+    self.assertEqual('Snapshot ID not found: b-1649962215\n', err.getvalue())
+    self.assertEqual('', out.getvalue())
 
   def test_multiple_ids_specified_and_exist_get_deleted(self):
     testargs = [
