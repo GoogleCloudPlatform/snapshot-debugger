@@ -551,6 +551,136 @@ Do you want to continue (Y/n)? Y
 Deleted 4 snapshots.
 ```
 
+### Set Logpoints
+
+Adds a debug logpoint to a debug target (debuggee). Logpoints inject logging
+into running services without changing your code or restarting your application.
+Every time any instance executes code at the logpoint location, Snapshot
+Debugger logs a message. Output is sent to the standard log for the programming
+language of the target (java.logging for ava, logging for Python, etc.)
+
+Logpoints remain active for 24 hours after creation, or until they are deleted
+or the service is redeployed. If you place a logpoint on a line that receives
+lots of traffic, Debugger throttles the logpoint to reduce its impact on your
+application.
+
+Set logpoints with the following command:
+
+```
+snapshot-dbg-cli set_logpoint index.js:21 "a: {a} b: {b}" --debuggee-id d-8dd7f149
+```
+
+Where:
+*   `index.js:21` is the `file:line` for the logpoint
+*   `a: {a} b: {b}` is the logpoint message format
+*   d-8dd7f149 is the debuggee ID
+
+#### Logpoint message format
+
+The format string is the message which will be logged every time the logpoint
+location is executed. If the string contains curly braces ('{' and '}'), any
+text within the curly braces will be interpreted as a run-time expression in the
+debug target's language, which will be evaluated when the logpoint is hit. Some
+valid examples are {a}, {myObj.myFunc()} or {a + b}.  The value of the
+expression will then replace the {} expression in the resulting log output. For
+example, if you specify the format string "a={a}, b={b}", and the logpoint is
+hit when local variable a is 1 and b is 2, the resulting log output would be
+"a=1, b=2".
+
+For more detailed information on valid expressions see [Snapshot
+expressions](#snapshot-expressions-optional) as the rules are the same for
+expressions in logpoints.
+
+#### Logpoint conditions (optional)
+
+A logpoint condition is a simple expression in the application language that
+must evaluate to true for the logpoint to be logged. Logpoint conditions are
+evaluated each time the line is executed, by any instance, until the logpoint
+expires or is deleted.
+
+Use of logpoint conditions is optional.
+
+For more detailed information on valid conditions see [Snapshot
+conditions](#snapshot-conditions-optional) as the rules are the same for
+logpoint conditions.
+
+
+### List logpoints
+
+List logpoints with the following command:
+
+```
+snapshot-dbg-cli list_logpoints --debuggee-id d-8dd7f149 --include-inactive
+```
+
+Where:
+*   d-8dd7f149 is the debuggee ID
+
+The output resembles the following:
+
+```
+User Email    Location        Condition  Log Level  Log Message Format   ID            Status
+------------  --------------  ---------  ---------  -------------------  ------------  -------------------------------------------
+foo1@bar.com  Main.java:23               INFO      a: {a} b: {b}         b-1660681047  EXPIRED
+foo2@bar.com  Main.java:25    a == 3     WARNING   Line hit              b-1660932877  EXPIRED
+foo2@bar.com  Main.java:9999             INFO      Log msg               b-1661203071  SOURCE_LOCATION: No code found at line 9999
+```
+
+
+### Get logpoint
+
+Get a logpoint with the following command:
+
+```
+snapshot-dbg-cli get_logpoint b-1660681047 --debuggee-id d-8dd7f149
+```
+
+Where:
+*   `b-1660681047` is the logpoint ID
+*   d-8dd7f149 is the debuggee ID
+
+The output resembles the following:
+
+```
+Logpoint ID:        b-1660681047
+Log Message Format: a == 3
+Location:           Main.java:23
+Condition:          No condition set
+Status:             EXPIRED
+Create Time:        2022-08-19T18:14:38.240000Z
+Final Time:         2022-08-20T18:14:39.618000Z
+User Email:         foo1@bar.com
+```
+
+
+### Delete logpoints
+
+Delete logpoints with the following command:
+
+```
+snapshot-dbg-cli delete_snapshots --debuggee-id d-8dd7f149 --include-inactive
+```
+
+Where:
+*   d-8dd7f149 is the debuggee ID
+
+The output resembles the following:
+
+```
+This command will delete the following logpoints:
+
+Location         Condition  Log Level  Log Message Format  ID
+---------------  ---------  ---------  ------------------  ------------
+Main.java:25     a == 3     WARNING    Line hit            b-1660927187
+Main.java:9999              INFO       Log msg             b-1660927272
+
+
+
+Do you want to continue (Y/n)?
+Deleted 4 snapshots.
+```
+
+
 ## Troubleshooting
 
 If you run into problems with Snapshot Debugger, file an
