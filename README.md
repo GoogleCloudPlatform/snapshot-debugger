@@ -382,7 +382,7 @@ snapshot-dbg-cli set_snapshot index.js:21 --debuggee-id d-8dd7f149
 
 Where:
 *   `index.js:21` is the `file:line` for the snapshot
-*   d-8dd7f149 is the debuggee ID
+*   `d-8dd7f149` is the debuggee ID
 
 
 #### Snapshot conditions (optional)
@@ -452,7 +452,7 @@ snapshot-dbg-cli list_snapshots --debuggee-id d-8dd7f149 --include-inactive
 ```
 
 Where:
-*   d-8dd7f149 is the debuggee ID
+*   `d-8dd7f149` is the debuggee ID
 
 The output resembles the following:
 
@@ -475,7 +475,7 @@ snapshot-dbg-cli get_snapshot b-1649947203 --debuggee-id d-8dd7f149
 
 Where:
 *   `b-1649947203` is the snapshot ID
-*   d-8dd7f149 is the debuggee ID
+*   `d-8dd7f149` is the debuggee ID
 
 The output resembles the following:
 
@@ -532,7 +532,7 @@ snapshot-dbg-cli delete_snapshots --debuggee-id d-8dd7f149 --include-inactive
 ```
 
 Where:
-*   d-8dd7f149 is the debuggee ID
+*   `d-8dd7f149` is the debuggee ID
 
 The output resembles the following:
 
@@ -557,7 +557,7 @@ Adds a debug logpoint to a debug target (debuggee). Logpoints inject logging
 into running services without changing your code or restarting your application.
 Every time any instance executes code at the logpoint location, Snapshot
 Debugger logs a message. Output is sent to the standard log for the programming
-language of the target (java.logging for ava, logging for Python, etc.)
+language of the target (java.logging for Java, logging for Python, etc.)
 
 Logpoints remain active for 24 hours after creation, or until they are deleted
 or the service is redeployed. If you place a logpoint on a line that receives
@@ -567,13 +567,13 @@ application.
 Set logpoints with the following command:
 
 ```
-snapshot-dbg-cli set_logpoint index.js:21 "a: {a} b: {b}" --debuggee-id d-8dd7f149
+snapshot-dbg-cli set_logpoint index.js:21 "a={a} b={b}" --debuggee-id d-8dd7f149
 ```
 
 Where:
 *   `index.js:21` is the `file:line` for the logpoint
-*   `a: {a} b: {b}` is the logpoint message format
-*   d-8dd7f149 is the debuggee ID
+*   `a={a} b={b}` is the logpoint message format
+*   `d-8dd7f149` is the debuggee ID
 
 #### Logpoint message format
 
@@ -589,7 +589,7 @@ hit when local variable a is 1 and b is 2, the resulting log output would be
 
 For more detailed information on valid expressions see [Snapshot
 expressions](#snapshot-expressions-optional) as the rules are the same for
-expressions in logpoints.
+logpoint expressions.
 
 #### Logpoint conditions (optional)
 
@@ -614,14 +614,14 @@ snapshot-dbg-cli list_logpoints --debuggee-id d-8dd7f149 --include-inactive
 ```
 
 Where:
-*   d-8dd7f149 is the debuggee ID
+*   `d-8dd7f149` is the debuggee ID
 
 The output resembles the following:
 
 ```
 User Email    Location        Condition  Log Level  Log Message Format   ID            Status
 ------------  --------------  ---------  ---------  -------------------  ------------  -------------------------------------------
-foo1@bar.com  Main.java:23               INFO      a: {a} b: {b}         b-1660681047  EXPIRED
+foo1@bar.com  Main.java:23               INFO      a={a} b={b}           b-1660681047  EXPIRED
 foo2@bar.com  Main.java:25    a == 3     WARNING   Line hit              b-1660932877  EXPIRED
 foo2@bar.com  Main.java:9999             INFO      Log msg               b-1661203071  SOURCE_LOCATION: No code found at line 9999
 ```
@@ -637,7 +637,7 @@ snapshot-dbg-cli get_logpoint b-1660681047 --debuggee-id d-8dd7f149
 
 Where:
 *   `b-1660681047` is the logpoint ID
-*   d-8dd7f149 is the debuggee ID
+*   `d-8dd7f149` is the debuggee ID
 
 The output resembles the following:
 
@@ -662,7 +662,7 @@ snapshot-dbg-cli delete_snapshots --debuggee-id d-8dd7f149 --include-inactive
 ```
 
 Where:
-*   d-8dd7f149 is the debuggee ID
+*   `d-8dd7f149` is the debuggee ID
 
 The output resembles the following:
 
