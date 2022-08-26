@@ -19,8 +19,6 @@ These utilities are useful in multiple snapshot and logpoint commands.
 import datetime
 import re
 
-from snapshot_dbg_cli.status_message import StatusMessage
-
 # Regex that can be used to validate a user inputted location which should be in
 # the format file:line.
 LOCATION_REGEX = '^[^:]+:[1-9][0-9]*$'
@@ -118,27 +116,17 @@ def normalize_breakpoint(bp, bpid=None):
   If a breakpoint is returned, the following fields are guaranteed to
   be populated:
 
-    id
-    location
-      path
-      line
-    action
-    isFinalState
-    createTime
-    createTimeUnixMsec
-    finalTime
-    finalTimeUnixMsec
-    userEmail
-
-  If the 'action' field is 'CAPTURE', the breakpoint represents a snapshot, and
-  if it's 'LOG', the breakpoint represents a logpoint.
-
-  Additionally, if the breakpoint represents a logpoint (action is 'LOG'), the
-  following fields will be present:
-
-    logMessageFormat
-    logMessageFormatString
-    logLevel
+  id
+  location
+    path
+    line
+  action
+  isFinalState
+  createTime
+  createTimeUnixMsec
+  finalTime
+  finalTimeUnixMsec
+  userEmail
 
   Returns:
     The normalized breakpoint on success, None on failure.
@@ -179,71 +167,4 @@ def normalize_breakpoint(bp, bpid=None):
 
   set_converted_timestamps(bp)
 
-  if bp['action'] == 'LOG':
-    if 'logLevel' not in bp:
-      bp['logLevel'] = 'INFO'
-
-    if 'logMessageFormat' not in bp:
-      bp['logMessageFormat'] = ''
-
-    bp['logMessageFormatString'] = merge_log_expressions(
-        bp['logMessageFormat'], bp.get('expressions', []))
-
   return bp
-
-
-def merge_log_expressions(log_format, expressions):
-  """Replaces each $N substring with the corresponding {expression}.
-
-  This function is intended for reconstructing an input expression string that
-  has been split using split_log_expressions.
-
-  Args:
-    log_format: A string containing 0 or more $N substrings, where N is any
-      valid index into the expressions array. Each such substring will be
-      replaced by '{expression}', where "expression" is expressions[N].
-    expressions: The expressions to substitute into the format string.
-  Returns:
-    The combined string.
-  """
-
-  def get_expression(m):
-    try:
-      index = int(m.group(0)[1:])
-      return f'{{{expressions[index]}}}'
-    except IndexError:
-      return m.group(0)
-
-  parts = log_format.split('$$')
-  return '$'.join(re.sub(r'\$\d+', get_expression, part) for part in parts)
-
-
-def get_logpoint_short_status(logpoint):
-  if not logpoint['isFinalState']:
-    return 'ACTIVE'
-
-  status_message = StatusMessage(logpoint)
-
-  # This would be unexpected, as logpoints expire, which is classified as an
-  # error.
-  if not status_message.is_error:
-    return 'COMPLETED'
-
-  refers_to = status_message.refers_to
-
-  if refers_to is None or len(refers_to) == 0:
-    refers_to = 'FAILED'
-
-  if refers_to == 'BREAKPOINT_AGE':
-    return 'EXPIRED'
-
-  # The refers_to is expected to always starts with 'BREAKPOINT_', so here we
-  # strip it off to shorten the output.
-  short_refers_to = refers_to.replace('BREAKPOINT_', '')
-
-  message = status_message.parsed_message
-
-  if message is None or len(message) == 0:
-    message = 'Unknown failure reason'
-
-  return f'{short_refers_to}: {message}'
