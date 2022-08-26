@@ -58,14 +58,16 @@ class LogLevel(Enum):
 
 
 DESCRIPTION = """
-Adds a debug logpoint to a debug target (debuggee).  Logpoints add logging to
-your running service without changing your code or restarting your application.
-When you create a logpoint, the message you specify will be added to your logs
-whenever any instance of your service executes the specified line of code.
+Adds a debug logpoint to a debug target (debuggee). Logpoints inject logging
+into running services without changing your code or restarting your application.
+Every time any instance executes code at the logpoint location, Snapshot
+Debugger logs a message.  Output is sent to the appropriate log for the target's
+environment.
 
-The default lifetime of a logpoint is 24 hours from creation, and the output
-will go to the standard log for the programming language of the target
-(java.logging for Java, logging for Python, etc.)
+Logpoints remain active for 24 hours after creation, or until they are deleted
+or the service is redeployed. If you place a logpoint on a line that receives
+lots of traffic, Debugger throttles the logpoint to reduce its impact on your
+application.
 """
 
 LOCATION_HELP = """
