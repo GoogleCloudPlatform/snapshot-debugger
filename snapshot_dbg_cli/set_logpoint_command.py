@@ -61,8 +61,8 @@ DESCRIPTION = """
 Adds a debug logpoint to a debug target (debuggee). Logpoints inject logging
 into running services without changing your code or restarting your application.
 Every time any instance executes code at the logpoint location, Snapshot
-Debugger logs a message.  Output is sent to the appropriate log for the target's
-environment.
+Debugger logs a message.  Output is sent to the standard log for the programming
+language of the target (java.logging for ava, logging for Python, etc.)
 
 Logpoints remain active for 24 hours after creation, or until they are deleted
 or the service is redeployed. If you place a logpoint on a line that receives
