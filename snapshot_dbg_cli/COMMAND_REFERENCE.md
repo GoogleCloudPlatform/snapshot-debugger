@@ -140,6 +140,7 @@ form which is intended to be machine-readable rather than human-readable.
 | Arguments                     | Description |
 |-------------------------------|-------------|
 | -h, --help                    | Show this help message and exit. |
+| `--include-inactive`          | Include completed snapshots. |
 | `--debuggee-id DEBUGGEE_ID`   | Specify the debuggee ID. It must be an ID obtained from the list_debuggees command. This value is required, it must be specified either via this command line argument or via the `SNAPSHOT_DEBUGGER_DEBUGGEE_ID` environment variable.  When both are specified, the value from the command line takes precedence. |
 | `--database-url DATABASE_URL` | Specify the database URL for the CLI to use. This should only be used as an override to make the CLI talk to a specific instance and isn't expected to be needed. It is only required if the `--database-id` argument was used with the init command.  This value may be specified either via this command line argument or via the `SNAPSHOT_DEBUGGER_DATABASE_URL` environment variable.  When both are specified, the value from the command line takes precedence. |
 | `--format FORMAT`             | Set the format for printing command output resources. The default is a command-specific human-friendly output format. The supported formats are: `default`, `json` (raw) and `pretty-json` (formatted `json`). |
@@ -183,30 +184,3 @@ confirmation before any snapshots are deleted. To suppress confirmation, use the
 | `--include-inactive`          | If set, also delete snapshots which have been completed. By default, only pending snapshots will be deleted. This flag is not required when specifying the exact ID of an inactive snapshot. |
 | `--quiet`                     | If set, suppresses user confirmation of the command. |
 
-
-## get_logpoint
-
-```
-snapshot-cdbg-cli get_logpoint
-```
-
-Usage: `__main__.py get_logpoint [-h] [--database-url DATABASE_URL] [--format
-FORMAT] [--debuggee-id DEBUGGEE_ID] [--debug] ID`
-
-Used to retrieve a debug logpoint from a debug target (debuggee).
-
-### Positional arguments
-
-| Arguments     | Description |
-|---------------|-------------|
-| `ID`          | Specify the logpoint ID to retrieve. |
-
-### Optional arguments
-
-| Arguments                     | Description |
-|-------------------------------|-------------|
-| -h, --help                    | Show this help message and exit. |
-| `--debuggee-id DEBUGGEE_ID`   | Specify the debuggee ID. It must be an ID obtained from the list_debuggees command. This value is required, it must be specified either via this command line argument or via the `SNAPSHOT_DEBUGGER_DEBUGGEE_ID` environment variable.  When both are specified, the value from the command line takes precedence. |
-| `--database-url DATABASE_URL` | Specify the database URL for the CLI to use. This should only be used as an override to make the CLI talk to a specific instance and isn't expected to be needed. It is only required if the `--database-id` argument was used with the init command.  This value may be specified either via this command line argument or via the `SNAPSHOT_DEBUGGER_DATABASE_URL` environment variable.  When both are specified, the value from the command line takes precedence. |
-| `--format FORMAT`             | Set the format for printing command output resources. The default is a command-specific human-friendly output format. The supported formats are: `default`, `json` (raw) and `pretty-json` (formatted `json`). |
-| `--debug`                     | Enable CLI debug messages. |
