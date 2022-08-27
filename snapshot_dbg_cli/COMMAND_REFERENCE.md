@@ -168,7 +168,7 @@ confirmation before any snapshots are deleted. To suppress confirmation, use the
 
 | Arguments     | Description |
 |---------------|-------------|
-| `ID`          | Zero or more snapshot IDs. The specified snapshots will be deleted. By default, if no snapshot IDs are specified, all active snapshots created by the user are selected for deletion. |
+| `ID`          | Zero or more snapshot IDs. The specified snapshots will be deleted. By default, If no snapshot IDs are specified, all active snapshots created by the user are selected for deletion. |
 
 ### Optional arguments
 
@@ -182,40 +182,5 @@ confirmation before any snapshots are deleted. To suppress confirmation, use the
 | `--debug`                     | Enable CLI debug messages. |
 | ` --all-users`                | If set, snapshots from all users will be deleted, rather than only snapshots created by the current user. This flag is not required when specifying the exact ID of a snapshot. |
 | `--include-inactive`          | If set, also delete snapshots which have been completed. By default, only pending snapshots will be deleted. This flag is not required when specifying the exact ID of an inactive snapshot. |
-| `--quiet`                     | If set, suppresses user confirmation of the command. |
-
-## delete_logpoints
-
-```
-logpoint-cdbg-cli delete_logpoints
-```
-
-Usage: `__main__.py delete_logpoints [-h] [--database-url DATABASE_URL] [--format
-FORMAT] [--debug] [--all-users] [--include-inactive]
-[--quiet] [--debuggee-id DEBUGGEE_ID] [ID ...]`
-
-Used to delete logpoints from a debug target (debuggee). You are prompted for
-confirmation before any logpoints are deleted. To suppress confirmation, use the
---quiet option.
-
-
-### Positional arguments
-
-| Arguments     | Description |
-|---------------|-------------|
-| `ID`          | Zero or more logpoint IDs. The specified logpoints will be deleted. By default, if no logpoint IDs are specified, all active logpoints created by the user are selected for deletion. |
-
-### Optional arguments
-
-| Arguments                     | Description |
-|-------------------------------|-------------|
-| -h, --help                    | Show this help message and exit. |
-| `--include-inactive`          | Include completed logpoints. |
-| `--debuggee-id DEBUGGEE_ID`   | Specify the debuggee ID. It must be an ID obtained from the list_debuggees command. This value is required, it must be specified either via this command line argument or via the `SNAPSHOT_DEBUGGER_DEBUGGEE_ID` environment variable.  When both are specified, the value from the command line takes precedence. |
-| `--database-url DATABASE_URL` | Specify the database URL for the CLI to use. This should only be used as an override to make the CLI talk to a specific instance and isn't expected to be needed. It is only required if the `--database-id` argument was used with the init command.  This value may be specified either via this command line argument or via the `SNAPSHOT_DEBUGGER_DATABASE_URL` environment variable.  When both are specified, the value from the command line takes precedence. |
-| `--format FORMAT`             | Set the format for printing command output resources. The default is a command-specific human-friendly output format. The supported formats are: `default`, `json` (raw) and `pretty-json` (formatted `json`). |
-| `--debug`                     | Enable CLI debug messages. |
-| ` --all-users`                | If set, logpoints from all users will be deleted, rather than only logpoints created by the current user. This flag is not required when specifying the exact ID of a logpoint. |
-| `--include-inactive`          | If set, also delete logpoints which have been completed. By default, only pending logpoints will be deleted. This flag is not required when specifying the exact ID of an inactive logpoint. |
 | `--quiet`                     | If set, suppresses user confirmation of the command. |
 
