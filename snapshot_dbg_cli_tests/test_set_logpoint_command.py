@@ -95,7 +95,7 @@ class SetLogpointCommandTests(unittest.TestCase):
     # enforce this and use SystemExit if it's not found.
     out, err = self.run_cmd(testargs, expected_exception=SystemExit)
 
-    self.assertIn('error: the following arguments are required: location',
+    self.assertIn('error: the following arguments are required: LOCATION',
                   err.getvalue())
     self.assertEqual('', out.getvalue())
 
@@ -107,7 +107,7 @@ class SetLogpointCommandTests(unittest.TestCase):
     out, err = self.run_cmd(testargs, expected_exception=SystemExit)
 
     self.assertIn(
-        'error: the following arguments are required: log_format_string',
+        'error: the following arguments are required: LOG_FORMAT_STRING',
         err.getvalue())
     self.assertEqual('', out.getvalue())
 

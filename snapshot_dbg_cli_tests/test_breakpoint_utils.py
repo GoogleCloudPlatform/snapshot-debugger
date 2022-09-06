@@ -18,8 +18,10 @@ import copy
 import unittest
 
 from snapshot_dbg_cli.breakpoint_utils import convert_unix_msec_to_rfc3339
-from snapshot_dbg_cli.breakpoint_utils import parse_and_validate_location
+from snapshot_dbg_cli.breakpoint_utils import get_logpoint_short_status
+from snapshot_dbg_cli.breakpoint_utils import merge_log_expressions
 from snapshot_dbg_cli.breakpoint_utils import normalize_breakpoint
+from snapshot_dbg_cli.breakpoint_utils import parse_and_validate_location
 from snapshot_dbg_cli.breakpoint_utils import set_converted_timestamps
 from snapshot_dbg_cli.breakpoint_utils import split_log_expressions
 from snapshot_dbg_cli.breakpoint_utils import transform_location_to_file_line
@@ -45,7 +47,6 @@ SNAPSHOT_COMPLETE =  {
   'createTime': '2022-04-14T18:50:15.426000Z',
   'finalTime': '2022-04-14T18:50:30.637000Z',
 } # yapf: disable (Subjectively, more readable hand formatted)
-
 
 class SnapshotDebuggerBreakpointUtilsTests(unittest.TestCase):
   """ Contains the unit tests for the breakpoint_utils module.
@@ -262,6 +263,41 @@ class SnapshotDebuggerBreakpointUtilsTests(unittest.TestCase):
         self.assertIn(missing_field, obtained_bp)
         self.assertEqual(expected_field_value, obtained_bp[missing_field])
 
+  def test_normalize_breakpoint_fills_in_expected_missing_logpoint_fields(self):
+    """Verify the logpoint specific processing of normalize_breakpoint() works.
+    """
+    logpoint =  {
+      'action': 'LOG',
+      'createTimeUnixMsec': 1649962215426,
+      'id': 'b-1650000003',
+      'isFinalState': True,
+      'location': {'line': 28, 'path': 'index.js'},
+      'userEmail': 'user@foo.com',
+      'logMessageFormat': 'a: $0',
+      'expressions': ['a']
+    } # yapf: disable (Subjectively, more readable hand formatted)
+
+
+    testcases = [
+        # (Test name, missing field, expected fill in value)
+        ('Log Level', 'logLevel', 'INFO'),
+        ('Log Message', 'logMessageFormat', ''),
+        ('User Log Message', 'logMessageFormatString', 'a: {a}'),
+    ]
+
+    for test_name, missing_field, expected_field_value in testcases:
+      with self.subTest(test_name):
+        bp = copy.deepcopy(logpoint)
+        bp.pop(missing_field, None)
+        self.assertNotIn(missing_field, bp)
+
+        obtained_bp = normalize_breakpoint(bp)
+
+        # It's expected the same instance is returned.
+        self.assertIs(obtained_bp, bp)
+        self.assertIn(missing_field, obtained_bp)
+        self.assertEqual(expected_field_value, obtained_bp[missing_field])
+
   def test_normalize_breakpoint_final_time_not_populated_on_active_bp(self):
     bp = copy.deepcopy(SNAPSHOT_ACTIVE)
 
@@ -317,3 +353,173 @@ class SnapshotDebuggerBreakpointUtilsTests(unittest.TestCase):
   def test_split_log_expressions_unbalanced_left(self):
     with self.assertRaisesRegex(ValueError, 'too many'):
       split_log_expressions('a={{a}')
+
+  def test_merge_log_expressions_simple(self):
+    self.assertEqual('a={a}, b={b}, c={c}',
+                     merge_log_expressions('a=$0, b=$1, c=$2', ['a', 'b', 'c']))
+
+  def test_merge_log_expressions_repeated_field(self):
+    self.assertEqual(
+        'a={a}, b={b}, a={a}, c={c}, b={b}',
+        merge_log_expressions('a=$0, b=$1, a=$0, c=$2, b=$1', ['a', 'b', 'c']))
+
+  def test_merge_log_expressions_escaped_dollar(self):
+    self.assertEqual('{a} $0 ${a} {b$} $2',
+                     merge_log_expressions('$0 $$0 $$$0 $1 $2', ['a', 'b$']))
+
+  def test_merge_log_expressions_bad_format(self):
+    self.assertEqual(
+        '}a={a}, b={b}, a={a}, c={c}, b={b}{',
+        merge_log_expressions('}a=$0, b=$1, a=$0, c=$2, b=$1{',
+                              ['a', 'b', 'c']))
+
+  def test_logpoint_get_short_status_active(self):
+    logpoint =  {
+      'action': 'LOG',
+      'logMessageFormat': 'a: $0',
+      'expressions': ['a'],
+      'logMessageFormatString': 'a: {a}',
+      'logLevel': 'INFO',
+      'createTimeUnixMsec': 1649962215426,
+      'id': 'b-1649962215',
+      'isFinalState': False,
+      'location': {'line': 26, 'path': 'index.js'},
+      'userEmail': 'user_a@foo.com',
+      'createTime': '2022-04-14T18:50:15.852000Z',
+    } # yapf: disable (Subjectively, more readable hand formatted)
+
+    self.assertEqual(get_logpoint_short_status(logpoint), 'ACTIVE')
+
+  def test_logpoint_get_short_status_complete(self):
+    # NOTE: It would actually be unexpected to receive a logpoint that is
+    # complete in this sense. Generally a successful logpoint that 'completes'
+    # actually expires, so it would be marked as failed with reason
+    # BREAKPOINT_AGE. But for testing purposes we include this complete logpoint
+    # still.
+    logpoint =  {
+      'action': 'LOG',
+      'logMessageFormat': 'b: $0',
+      'expressions': ['b'],
+      'logMessageFormatString': 'b: {b}',
+      'logLevel': 'WARNING',
+      'createTimeUnixMsec': 1649962216426,
+      'finalTimeUnixMsec': 1649962230637,
+      'id': 'b-1649962216',
+      'isFinalState': True,
+      'location': {'line': 27, 'path': 'index.js'},
+      'userEmail': 'user_b@foo.com',
+      'createTime': '2022-04-14T18:50:16.852000Z',
+      'finalTime': '2022-04-14T18:50:31.274000Z',
+    } # yapf: disable (Subjectively, more readable hand formatted)
+
+    self.assertEqual(get_logpoint_short_status(logpoint), 'COMPLETED')
+
+  def test_logpoint_get_short_status_expired(self):
+    logpoint =  {
+      'action': 'LOG',
+      'logMessageFormat': 'c: $0',
+      'expressions': ['c'],
+      'logMessageFormatString': 'c: {c}',
+      'logLevel': 'ERROR',
+      'createTimeUnixMsec': 1649962217426,
+      'id': 'b-1649962217',
+      'isFinalState': True,
+      'location': {'line': 28, 'path': 'index.js'},
+      'userEmail': 'user_c@foo.com',
+      'createTime': '2022-04-14T18:50:17.852000Z',
+      'finalTime': '2022-04-14T18:50:31.274000Z',
+      'status': {
+        'description': {
+          'format': 'The logpoint has expired'
+        },
+        'isError': True,
+        'refersTo': 'BREAKPOINT_AGE'
+      },
+    } # yapf: disable (Subjectively, more readable hand formatted)
+
+    self.assertEqual(get_logpoint_short_status(logpoint), 'EXPIRED')
+
+  def test_logpoint_get_short_status_failed(self):
+    logpoint =  {
+      'action': 'LOG',
+      'logMessageFormat': 'd: $0',
+      'expressions': ['d'],
+      'logMessageFormatString': 'd: {d}',
+      'logLevel': 'INFO',
+      'createTimeUnixMsec': 1649962218426,
+      'condition': '',
+      'id': 'b-1649962218',
+      'isFinalState': True,
+      'location': {'line': 29, 'path': 'index.js'},
+      'userEmail': 'user_d@foo.com',
+      'createTime': '2022-04-14T18:50:18.852000Z',
+      'finalTime': '2022-04-14T18:50:31.274000Z',
+      'status': {
+        'description': {
+            'format': 'No code found at line 29'
+        },
+        'isError': True,
+        'refersTo': 'BREAKPOINT_SOURCE_LOCATION'
+      },
+    } # yapf: disable (Subjectively, more readable hand formatted)
+
+    self.assertEqual(
+        get_logpoint_short_status(logpoint),
+        'SOURCE_LOCATION: No code found at line 29')
+
+  def test_logpoint_get_short_status_data_incomplete(self):
+    logpoint =  {
+      'action': 'LOG',
+      'logMessageFormat': 'd: $0',
+      'expressions': ['d'],
+      'logMessageFormatString': 'd: {d}',
+      'logLevel': 'INFO',
+      'createTimeUnixMsec': 1649962218426,
+      'condition': '',
+      'id': 'b-1649962218',
+      'isFinalState': True,
+      'location': {'line': 29, 'path': 'index.js'},
+      'userEmail': 'user_d@foo.com',
+      'createTime': '2022-04-14T18:50:18.852000Z',
+      'finalTime': '2022-04-14T18:50:31.274000Z',
+      'status': {
+        'description': {
+            'format': 'No code found at line 29'
+        },
+        'isError': True,
+        'refersTo': 'BREAKPOINT_SOURCE_LOCATION'
+      },
+    } # yapf: disable (Subjectively, more readable hand formatted)
+
+    logpoint_status_missing = copy.deepcopy(logpoint)
+    logpoint_is_error_missing = copy.deepcopy(logpoint)
+    logpoint_refers_to_missing = copy.deepcopy(logpoint)
+    logpoint_description_missing = copy.deepcopy(logpoint)
+    logpoint_format_missing = copy.deepcopy(logpoint)
+    logpoint_description_and_refers_to_missing = copy.deepcopy(logpoint)
+
+    del logpoint_status_missing['status']
+    del logpoint_is_error_missing['status']['isError']
+    del logpoint_refers_to_missing['status']['refersTo']
+    del logpoint_description_missing['status']['description']
+    del logpoint_format_missing['status']['description']['format']
+    del logpoint_description_and_refers_to_missing['status']['description']
+    del logpoint_description_and_refers_to_missing['status']['refersTo']
+
+    testcases = [
+        ('Status Missing', logpoint_status_missing, 'COMPLETED'),
+        ('IsError Missing', logpoint_is_error_missing, 'COMPLETED'),
+        ('RefersTo Missing', logpoint_refers_to_missing,
+         'FAILED: No code found at line 29'),
+        ('Description Missing', logpoint_description_missing,
+         'SOURCE_LOCATION: Unknown failure reason'),
+        ('Format Missing', logpoint_format_missing,
+         'SOURCE_LOCATION: Unknown failure reason'),
+        ('Desc and RefersTo Missing',
+         logpoint_description_and_refers_to_missing,
+         'FAILED: Unknown failure reason'),
+    ]
+
+    for testname, logpoint, expected_status in testcases:
+      with self.subTest(testname):
+        self.assertEqual(get_logpoint_short_status(logpoint), expected_status)
