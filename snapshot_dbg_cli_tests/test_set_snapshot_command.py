@@ -94,7 +94,7 @@ class SetSnapshotCommandTests(unittest.TestCase):
     # enforce this and use SystemExit if it's not found.
     out, err = self.run_cmd(testargs, expected_exception=SystemExit)
 
-    self.assertIn('error: the following arguments are required: location',
+    self.assertIn('error: the following arguments are required: LOCATION',
                   err.getvalue())
     self.assertEqual('', out.getvalue())
 
