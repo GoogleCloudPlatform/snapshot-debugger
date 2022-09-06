@@ -310,7 +310,7 @@ def get_logpoint_short_status(logpoint):
   refers_to = status_message.refers_to
 
   if refers_to is None or len(refers_to) == 0:
-    refers_to = 'FAILED'
+    refers_to = 'BREAKPOINT_FAILED'
 
   if refers_to == 'BREAKPOINT_AGE':
     return 'EXPIRED'
