@@ -23,6 +23,7 @@ import sys
 from snapshot_dbg_cli.cli_services import CliServices
 from snapshot_dbg_cli import cli_common_arguments
 from snapshot_dbg_cli.exceptions import SilentlyExitError
+from snapshot_dbg_cli.delete_logpoints_command import DeleteLogpointsCommand
 from snapshot_dbg_cli.delete_snapshots_command import DeleteSnapshotsCommand
 from snapshot_dbg_cli.get_snapshot_command import GetSnapshotCommand
 from snapshot_dbg_cli.init_command import InitCommand
@@ -35,6 +36,7 @@ from snapshot_dbg_cli.set_snapshot_command import SetSnapshotCommand
 
 def run(cli_services=None):
   cli_commands = [
+      DeleteLogpointsCommand(),
       DeleteSnapshotsCommand(),
       GetSnapshotCommand(),
       InitCommand(),
