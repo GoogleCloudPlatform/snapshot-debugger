@@ -21,6 +21,7 @@ from snapshot_dbg_cli.breakpoint_utils import convert_unix_msec_to_rfc3339
 from snapshot_dbg_cli.breakpoint_utils import parse_and_validate_location
 from snapshot_dbg_cli.breakpoint_utils import normalize_breakpoint
 from snapshot_dbg_cli.breakpoint_utils import set_converted_timestamps
+from snapshot_dbg_cli.breakpoint_utils import split_log_expressions
 from snapshot_dbg_cli.breakpoint_utils import transform_location_to_file_line
 
 SNAPSHOT_ACTIVE =  {
@@ -283,3 +284,36 @@ class SnapshotDebuggerBreakpointUtilsTests(unittest.TestCase):
 
     self.assertIn('id', obtained_bp)
     self.assertEqual('b-123', obtained_bp['id'])
+
+  def test_split_log_expressions_no_expressions(self):
+    self.assertEqual(split_log_expressions('Hi there.'), ('Hi there.', []))
+
+  def test_split_log_expressions_simple(self):
+    self.assertEqual(
+        split_log_expressions('a={a}, b={b}, c={c}'),
+        ('a=$0, b=$1, c=$2', ['a', 'b', 'c']))
+
+  def test_split_log_expressions_escaped_dollar(self):
+    self.assertEqual(
+        split_log_expressions('$ {abc$}$ $0'), ('$$ $0$$ $$0', ['abc$']))
+
+  def test_split_log_expressions_repeated_field(self):
+    self.assertEqual(
+        split_log_expressions('a={a}, b={b}, a={a}, c={c}, b={b}'),
+        ('a=$0, b=$1, a=$0, c=$2, b=$1', ['a', 'b', 'c']))
+
+  def test_split_log_expressions_nested_braces(self):
+    self.assertEqual(
+        split_log_expressions('a={{a} and {b}}, b={a{b{{cde}f}}g}'),
+        ('a=$0, b=$1', ['{a} and {b}', 'a{b{{cde}f}}g']))
+
+  def test_split_log_expressions_trailing_numbers(self):
+    self.assertEqual(split_log_expressions('a={abc}100'), ('a=$0 100', ['abc']))
+
+  def test_split_log_expressions_unbalanced_right(self):
+    with self.assertRaisesRegex(ValueError, 'too many'):
+      split_log_expressions('a={abc}}')
+
+  def test_split_log_expressions_unbalanced_left(self):
+    with self.assertRaisesRegex(ValueError, 'too many'):
+      split_log_expressions('a={{a}')

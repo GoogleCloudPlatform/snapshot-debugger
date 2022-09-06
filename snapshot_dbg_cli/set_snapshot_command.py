@@ -33,7 +33,7 @@ there is no condition), the instance captures the current thread state and
 reports it back to Cloud Debugger. Once any instance captures a snapshot,
 the snapshot is marked as completed, and it will not be captured again.
 
-It is also possible to inspect snapshot results with the "describe_snapshots"
+It is also possible to inspect snapshot results with the "get_snapshot"
 command.
 """
 
@@ -91,7 +91,8 @@ class SetSnapshotCommand:
 
       return loc
 
-    parser.add_argument('location', help=LOCATION_HELP, type=location)
+    parser.add_argument(
+        'location', metavar='LOCATION', help=LOCATION_HELP, type=location)
     parser.add_argument('--condition', help=CONDITION_HELP)
     parser.add_argument('--expression', action='append', help=EXPRESSION_HELP)
     self.args_parser = parser
