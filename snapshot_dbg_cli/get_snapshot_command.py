@@ -83,9 +83,14 @@ class GetSnapshotCommand:
     self.user_output.normal('')
 
   def display_summary(self, bp, status_message):
+    # To note we're being defensive here with respect to the condition and
+    # expressions fields so that their absence and them being present but empty
+    # are treated to the same way.
     location = breakpoint_utils.transform_location_to_file_line(bp['location'])
-    condition = bp.get('condition', 'No condition set.')
-    expressions = bp.get('expressions', 'No expressions set.')
+    condition = bp.get('condition', '')
+    condition = condition if condition != '' else 'No condition set'
+    expressions = bp.get('expressions', [])
+    expressions = expressions if len(expressions) > 0 else 'No expressions set'
     create_time = bp['createTime']
     final_time = bp.get('finalTime', '')
 
@@ -136,7 +141,7 @@ class GetSnapshotCommand:
     snapshot = debugger_rtdb_service.get_snapshot_detailed(
         args.debuggee_id, args.snapshot_id)
 
-    if snapshot is None:
+    if snapshot is None or snapshot['action'] != 'CAPTURE':
       self.user_output.error(f'Snapshot ID not found: {args.snapshot_id}')
       raise SilentlyExitError
 

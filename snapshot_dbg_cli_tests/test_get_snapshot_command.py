@@ -135,6 +135,20 @@ SNAPSHOT_FAILED =  {
   },
 } # yapf: disable (Subjectively, more readable hand formatted)
 
+LOGPOINT_ACTIVE =  {
+  'action': 'LOG',
+  'logMessageFormat': 'a: $0',
+  'expressions': ['a'],
+  'logMessageFormatString': 'a: {a}',
+  'logLevel': 'INFO',
+  'createTimeUnixMsec': 1649962215426,
+  'id': 'b-1649962215',
+  'isFinalState': False,
+  'location': {'line': 26, 'path': 'index.js'},
+  'userEmail': 'user_a@foo.com',
+  'createTime': '2022-04-14T18:50:15.852000Z',
+} # yapf: disable (Subjectively, more readable hand formatted)
+
 class GetSnapshotTests(unittest.TestCase):
   """ Contains the unit tests for the GetSnapshot class.
   """
@@ -208,6 +222,18 @@ class GetSnapshotTests(unittest.TestCase):
     self.assertEqual('Snapshot ID not found: b-111\n', err.getvalue())
     self.assertEqual('', out.getvalue())
 
+  def test_id_matches_a_logpoint_not_a_snapshot(self):
+    testargs = ['b-111', '--debuggee-id=123']
+    self.rtdb_service_mock.validate_debuggee_id = MagicMock(return_value=None)
+    self.rtdb_service_mock.get_snapshot_detailed = MagicMock(
+        return_value=LOGPOINT_ACTIVE)
+
+    out, err = self.run_cmd(testargs, expected_exception=SilentlyExitError)
+
+    self.user_output_mock.error.assert_called_once()
+    self.assertEqual('Snapshot ID not found: b-111\n', err.getvalue())
+    self.assertEqual('', out.getvalue())
+
   def test_output_format_json(self):
     testargs = [SNAPSHOT_COMPLETE['id'], '--debuggee-id=123', '--format=json']
     self.rtdb_service_mock.validate_debuggee_id = MagicMock(return_value=None)
@@ -237,7 +263,7 @@ class GetSnapshotTests(unittest.TestCase):
     self.assertEqual('', err.getvalue())
     self.assertEqual(SNAPSHOT_COMPLETE, json.loads(out.getvalue()))
 
-  def test_summary_summary_section(self):
+  def test_summary_section(self):
     snapshot_active = SNAPSHOT_ACTIVE
 
     snapshot_with_condition = SNAPSHOT_ACTIVE
@@ -246,11 +272,17 @@ class GetSnapshotTests(unittest.TestCase):
     snapshot_without_condition = SNAPSHOT_ACTIVE.copy()
     del snapshot_without_condition['condition']
 
+    snapshot_condition_empty = SNAPSHOT_ACTIVE.copy()
+    snapshot_condition_empty['condition'] = ''
+
     snapshot_with_expressions = SNAPSHOT_ACTIVE
     self.assertGreater(len(snapshot_with_expressions['expressions']), 0)
 
     snapshot_without_expressions = SNAPSHOT_ACTIVE.copy()
     del snapshot_without_expressions['expressions']
+
+    snapshot_expressions_empty = SNAPSHOT_ACTIVE.copy()
+    snapshot_expressions_empty['expressions'] = []
 
     snapshot_complete = SNAPSHOT_COMPLETE
     snapshot_expired = SNAPSHOT_EXPIRED
@@ -271,23 +303,27 @@ class GetSnapshotTests(unittest.TestCase):
 
     expected_summary_without_condition = (
         expected_header + 'Location:    index.js:26\n'
-        'Condition:   No condition set.\n'
+        'Condition:   No condition set\n'
         "Expressions: ['a', 'b', 'a+b']\n"
         'Status:      Active\n'
         'Create Time: 2022-04-14T18:50:15.852000Z\n'
         'Final Time:  \n')
+
+    expected_summary_condition_empty = expected_summary_without_condition
 
     expected_summary_with_expressions = expected_summary_active
 
     expected_summary_without_expressions = (
         expected_header + 'Location:    index.js:26\n'
         'Condition:   a == 3\n'
-        'Expressions: No expressions set.\n'
+        'Expressions: No expressions set\n'
         'Status:      Active\n'
         'Create Time: 2022-04-14T18:50:15.852000Z\n'
         'Final Time:  \n')
 
-    expected_complete_summary = (
+    expected_summary_expressions_empty = expected_summary_without_expressions
+
+    expected_summary_complete = (
         expected_header + 'Location:    index.js:26\n'
         'Condition:   a == 3\n'
         "Expressions: ['a', 'b', 'a+b']\n"
@@ -295,7 +331,7 @@ class GetSnapshotTests(unittest.TestCase):
         'Create Time: 2022-04-14T18:50:15.852000Z\n'
         'Final Time:  2022-04-14T18:50:31.274000Z\n')
 
-    expected_expired_summary = (
+    expected_summary_expired = (
         expected_header + 'Location:    index.js:26\n'
         'Condition:   a == 3\n'
         "Expressions: ['a', 'b', 'a+b']\n"
@@ -303,7 +339,7 @@ class GetSnapshotTests(unittest.TestCase):
         'Create Time: 2022-04-14T18:50:15.852000Z\n'
         'Final Time:  2022-04-14T18:50:31.274000Z\n')
 
-    expected_failed_summary = (
+    expected_summary_failed = (
         expected_header + 'Location:    index.js:100\n'
         'Condition:   a == 3\n'
         "Expressions: ['a', 'b', 'a+b']\n"
@@ -325,15 +361,19 @@ class GetSnapshotTests(unittest.TestCase):
          expected_summary_with_condition, OutputType.FULL),
         ('Without Condition', snapshot_without_condition,
          expected_summary_without_condition, OutputType.FULL),
+        ('Condition Empty', snapshot_condition_empty,
+         expected_summary_condition_empty, OutputType.FULL),
         ('With Expressions', snapshot_with_expressions,
          expected_summary_with_expressions, OutputType.FULL),
         ('Without Expressions', snapshot_without_expressions,
          expected_summary_without_expressions, OutputType.FULL),
-        ('Complete', snapshot_complete, expected_complete_summary,
+        ('Expressions Empty', snapshot_expressions_empty,
+         expected_summary_expressions_empty, OutputType.FULL),
+        ('Complete', snapshot_complete, expected_summary_complete,
          OutputType.PARTIAL),
-        ('Expired', snapshot_expired, expected_expired_summary,
+        ('Expired', snapshot_expired, expected_summary_expired,
          OutputType.FULL),
-        ('Failed', snapshot_failed, expected_failed_summary, OutputType.FULL),
+        ('Failed', snapshot_failed, expected_summary_failed, OutputType.FULL),
     ]
 
     self.rtdb_service_mock.validate_debuggee_id = MagicMock(return_value=None)
