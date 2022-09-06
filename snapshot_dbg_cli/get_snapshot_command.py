@@ -83,6 +83,9 @@ class GetSnapshotCommand:
     self.user_output.normal('')
 
   def display_summary(self, bp, status_message):
+    # To note we're being defensive here with respect to the condition and
+    # expressions fields so that their absence and them being present but empty
+    # are treated to the same way.
     location = breakpoint_utils.transform_location_to_file_line(bp['location'])
     condition = bp.get('condition', '')
     condition = condition if condition != '' else 'No condition set'

@@ -50,6 +50,8 @@ class GetLogpointCommand:
     parser.set_defaults(func=self.cmd)
 
   def display_summary(self, bp):
+    # To note we're being defensive here with respect to the condition field the
+    # that its absence is treated to the same way as it being present but empty.
     logpoint_id = bp['id']
     location = breakpoint_utils.transform_location_to_file_line(bp['location'])
     condition = bp.get('condition', '')
