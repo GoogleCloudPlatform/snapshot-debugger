@@ -62,7 +62,7 @@ Adds a debug logpoint to a debug target (debuggee). Logpoints inject logging
 into running services without changing your code or restarting your application.
 Every time any instance executes code at the logpoint location, Snapshot
 Debugger logs a message.  Output is sent to the standard log for the programming
-language of the target (java.logging for ava, logging for Python, etc.)
+language of the target (java.logging for Java, logging for Python, etc.)
 
 Logpoints remain active for 24 hours after creation, or until they are deleted
 or the service is redeployed. If you place a logpoint on a line that receives
@@ -84,9 +84,9 @@ curly braces will be interpreted as a run-time expression in the debug target's
 language, which will be evaluated when the logpoint is hit.
 
 The value of the expression will then replace the {} expression in the resulting
-log output. For example, if you specify the format string "a={a}, b={b}", and
-the logpoint is hit when local variable a is 1 and b is 2, the resulting log
-output would be "a=1, b=2".
+log output. For example, if you specify the format string "a={a}, (b+1)={b+1}",
+and the logpoint is hit when local variable a is 1 and field b has a value of 2,
+the resulting log output would be "a=1, (b+1)=2".
 """
 
 LOG_LEVEL_HELP = """
