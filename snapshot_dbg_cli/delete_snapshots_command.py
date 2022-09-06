@@ -85,4 +85,5 @@ class DeleteSnapshotsCommand:
     parser.set_defaults(func=self.cmd)
 
   def cmd(self, args, cli_services):
-    delete_breakpoints.run_cmd('CAPTURE', args, cli_services, SUMMARY_HEADERS, transform_to_snapshot_summary)
+    delete_breakpoints.run_cmd('CAPTURE', args, cli_services, SUMMARY_HEADERS,
+                               transform_to_snapshot_summary)

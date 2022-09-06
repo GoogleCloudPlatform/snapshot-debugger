@@ -13,10 +13,12 @@
 # limitations under the License.
 """This module provides common functionality for delete breakpoints commands.
 
-Provides the command functionality for the delete_snapshots and delete_breakpoints commands.
+Provides the command functionality for the delete_snapshots and
+delete_breakpoints commands.
 """
 
 from snapshot_dbg_cli.exceptions import SilentlyExitError
+
 
 def run_cmd(action, args, cli_services, summary_headers, summary_transform):
   """Contains the common logic to run a delete snapshots or logpoints command.
@@ -26,7 +28,8 @@ def run_cmd(action, args, cli_services, summary_headers, summary_transform):
       snapshots) or 'LOG' (for logpoints).
     args: The argsparse args for the delete command.
     cli_services: The CliServices instance to use for running the command.
-    summary_headers: The headers for the breakpoints table the delete command emits for the user
+    summary_headers: The headers for the breakpoints table the delete command
+      emits for the user.
   Returns:
     string, [string]) - The new format string and the array of expressions.
   Raises:
@@ -35,7 +38,6 @@ def run_cmd(action, args, cli_services, summary_headers, summary_transform):
   # This two variables provide customization for emitted user messages.
   breakpoint_type = 'snapshot' if action == 'CAPTURE' else 'logpoint'
   breakpoint_type_capitalized = breakpoint_type[0].upper() + breakpoint_type[1:]
-
 
   user_input = cli_services.user_input
   user_output = cli_services.user_output
@@ -62,7 +64,8 @@ def run_cmd(action, args, cli_services, summary_headers, summary_transform):
         breakpoints.append(bp)
 
     if ids_not_found:
-      user_output.error(f"{breakpoint_type_capitalized} ID not found: {', '.join(ids_not_found)}")
+      user_output.error(f'{breakpoint_type_capitalized} ID not found: '
+                        f"{', '.join(ids_not_found)}")
       raise SilentlyExitError
   else:
     if action == 'CAPTURE':
@@ -75,7 +78,8 @@ def run_cmd(action, args, cli_services, summary_headers, summary_transform):
                                                         user_email)
 
   if breakpoints:
-    user_output.normal(f'This command will delete the following {breakpoint_type}s:\n')
+    user_output.normal(
+        f'This command will delete the following {breakpoint_type}s:\n')
     values = list(map(summary_transform, breakpoints))
     user_output.tabular(summary_headers, values)
     user_output.normal('\n')
