@@ -86,7 +86,7 @@ language, which will be evaluated when the logpoint is hit.
 The value of the expression will then replace the {} expression in the resulting
 log output. For example, if you specify the format string "a={a}, (b+1)={b+1}",
 and the logpoint is hit when local variable a is 1 and field b has a value of 2,
-the resulting log output would be "a=1, (b+1)=2".
+the resulting log output would be "a=1, (b+1)=3".
 """
 
 LOG_LEVEL_HELP = """
