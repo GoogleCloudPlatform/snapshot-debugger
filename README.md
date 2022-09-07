@@ -575,6 +575,10 @@ Where:
 *   `a={a} b={b}` is the logpoint message format
 *   `d-8dd7f149` is the debuggee ID
 
+> **Note**: A common issue that users have run into is that logging at INFO
+level is often suppressed by the default logger and so logpoints will appear to
+be broken. See the `--log-level` option for setting a higher priority log level.
+
 #### Logpoint message format
 
 The format string is the message which will be logged every time the logpoint
@@ -583,9 +587,9 @@ text within the curly braces will be interpreted as a run-time expression in the
 debug target's language, which will be evaluated when the logpoint is hit. Some
 valid examples are {a}, {myObj.myFunc()} or {a + b}.  The value of the
 expression will then replace the {} expression in the resulting log output. For
-example, if you specify the format string "a={a}, b={b}", and the logpoint is
-hit when local variable a is 1 and b is 2, the resulting log output would be
-"a=1, b=2".
+example, if you specify the format string "a={a}, (b+1)={b+1}", and the logpoint
+is hit when local variable a is 1 and b is 3, the resulting log output would be
+"a=1, (b+1)=3".
 
 For more detailed information on valid expressions see [Snapshot
 expressions](#snapshot-expressions-optional) as the rules are the same for
