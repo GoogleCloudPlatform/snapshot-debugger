@@ -74,6 +74,7 @@ LOGPOINT_ACTIVE =  {
   'location': {'line': 26, 'path': 'index.js'},
   'userEmail': 'user@foo.com',
   'createTime': '2022-04-14T18:50:15.852000Z',
+  'logMessageFormat': 'Message 1',
 } # yapf: disable (Subjectively, more readable hand formatted)
 
 LOGPOINT_COMPLETED =  {
@@ -84,6 +85,7 @@ LOGPOINT_COMPLETED =  {
   'location': {'line': 28, 'path': 'index.js'},
   'userEmail': 'user@foo.com',
   'createTime': '2022-04-14T18:50:15.852000Z',
+  'logMessageFormat': 'Message 2',
 } # yapf: disable (Subjectively, more readable hand formatted)
 
 
@@ -485,6 +487,188 @@ class SnapshotDebuggerRtdbServiceTests(unittest.TestCase):
     # ensures it was called as expected.
     self.assertIn('action', obtained_snapshot)
     self.assertEqual('CAPTURE', obtained_snapshot['action'])
+
+  def test_get_logpoints_works_as_expected(self):
+    snapshot_active_user1 = SNAPSHOT_ACTIVE.copy()
+    snapshot_active_user1['id'] = 'b-1650000000'
+    snapshot_active_user1['userEmail'] = 'user1@foo.com'
+
+    snapshot_active_user2 = SNAPSHOT_ACTIVE.copy()
+    snapshot_active_user2['id'] = 'b-1650000001'
+    snapshot_active_user2['userEmail'] = 'user2@foo.com'
+
+    snapshot_completed_user1 = SNAPSHOT_COMPLETED.copy()
+    snapshot_completed_user1['id'] = 'b-1650000002'
+    snapshot_completed_user1['userEmail'] = 'user1@foo.com'
+
+    snapshot_completed_user2 = SNAPSHOT_COMPLETED.copy()
+    snapshot_completed_user2['id'] = 'b-1650000003'
+    snapshot_completed_user2['userEmail'] = 'user2@foo.com'
+
+    logpoint_active_user1 = LOGPOINT_ACTIVE.copy()
+    logpoint_active_user1['id'] = 'b-1650000004'
+    logpoint_active_user1['userEmail'] = 'user1@foo.com'
+
+    logpoint_active_user2 = LOGPOINT_ACTIVE.copy()
+    logpoint_active_user2['id'] = 'b-1650000005'
+    logpoint_active_user2['userEmail'] = 'user2@foo.com'
+
+    logpoint_completed_user1 = LOGPOINT_COMPLETED.copy()
+    logpoint_completed_user1['id'] = 'b-1650000006'
+    logpoint_completed_user1['userEmail'] = 'user1@foo.com'
+
+    logpoint_completed_user2 = LOGPOINT_COMPLETED.copy()
+    logpoint_completed_user2['id'] = 'b-1650000007'
+    logpoint_completed_user2['userEmail'] = 'user2@foo.com'
+
+    # To note, snapshots are included, this ensures only logpoitns are returned
+    # by the get_logpoints call.
+    all_active_breakpoints = [
+        snapshot_active_user1,
+        snapshot_active_user2,
+        logpoint_active_user1,
+        logpoint_active_user2,
+    ]
+
+    all_final_breakpoints = [
+        snapshot_completed_user1,
+        snapshot_completed_user2,
+        logpoint_completed_user1,
+        logpoint_completed_user2,
+    ]
+
+    # Queries for a list of breakpoints from the Firebase Rest interface will
+    # come back in dict form. So we convert array of breakpoints to this form.
+    def convert_breakpoints(breakpoints):
+      return {bp['id']: bp for bp in breakpoints}
+
+    all_active_breakpoints = convert_breakpoints(all_active_breakpoints)
+    all_final_breakpoints = convert_breakpoints(all_final_breakpoints)
+
+    testcases = [
+        # (Test name, include_inactive, user_email, active bps query,
+        #  final bps query, expected logpoints, expected get calls)
+        (
+            'Active Only - Individual User',
+            False, # include_inactive
+            'user1@foo.com',
+            all_active_breakpoints,
+            None, # Doesn't matter, final path should not be queried
+            [logpoint_active_user1],
+            [call(self.schema.get_path_breakpoints_active('123'))]
+        ),
+        (
+            'Final Included - Individual User',
+            True, # include_inactive
+            'user1@foo.com',
+            all_active_breakpoints,
+            all_final_breakpoints,
+            [logpoint_active_user1, logpoint_completed_user1],
+            [call(self.schema.get_path_breakpoints_active('123')),
+             call(self.schema.get_path_breakpoints_final('123'))]
+        ),
+        (
+            'Active Only - All Users',
+            False, # include_inactive
+            None, # user email of None means don't filter on email.
+            all_active_breakpoints,
+            None, # Doesn't matter, final path should not be queried
+            [logpoint_active_user1, logpoint_active_user2],
+            [call(self.schema.get_path_breakpoints_active('123'))]
+        ),
+        (
+            'Final Included - Individual User',
+            True, # include_inactive
+            None, # user email of None means don't filter on email.
+            all_active_breakpoints,
+            all_final_breakpoints,
+            [logpoint_active_user1, logpoint_active_user2,
+             logpoint_completed_user1, logpoint_completed_user2],
+            [call(self.schema.get_path_breakpoints_active('123')),
+             call(self.schema.get_path_breakpoints_final('123'))]
+        ),
+        (
+            'User Not Found',
+            False, # include_inactive
+            'user-not-found@foo.com',
+            all_active_breakpoints,
+            None, # Doesn't matter, final path should not be queried
+            [],
+            [call(self.schema.get_path_breakpoints_active('123'))]
+        ),
+        (
+            # To note in practise this scenario may not be possible. If a
+            # debuggee has no active breakpoints, e.g. the last one was deleted,
+            # the path would cease to exist and so queries to it would instead
+            # return None, which is its own test scenario one. That said the
+            # code should be able to handle an empty response and so we check
+            # for it.
+            'Empty responses on path queries',
+            True, # include_inactive
+            'user1@foo.com',
+            {}, # No active breakpoints at all.
+            {}, # No final breakpoints at all.
+            [], # Expected to get empty array from get_logpoints()
+            [call(self.schema.get_path_breakpoints_active('123')),
+             call(self.schema.get_path_breakpoints_final('123'))]
+        ),
+        (
+            # This scenario happens if the debuggee has no breakpoints and the
+            # path doesn't actually exist. None will be returned for the get
+            # query on the path in this case.
+            'None responses on path queries',
+            True, # include_inactive
+            'user1@foo.com',
+            None, # No active breakpoints at all.
+            None, # No final breakpoints at all.
+            [], # Expected to get empty array from get_logpoints()
+            [call(self.schema.get_path_breakpoints_active('123')),
+             call(self.schema.get_path_breakpoints_final('123'))]
+        ),
+    ] # yapf: disable (Subjectively, more readable hand formatted)
+
+    for (test_name, include_inactive, user_email, active_breakpoints,
+         final_breakpoints, expected_logpoints, expected_calls) in testcases:
+      with self.subTest(test_name):
+        # The first call to get will be for the active, path, and the second (if
+        # it occurs) will be for the final path. Set the array order based on
+        # this.
+        self.firebase_rtdb_service_mock.get = MagicMock(
+            side_effect=[active_breakpoints, final_breakpoints])
+
+        obtained_logpoints = self.debugger_rtdb_service.get_logpoints(
+            '123', include_inactive, user_email)
+
+        self.assertEqual(expected_logpoints, obtained_logpoints)
+        self.assertEqual(expected_calls,
+                         self.firebase_rtdb_service_mock.get.mock_calls)
+
+  def test_get_logpoints_normalizes_bp(self):
+    """This test focuses solely on ensuring the logpoints gets normalized.
+
+    The logpoints returned by get_logpoints() should have the
+    breakpoint_utils.normalize_breakpoint function applied to them.  This
+    ensures all expected fields are set and calling code can assume they exist.
+    """
+
+    bp = LOGPOINT_ACTIVE.copy()
+
+    # The logMessageFormatString will get filled in with the user legible
+    # version of the log message.
+    bp['logMessageFormat'] = 'a: $0'
+    bp['expressions'] = ['a']
+    self.assertNotIn('logMessageFormatString', bp)
+
+    get_response = {bp['id']: bp}
+    self.firebase_rtdb_service_mock.get = MagicMock(return_value=get_response)
+
+    obtained_logpoints = self.debugger_rtdb_service.get_logpoints(
+        '123', include_inactive=False)
+
+    # This field will have been set by the call to normalize_breakpoint which
+    # ensures it was called as expected.
+    self.assertIn('logMessageFormatString', obtained_logpoints[0])
+    self.assertEqual('a: {a}', obtained_logpoints[0]['logMessageFormatString'])
 
   def test_get_snapshots_works_as_expected(self):
     snapshot_active_user1 = SNAPSHOT_ACTIVE.copy()

@@ -188,6 +188,26 @@ class SnapshotDebuggerRtdbService:
 
     return normalize_breakpoint(bp, breakpoint_id)
 
+  def get_logpoints(self, debuggee_id, include_inactive, user_email=None):
+    """Retrieves all the logpoints matching the search criteria.
+
+    Args:
+      debuggee_id: The debuggee to retrieve the logpoints from.
+      include_inactive: Boolean flag that when true will return both active and
+        completed logpoints. When false, only active logpoints will be returned.
+      user_email: A filter that when set to a string value, will only return
+        snapshots whose 'userEmail' matches. When this value is None, snapshots
+        from all users are returned.
+
+    Returns:
+      The logpoints (list of dicts). If no snapshots were found this list will
+      simply be empty. All returned logpoints will have the
+      breakpoint_utils.normalize_breakpoint function applied to ensure all
+      expected fields are set.
+    """
+    return self._get_breakpoints(debuggee_id, include_inactive, 'LOG',
+                                 user_email)
+
   def get_snapshots(self, debuggee_id, include_inactive, user_email=None):
     """Retrieves all the snapshots matching the search criteria.
 

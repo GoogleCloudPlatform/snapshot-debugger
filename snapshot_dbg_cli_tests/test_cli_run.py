@@ -36,11 +36,15 @@ class CliRunTests(unittest.TestCase):
 
   def test_expected_commands_are_registered(self):
     testcases = [
+        ('delete_logpoints', 'Used to delete logpoints'),
         ('delete_snapshots', 'Used to delete snapshots'),
+        ('get_logpoint', 'Used to retrieve a debug logpoint'),
         ('get_snapshot', 'Used to retrieve a debug snapshot'),
         ('init', 'Initializes a GCP project with the required'),
         ('list_debuggees', 'Used to display a list of the debug targets'),
+        ('list_logpoints', 'Used to display the debug logpoints'),
         ('list_snapshots', 'Used to display the debug snapshots'),
+        ('set_logpoint', 'Adds a debug logpoint to a debug target'),
         ('set_snapshot', 'Creates a snapshot on a debug target'),
     ]
 
