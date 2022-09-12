@@ -11,33 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-""" Snapshot Debugger CLI.
-
-This package provides the CLI of the Snapshot Debugger.
+""" Unit test __init__.
 """
 
-import sys
-
-import snapshot_dbg_cli.cli_run
-import snapshot_dbg_cli.cli_version
-from snapshot_dbg_cli.exceptions import SilentlyExitError
-
-__version__ = snapshot_dbg_cli.cli_version.running_version()
+import unittest
+import snapshot_dbg_cli
 
 
-def main():
-  snapshot_dbg_cli.cli_version.check_for_newer_version()
-  snapshot_dbg_cli.cli_run.run()
+class CliInitTests(unittest.TestCase):
+  """ Contains the unit tests for __init__.py
+  """
 
-
-def run_main():
-  try:
-    main()
-  except SilentlyExitError:
-    sys.exit(1)
-
-  sys.exit(0)
-
-
-if __name__ == '__main__':
-  run_main()
+  def test_version_is_expected_value(self):
+    # Yes, this will need to be updated for each new version.
+    self.assertEqual('0.1.1', snapshot_dbg_cli.__version__)
