@@ -41,7 +41,7 @@ class SuppressedUserOutput(UserOutput):
 
   def __init__(self):
     # Just need to intialize it, the local_print override is the important bit
-    # that will ensure no data is writting to stdout/stderr.
+    # that will ensure no data is written to stdout/stderr.
     super().__init__(is_debug_enabled=False, data_formatter=DataFormatter())
 
   def local_print(self, *args, **kwargs):
@@ -76,7 +76,7 @@ def latest_version():
     if match is not None:
       version = extract_version_number(match.group(0))
   except SilentlyExitError:
-    # Simply swallow the error, it is not crucial to retrieve the latest, we'll
+    # Simply swallow the error, it is not critical to retrieve the latest, we'll
     # simply fall through and None will be returned in this case.
     pass
 

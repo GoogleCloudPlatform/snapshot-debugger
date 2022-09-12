@@ -29,7 +29,7 @@ from urllib.error import URLError
 
 
 class CliVersionTests(unittest.TestCase):
-  """ Contains the unit tests for the CliVersion class.
+  """ Contains the unit tests for the cli_version module.
   """
 
   def setUp(self):
