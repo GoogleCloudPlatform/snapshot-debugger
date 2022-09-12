@@ -42,6 +42,9 @@ class CliVersionTests(unittest.TestCase):
     self.set_urlopen_response('foo')
 
   def set_urlopen_response(self, body):
+    # The EmailMessage here may look odd, but the response headers are "...in
+    # the form of an EmailMessage instance."
+    # https://docs.python.org/3/library/urllib.request.html#urllib.response.addinfourl.headers,
     response_headers = EmailMessage()
     response_headers.add_header('Content-type', 'text/plain; charset=utf-8')
     resp = urllib.response.addinfourl(

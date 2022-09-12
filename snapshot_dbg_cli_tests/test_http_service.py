@@ -44,6 +44,9 @@ DEFAULT_JSON_CONTENT_TYPE = 'application/json; charset=utf-8'
 
 
 def build_response_headers(headers):
+  # The EmailMessage here may look odd, but the response headers are "...in the
+  # form of an EmailMessage instance."
+  # https://docs.python.org/3/library/urllib.request.html#urllib.response.addinfourl.headers,
   response_headers = EmailMessage()
   for k, v in headers.items():
     response_headers.add_header(k, v)
