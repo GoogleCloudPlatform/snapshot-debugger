@@ -18,12 +18,14 @@ import json
 import unittest
 import urllib
 
+from email.message import EmailMessage
 from io import BytesIO
 from io import StringIO
 from snapshot_dbg_cli.exceptions import SilentlyExitError
 from snapshot_dbg_cli import data_formatter
 from snapshot_dbg_cli.http_service import HttpService
 from snapshot_dbg_cli.user_output import UserOutput
+from unittest.mock import ANY
 from unittest.mock import call
 from unittest.mock import MagicMock
 from unittest.mock import patch
@@ -37,6 +39,29 @@ TEST_ACCESS_TOKEN = 'test-access-token'
 # lower case. So we use these header defines in the tests where appropriate.
 GOOG_USER_PROJECT_HEADER = 'X-goog-user-project'
 CONTENT_TYPE_HEADER = 'Content-type'
+
+DEFAULT_JSON_CONTENT_TYPE = 'application/json; charset=utf-8'
+
+
+def build_response_headers(headers):
+  # The EmailMessage here may look odd, but the response headers are "...in the
+  # form of an EmailMessage instance."
+  # https://docs.python.org/3/library/urllib.request.html#urllib.response.addinfourl.headers,
+  response_headers = EmailMessage()
+  for k, v in headers.items():
+    response_headers.add_header(k, v)
+
+  return response_headers
+
+
+def build_http_response(body_bytes,
+                        content_type=DEFAULT_JSON_CONTENT_TYPE,
+                        url=''):
+  response_headers = build_response_headers({CONTENT_TYPE_HEADER: content_type})
+  resp = urllib.response.addinfourl(BytesIO(body_bytes), response_headers, url)
+  resp.code = 200
+  resp.msg = 'OK'
+  return resp
 
 
 class HttpServiceBuildRequestTests(unittest.TestCase):
@@ -123,13 +148,19 @@ class HttpServiceBuildRequestTests(unittest.TestCase):
     self.assertEqual('project-2',
                      req_include_true_2.get_header(GOOG_USER_PROJECT_HEADER))
 
+  def test_access_token_not_included_when_none(self):
+    service = HttpService(
+        'project-1', access_token=None, user_output=self.user_output_mock)
+    request = service.build_request('GET', 'http://foo.com')
+    self.assertFalse(request.has_header('Authorization'))
+
 
 class HttpServiceSendRequestTests(unittest.TestCase):
   """ Unit tests for the send_request() method of the HttpService class.
 
   To note, there is some similar overlap in these tests as with the
   HttpServiceSendTests below which tests the send() method. Also, the tests here
-  are less comprehensive. This is because send_request() make use of send(), so
+  are less comprehensive. This is because send_request() makes use of send(), so
   here we simply test enough to ensure send_request() makes use of send()
   correctly. send() then gets more thorough vetting in the HttpServiceSendTests.
   """
@@ -160,12 +191,13 @@ class HttpServiceSendRequestTests(unittest.TestCase):
     # that care will override when needed.
     self.set_urlopen_response(body={})
 
-  def set_urlopen_response(self, body, headers=None, url=''):
+  def set_urlopen_response(self,
+                           body,
+                           content_type=DEFAULT_JSON_CONTENT_TYPE,
+                           url=''):
     body = json.dumps(body).encode('utf-8')
-    resp = urllib.response.addinfourl(BytesIO(body), headers, url)
-    resp.code = 200
-    resp.msg = 'OK'
-    self.urlopen_mock.return_value = resp
+    self.urlopen_mock.return_value = build_http_response(
+        body, content_type, url)
 
   def set_urlopen_exception(self, exception):
     self.urlopen_mock.side_effect = exception
@@ -251,6 +283,16 @@ class HttpServiceSendRequestTests(unittest.TestCase):
     # 1 for the initial call, then the 7 retries.
     self.assertEqual(8, self.urlopen_mock.call_count)
 
+  def test_default_timeout_is_expected_value(self):
+    self.http_service.send_request(method='POST', url='http://foo.com')
+    self.urlopen_mock.assert_called_once_with(ANY, timeout=10)
+
+  def test_timeout_is_configurable(self):
+    self.http_service.send_request(
+        method='POST', url='http://foo.com', timeout_sec=999)
+
+    self.urlopen_mock.assert_called_once_with(ANY, timeout=999)
+
   def test_returns_expected_data_on_success(self):
     # Just run it through a few basic test cases, ensure it's decoding the json
     # data as expected and returning it.
@@ -271,13 +313,7 @@ class HttpServiceSendRequestTests(unittest.TestCase):
 
     for data in testcases:
       with self.subTest(data):
-        body = json.dumps(data).encode('utf-8')
-        mock_resp = urllib.response.addinfourl(
-            BytesIO(body), headers=None, url='')
-        mock_resp.code = 200
-        mock_resp.msg = 'OK'
-        self.urlopen_mock.return_value = mock_resp
-
+        self.set_urlopen_response(body=data)
         obtained_response = self.http_service.send_request(
             method='GET', url='http://foo.com')
         self.assertEqual(data, obtained_response)
@@ -316,12 +352,13 @@ class HttpServiceSendTests(unittest.TestCase):
     # Most test will need a valid request, but not care about the contents.
     self.test_request = self.http_service.build_request('GET', 'http://foo.com')
 
-  def set_urlopen_response(self, body, headers=None, url=''):
+  def set_urlopen_response(self,
+                           body,
+                           content_type=DEFAULT_JSON_CONTENT_TYPE,
+                           url=''):
     body = json.dumps(body).encode('utf-8')
-    resp = urllib.response.addinfourl(BytesIO(body), headers, url)
-    resp.code = 200
-    resp.msg = 'OK'
-    self.urlopen_mock.return_value = resp
+    self.urlopen_mock.return_value = build_http_response(
+        body, content_type, url)
 
   def set_urlopen_exception(self, exception):
     self.urlopen_mock.side_effect = exception
@@ -468,11 +505,8 @@ class HttpServiceSendTests(unittest.TestCase):
 
   def test_send_handles_jsondecode_error_as_expected(self):
     # Attempting to decode this response as json should cause a JSONDecodeError
-    resp = urllib.response.addinfourl(
-        BytesIO(b'{bad json'), headers=None, url='')
-    resp.code = 200
-    resp.msg = 'OK'
-    self.urlopen_mock.return_value = resp
+    self.urlopen_mock.return_value = build_http_response(
+        '{bad json'.encode('utf-8'))
 
     with self.assertRaises(SilentlyExitError), \
          patch('sys.stdout', new_callable=StringIO) as out, \
@@ -513,43 +547,63 @@ class HttpServiceSendTests(unittest.TestCase):
         raise HTTPError('https://foo.com', 500, 'Internal Server Error', {},
                         BytesIO(b'Fake Error Message'))
 
-      body = json.dumps({'foo': 'bar'}).encode('utf-8')
-      resp = urllib.response.addinfourl(BytesIO(body), headers='', url='')
-      resp.code = 200
-      resp.msg = 'OK'
-      return resp
+      return build_http_response(json.dumps({'foo': 'bar'}).encode('utf-8'))
 
     self.urlopen_mock.side_effect = side_effect
     response = self.http_service.send(self.test_request, max_retries=4)
     self.assertEqual({'foo': 'bar'}, response)
     self.assertEqual(2, self.urlopen_mock.call_count)
 
-  def test_returns_expected_data_on_success(self):
-    # Just run it through a few basic test cases, ensure it's decoding the json
-    # data as expected and returning it.
+  def test_default_timeout_is_expected_value(self):
+    self.http_service.send(self.test_request)
+    self.urlopen_mock.assert_called_once_with(ANY, timeout=10)
+
+  def test_timeout_is_configurable(self):
+    self.http_service.send(self.test_request, timeout_sec=999)
+    self.urlopen_mock.assert_called_once_with(ANY, timeout=999)
+
+  def test_returns_expected_type_for_different_encodings(self):
+    simple_html = '<!DOCTYPE html> <p>foo</p> </html>'
     testcases = [
-        {},
-        [],
-        [{
-            'foo': 'bar'
-        }],
-        'foo',
-        {
-            'p1': 'v1',
-            'p2': {
-                'p3': 'v3'
-            }
-        },
+        # testname, body_bytes, content-type, expected_response
+
+        # For JSON input, decoded json is expected
+        ('JSON empty dict', '{}'.encode('utf-8'),
+         'application/json; charset=utf-8', {}),
+        ('JSON empty list', '[]'.encode('utf-8'),
+         'application/json; charset=utf-8', []),
+        ('JSON string', '"foo"'.encode('utf-8'),
+         'application/json; charset=utf-8', 'foo'),
+        ('JSON list', '["foo", "bar"]'.encode('utf-8'),
+         'application/json; charset=utf-8', ['foo', 'bar']),
+        ('JSON dict', '{"foo1": "bar1", "foo2": "bar2"}'.encode('utf-8'),
+         'application/json; charset=utf-8', {
+             'foo1': 'bar1',
+             'foo2': 'bar2'
+         }),
+        ('JSON UTF-8', '{"foo": "bar"}'.encode('utf-8'),
+         'application/json; charset=utf-8', {
+             'foo': 'bar'
+         }),
+        ('JSON UTF-16', '{"foo": "bar"}'.encode('utf-16'),
+         'application/json; charset=utf-16', {
+             'foo': 'bar'
+         }),
+
+        # For non JSON data, the string as is expected to be returned
+        ('Text Plain UTF-8', 'foo'.encode('utf-8'), 'text/plain; charset=utf-8',
+         'foo'),
+        ('Text Plain UTF-16', 'foo'.encode('utf-16'),
+         'text/plain; charset=utf-16', 'foo'),
+        ('Text HTML UTF-8', simple_html.encode('utf-8'),
+         'text/html; charset=utf-8', simple_html),
+        ('Text HTML UTF-16', simple_html.encode('utf-16'),
+         'text/html; charset=utf-16', simple_html),
     ]
 
-    for data in testcases:
-      with self.subTest(data):
-        body = json.dumps(data).encode('utf-8')
-        mock_resp = urllib.response.addinfourl(
-            BytesIO(body), headers=None, url='')
-        mock_resp.code = 200
-        mock_resp.msg = 'OK'
-        self.urlopen_mock.return_value = mock_resp
-
+    for testname, body_bytes, content_type, expected_response in testcases:
+      with self.subTest(testname):
+        self.urlopen_mock.return_value = build_http_response(
+            body_bytes, content_type)
         obtained_response = self.http_service.send(self.test_request)
-        self.assertEqual(data, obtained_response)
+        self.assertEqual(expected_response, obtained_response)

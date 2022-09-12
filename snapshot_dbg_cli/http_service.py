@@ -47,6 +47,7 @@ Sending the following REST request (attempt {attempt_count}):
 RETRIABLE_HTTP_CODES = [429, 500, 502, 503, 504]
 
 DEFAULT_MAX_RETRIES = 4
+DEFAULT_TIMEOUT_SEC = 10
 
 
 def get_scrubbed_headers(headers):
@@ -84,11 +85,23 @@ class HttpService:
   """Service class for making HTTP requests.
 
   This class is built on top of urllib and provides a convenient interface for
-  the needs of the CLI for making HTTP requsts to the Google and Firebase REST
+  the needs of the CLI for making HTTP requests to the Google and Firebase REST
   APIs.
   """
 
   def __init__(self, project_id, access_token, user_output):
+    """Initializes the HttpService instance.
+
+    Args:
+      project_id: (string|None) The Google Cloud project ID the requests are
+        for.  This value will be used for the X-Goog-User-Project header when
+        the include_project_header flag is true in send and build request calls.
+        This value can safely be set to None if the project header does not need
+        to be set.
+      access_token: (string|None) The access token to use for all requests. If
+        this value is None, it will not be included in the request header.
+      user_output: UserOutput instance to use for emitting user output.
+    """
     self._project_id = project_id
     self._access_token = access_token
     self._user_output = user_output
@@ -100,7 +113,8 @@ class HttpService:
                    data=None,
                    include_project_header=False,
                    max_retries=DEFAULT_MAX_RETRIES,
-                   handle_http_error=True):
+                   handle_http_error=True,
+                   timeout_sec=DEFAULT_TIMEOUT_SEC):
     """ Sends an HTTP request based on the passed in arguments.
 
     On success, the json decoded body from the HTTP response will be returned,
@@ -127,6 +141,7 @@ class HttpService:
         exceptions on its own. Callers that want to receive the error, in order
         to check the error code or message, should set this flag to False. It
         defaults to True.
+      timeout_sec: The timeout in seconds to use for each http request.
 
     Returns:
       The json decoded body of the HTTP response, meaning this value will be a
@@ -146,7 +161,10 @@ class HttpService:
         include_project_header=include_project_header)
 
     return self.send(
-        request, max_retries=max_retries, handle_http_error=handle_http_error)
+        request,
+        max_retries=max_retries,
+        handle_http_error=handle_http_error,
+        timeout_sec=timeout_sec)
 
   def build_request(self,
                     method,
@@ -179,7 +197,10 @@ class HttpService:
         url += f"{'?' if first_param else '&'}{p}"
         first_param = False
 
-    headers = {"Authorization": f"Bearer {self._access_token}"}
+    headers = {}
+
+    if self._access_token is not None:
+      headers["Authorization"] = f"Bearer {self._access_token}"
 
     if include_project_header:
       headers["X-Goog-User-Project"] = self._project_id
@@ -197,7 +218,8 @@ class HttpService:
   def send(self,
            request,
            max_retries=DEFAULT_MAX_RETRIES,
-           handle_http_error=True):
+           handle_http_error=True,
+           timeout_sec=DEFAULT_TIMEOUT_SEC):
     """ Sends an HTTP request using the passed in request.
 
     On success, the json decoded body from the HTTP response will be returned,
@@ -216,6 +238,7 @@ class HttpService:
         exceptions on its own. Callers that want to receive the error, in order
         to check the error code or message, should set this flag to False. It
         defaults to True.
+      timeout_sec: The timeout in seconds to use for each http request.
 
     Returns:
       The json decoded body of the HTTP response, meaning this value will be a
@@ -240,8 +263,13 @@ class HttpService:
       self._user_output.debug(send_msg)
 
       try:
-        with urlopen(request, timeout=10) as response:
-          body_parsed = json.loads(response.read().decode("utf-8"))
+        with urlopen(request, timeout=timeout_sec) as response:
+          content_type = response.headers.get_content_type()
+          charset = response.headers.get_content_charset("utf-8")
+          body_parsed = response.read().decode(charset)
+
+          if content_type == "application/json":
+            body_parsed = json.loads(body_parsed)
         break
       except HTTPError as err:
         if retry_count == max_retries or err.code not in RETRIABLE_HTTP_CODES:

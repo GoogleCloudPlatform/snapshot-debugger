@@ -56,7 +56,7 @@ class UserOutput:
       kwargs: Variable length named argument list which will be passed to print.
     """
     if self._is_debug_enabled:
-      print(*args, file=sys.stderr, **kwargs)
+      self.local_print(*args, file=sys.stderr, **kwargs)
 
   def normal(self, *args, **kwargs):
     """Outputs a normal user message.
@@ -69,7 +69,7 @@ class UserOutput:
       args: Variable length unnamed argument list which will be passed to print.
       kwargs: Variable length named argument list which will be passed to print.
     """
-    print(*args, file=sys.stderr, **kwargs)
+    self.local_print(*args, file=sys.stderr, **kwargs)
 
   def error(self, *args, **kwargs):
     """Outputs an error message to the user.
@@ -81,7 +81,7 @@ class UserOutput:
       args: Variable length unnamed argument list which will be passed to print.
       kwargs: Variable length named argument list which will be passed to print.
     """
-    print(*args, file=sys.stderr, **kwargs)
+    self.local_print(*args, file=sys.stderr, **kwargs)
 
   def json_format(self, data, pretty):
     """Transforms the data to a JSON string and prints it to stdout.
@@ -93,7 +93,7 @@ class UserOutput:
         human readable, otherwise it will be in a compact representation.
     """
     json_string = self.data_formatter.to_json_string(data, pretty)
-    print(json_string, file=sys.stdout)
+    self.local_print(json_string, file=sys.stdout)
 
   def tabular(self, headers, values):
     """Outputs the data in a human friendly tabular form.
@@ -107,3 +107,6 @@ class UserOutput:
     """
     table = self.data_formatter.build_table(headers, values)
     self.normal(table)
+
+  def local_print(self, *args, **kwargs):
+    print(*args, **kwargs)
