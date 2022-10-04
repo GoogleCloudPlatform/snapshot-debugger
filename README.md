@@ -20,8 +20,6 @@ local debugging are supported. Snapshot Debugger only works with the
 
 ### Upcoming Features
 
-* Java agent support
-* Python 3 agent support
 * App Engine support for Java, Python 3, and Node.js
 
 Note:
@@ -259,21 +257,100 @@ To use the preview Snapshot Debugger, it’s necessary to set a flag to use the
 Firebase backend.
 
 If you don’t have a project yet and want to try out Snapshot Debugger, follow
-the steps in [Getting started with Node.js on Compute Engine | Google
-Cloud](https://cloud.google.com/nodejs/getting-started/getting-started-on-compute-engine)
+the steps for one of the following getting started on Compute Engine guides
+([Java](https://cloud.google.com/java/getting-started/getting-started-on-compute-engine),
+[Python](https://cloud.google.com/python/docs/getting-started/getting-started-on-compute-engine),
+[Node.js](https://cloud.google.com/nodejs/getting-started/getting-started-on-compute-engine))
 to create one.
+
 
 ### Set up Google Compute Engine
 
-1. Create your Compute Engine instance with the following access scopes:
-    *   https://www.googleapis.com/auth/userinfo.email grants your cluster access to your email address.
-    *   https://www.googleapis.com/auth/firebase.database grants your cluster access to the Firebase database.
+Create your Compute Engine instance with the following access scopes:
+*   https://www.googleapis.com/auth/userinfo.email grants your cluster access to your email address.
+*   https://www.googleapis.com/auth/firebase.database grants your cluster access to the Firebase database.
 
-    See the [Firebase information on scopes for Realtime Database and
-    Authentication](https://firebase.google.com/docs/admin/setup#set-scopes-for-realtime-database-auth)
-    page for more information on access scopes. To note, the `userinfo.email`
-    scope is not included when specifying `full access to google apis` when
-    creating a GCE instance, and will need to be added.
+See the [Firebase information on scopes for Realtime Database and
+Authentication](https://firebase.google.com/docs/admin/setup#set-scopes-for-realtime-database-auth)
+page for more information on access scopes. To note, the `userinfo.email`
+scope is not included when specifying `full access to google apis` when
+creating a GCE instance, and will need to be added.
+
+Language specific instructions follow:
+
+#### Java
+
+1. Ensure the first step above of creating your GCE instance with the correct
+   scopes has been done.
+
+2. Download the pre-built agent package:
+
+    ```
+    # Create a directory for the Debugger. Add and unzip the agent in the directory.
+    sudo sh -c "mkdir /opt/cdbg && wget -qO- https://github.com/GoogleCloudPlatform/cloud-debug-java/releases/latest/download/cdbg_java_agent_gce.tar.gz | tar xvz -C /opt/cdbg"
+    ```
+
+3. Add the agent to your Java invocation:
+
+    _(If you are using Tomcat or Jetty, see the [Application
+    Servers](https://github.com/GoogleCloudPlatform/cloud-debug-java#application-servers)
+    section of the agent documentation for extra information.)_
+
+    ```
+    # Start the agent when the app is deployed.
+    java -agentpath:/opt/cdbg/cdbg_java_agent.so \
+        -Dcom.google.cdbg.module=MODULE \
+        -Dcom.google.cdbg.version=VERSION \
+        -Dcom.google.cdbg.agent.use_firebase=True \
+        -jar PATH_TO_JAR_FILE
+    ```
+
+    Where:
+    *    `MODULE` is a name for your app, such as MyApp, Backend, or Frontend.
+    *    `VERSION` is a version, such as v1.0, build_147, or v20170714.
+    *    `PATH_TO_JAR_FILE` is the relative path to the app's JAR file. e.g.,: ~/myapp.jar.
+
+The debugger is now ready for use with your app.
+
+#### Python
+
+1. Ensure the first step above of creating your GCE instance with the correct
+   scopes has been done.
+
+2. Download the Debugger agent.
+
+    The easiest way to install the Python Debugger is with
+    [pip](https://pypi.org/project/pip/)
+
+    ```
+    pip install google-python-cloud-debugger
+    ```
+
+3. Add the following lines as early as possible in your initialization code, such as in your main function, or in manage.py when using the Django web framework.
+
+    ```
+    try:
+      import googleclouddebugger
+      googleclouddebugger.enable(
+        use_firebase=True,
+        module='[MODULE]',
+        version='[VERSION]'
+      )
+    except ImportError:
+      pass
+    ```
+
+    Where:
+    *    `MODULE` is a name for your app, such as MyApp, Backend, or Frontend.
+    *    `VERSION` is a version, such as v1.0, build_147, or v20170714.
+
+The debugger is now ready for use with your app.
+
+#### Node.js
+
+
+1. Ensure the first step above of creating your GCE instance with the correct
+   scopes has been done.
 
 2. Use [npm](https://www.npmjs.com/) to install the package:
 
@@ -303,15 +380,9 @@ to create one.
 
 The debugger is now ready for use with your app.
 
-### Local and elsewhere
+### Local
 
-1. Use [npm](https://www.npmjs.com/) to install the package:
-
-    ```
-    npm install --save @google-cloud/debug-agent
-    ```
-
-2. Download service account credentials from Firebase.
+Download service account credentials from Firebase.
     1. Navigate to your project in the Firebase console service account page.
        Replace `PROJECT_ID` with your project’s ID.
 
@@ -321,7 +392,82 @@ The debugger is now ready for use with your app.
 
     2. Click **Generate new private key** and save the key locally.
 
-3. Configure and enable the agent at the top of your app's main script or entry
+
+Language specific instructions:
+
+#### Java
+
+1. Download the pre-built agent package:
+
+    ```
+    # Create a directory for the Debugger. Add and unzip the agent in the directory.
+    sudo sh -c "mkdir /opt/cdbg && wget -qO- https://github.com/GoogleCloudPlatform/cloud-debug-java/releases/latest/download/cdbg_java_agent_gce.tar.gz | tar xvz -C /opt/cdbg"
+    ```
+
+2. Add the agent to your Java invocation:
+
+    _(If you are using Tomcat or Jetty, see the [Application
+    Servers](https://github.com/GoogleCloudPlatform/cloud-debug-java#application-servers)
+    section of the agent documentation for extra information.)_
+
+    ```
+    # Start the agent when the app is deployed.
+    java -agentpath:/opt/cdbg/cdbg_java_agent.so \
+        -Dcom.google.cdbg.module=MODULE \
+        -Dcom.google.cdbg.version=VERSION \
+        -Dcom.google.cdbg.agent.use_firebase=True \
+        -Dcom.google.cdbg.auth.serviceaccount.jsonfile=PATH-TO-KEY-FILE
+        -jar PATH_TO_JAR_FILE
+    ```
+
+    Where:
+    *    `MODULE` is a name for your app, such as MyApp, Backend, or Frontend.
+    *    `VERSION` is a version, such as v1.0, build_147, or v20170714.
+    *    `PATH-TO-KEY-FILE` is the path to your Firebase private key.
+    *    `PATH_TO_JAR_FILE` is the relative path to the app's JAR file. e.g.,: ~/myapp.jar.
+
+#### Python
+
+1. Download the Debugger agent.
+
+    The easiest way to install the Python Debugger is with
+    [pip](https://pypi.org/project/pip/)
+
+    ```
+    pip install google-python-cloud-debugger
+    ```
+
+2. Add the following lines as early as possible in your initialization code, such as in your main function, or in manage.py when using the Django web framework.
+
+    ```
+    try:
+      import googleclouddebugger
+      googleclouddebugger.enable(
+        use_firebase=True,
+        module='[MODULE]',
+        version='[VERSION]',
+        service_account_json_file='[PATH-TO-KEY-FILE]'
+      )
+    except ImportError:
+      pass
+    ```
+
+    Where:
+    *    `MODULE` is a name for your app, such as MyApp, Backend, or Frontend.
+    *    `VERSION` is a version, such as v1.0, build_147, or v20170714.
+    *    `PATH-TO-KEY-FILE` is the path to your Firebase private key.
+
+
+
+#### Node.js
+
+1. Use [npm](https://www.npmjs.com/) to install the package:
+
+    ```
+    npm install --save @google-cloud/debug-agent
+    ```
+
+2. Configure and enable the agent at the top of your app's main script or entry
    point (but after @google/cloud-trace if you are also using it).
 
     ```
@@ -405,6 +551,38 @@ snapshot-dbg-cli set_snapshot index.js:26 --debuggee-id d-8dd7f149 --condition="
 
 You can use the following language features to express conditions:
 
+##### Java
+
+Most Java expressions are supported, including:
+
+*   Local variables: `a == 8`.
+*   Numerical and boolean operations: `x + y < 20`.
+*   Instance and static fields: `this.counter == 20`, `this.myObj.isShutdown`,
+    `myStatic`, or `com.mycompany.MyClass.staticMember`.
+*   String comparisons with the equality operator: `myString == "abc"`.
+*   Function calls. Only read-only functions can be used. For example,
+    `StringBuilder.indexOf()` is supported, but `StringBuilder.append()` is not.
+*   Type casting, with fully qualified types: `((com.myprod.ClassImpl)
+    myInterface).internalField`
+
+The following language features are *not* supported:
+
+*   Unboxing of numeric types, such as `Integer`; use `myInteger.value` instead.
+
+
+##### Python
+
+Most Python expressions are supported, including:
+
+*   Reading local and global variables.
+*   Reading from arrays, lists, slices, dictionaries and objects.
+*   Calling simple methods.
+
+The following language features are not supported:
+
+*   Calling functions that allocate new objects or use complex constructs.
+*   Creating new objects inside the expression.
+
 ##### Node.js
 
 Most Javascript expressions are supported, with the following caveat:
@@ -422,7 +600,7 @@ dynamic-side effects.
 
 Snapshot Debugger's Expressions feature allows you to evaluate complex
 expressions or traverse object hierarchies when a snapshot is taken. Expressions
-support the same language features as snapshot conditions.
+support the same language features as [snapshot conditions](#snapshot-conditions-optional), described above.
 
 Use of expressions is optional.
 
