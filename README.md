@@ -14,8 +14,7 @@ most cases, this isn’t noticeable by users.
 ## Preview Limitations
 
 During the preview phase, only [GCE](https://cloud.google.com/compute), and
-local debugging are supported. Snapshot Debugger only works with the
-[Node.js](https://github.com/googleapis/cloud-debug-nodejs) agent for preview.
+local debugging are supported.
 
 
 ### Upcoming Features
