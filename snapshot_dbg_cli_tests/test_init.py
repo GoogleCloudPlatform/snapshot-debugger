@@ -24,4 +24,4 @@ class CliInitTests(unittest.TestCase):
 
   def test_version_is_expected_value(self):
     # Yes, this will need to be updated for each new version.
-    self.assertEqual('0.2.0', snapshot_dbg_cli.__version__)
+    self.assertEqual('0.2.1', snapshot_dbg_cli.__version__)
