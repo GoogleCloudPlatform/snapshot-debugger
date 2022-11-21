@@ -3,4 +3,6 @@ __pycache__/
 dist/
 env/
 *.class
+*.jar
+*.so
 .gcloudignore

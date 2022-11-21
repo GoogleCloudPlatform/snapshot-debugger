@@ -11,7 +11,7 @@ See [Prerequisites](../README.md#Prerequisites).
 ## Compile the Source With Full Debug Information Enabled
 
 ```
-javac -g Main.java
+javac -source 11 -target 11 -g Main.java
 ```
 
 ## Install the Snapshot Debugger Java Agent

@@ -1,13 +1,14 @@
 # Snapshot Debugger Examples for Google App Engine Standard Environment for Java 11
 
-NOTE: This file was copied and modified from this
+NOTE: This file was copied
 [README](https://github.com/GoogleCloudPlatform/java-docs-samples/blob/main/appengine-java11/README.md)
+and modified for the sampls here.
 
 ## Prerequisites
 
 ### Download Maven
 
-Some of thiese samples use the [Apache Maven][maven] build system. Before
+Some of these samples use the [Apache Maven][maven] build system. Before
 getting started, be sure to [download][maven-download] and
 [install][maven-install] it.  When you use Maven as described here, it will
 automatically download the needed client libraries.
@@ -53,11 +54,12 @@ If running in the Google Cloud Shell, to switch to an Open JDK 11 you can use:
 ### App Engine Staging Directory and The Snapshot Debugger Java Agent
 
 The App Engine Plugin will stage all the files to upload into App Engine
-runtime in `${build.directory}/appengine-staging`. When deploying an
-[Uber JAR][uber-jar], the JAR is automatically copied into this staging
-directory and uploaded. It's possible to copy other files into this staging
-directory and having them available in the deployed App Engine runtime
-directory. This is required for the examples here as the Snapshot Debugger Java
+runtime in `${build.directory}/appengine-staging`. When deploying an [Uber
+JAR](https://stackoverflow.com/questions/11947037/what-is-an-uber-jar), the JAR
+is automatically copied into this staging directory and uploaded. It's possible
+to copy other files into this staging directory and having them available in the
+deployed App Engine runtime directory. This is required for the examples here as
+the Snapshot Debugger Java
 Agent must be deployed with your application.
 
 - To stage the files to be uploaded:

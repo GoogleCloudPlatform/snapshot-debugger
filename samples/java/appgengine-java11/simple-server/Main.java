@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-// [START gae_java11_simple_server]
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -41,4 +40,3 @@ public class Main {
     server.start();
   }
 }
-// [END gae_java11_simple_server]
