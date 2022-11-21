@@ -1,7 +1,7 @@
 # Snapshot Debugger Examples for Google App Engine Standard Environment for Java 11
 
 NOTE: This file was copied from
-[appengine-java11/README.md](https://github.com/GoogleCloudPlatform/java-docs-samples/blob/main/appengine-java11/README.md)
+[java-docs-samples/appengine-java11/README.md](https://github.com/GoogleCloudPlatform/java-docs-samples/blob/main/appengine-java11/README.md)
 and modified for the Snapshot Debugger samples here.
 
 ## Prerequisites
