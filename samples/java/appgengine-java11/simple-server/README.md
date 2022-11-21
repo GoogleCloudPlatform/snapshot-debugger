@@ -78,3 +78,10 @@ default - 20221117t213436    d-de80f15f     my-project-20221117t213436-447943866
 The debuggee ID in this case is  `d-de80f15f`. Using this ID you may now run
 through an [Example workflow](../../../../README.md#example-workflow).
 
+E.g.
+*    Use the `set_snapshot` CLI command to set a snapshot at `Main.java:33`. Note
+     the returned breakpoint ID.
+*    Navigate to your application using the `target url` shown in the `gcloud
+     app deploy` output. This will trigger the breakpoint and collect the snapshot.
+*    Use the `get_breakpoint` CLI command to retrieve the snapshot using the
+     breakpoint ID created with the `set_snapshot` command.
