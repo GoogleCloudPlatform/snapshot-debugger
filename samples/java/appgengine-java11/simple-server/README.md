@@ -10,6 +10,11 @@ See [Prerequisites](../README.md#Prerequisites).
 
 ## Compile the Source With Full Debug Information Enabled
 
+The `-g` option here is what enables full debug information. Without it
+information on method arguments and local variables would not be available. The
+`-source` and `-target` options are to ensure it will run with the Java 11
+runtime.
+
 ```
 javac -source 11 -target 11 -g Main.java
 ```
@@ -23,8 +28,12 @@ wget -qO- https://github.com/GoogleCloudPlatform/cloud-debug-java/releases/lates
 
 ## Deploy to App Engine Standard
 
-Examine the app.yaml file, which specifies the -agentpath java option to load
-the agent. Deploy the app with the following:
+Examine the app.yaml contents, which provides a custom entry point that
+specifies the -agentpath java option to load the agent:
+
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/cbe7516dc06d4f8c591b0239fa5cea078787f7c5/samples/java/appgengine-java11/simple-server/app.yaml#L15-L16)
+
+Deploy the app with the following:
 
 ```
 gcloud app deploy
@@ -44,9 +53,9 @@ The service and version will be used to identify your debuggee ID.
 
 ## Navigate To Your App
 
-This will ensure the app is run, which will allow the agent to register itself
-with the Firebase backend. The URL should be provide in the `target url` output
-of the pprevious step.
+This will ensure the app is run and is required as your app Your app will not be
+debuggable until after the first request has been received.  The URL should be
+provided in the `target url` output of the previous step.
 
 ## Determine the Debuggee ID
 
