@@ -44,7 +44,9 @@ The service and version will be used to identify your debuggee ID.
 
 ## Navigate To Your App
 
-This will ensure the app is run, which will allow the agent to register itself with the Firebase backend.
+This will ensure the app is run, which will allow the agent to register itself
+with the Firebase backend. The URL should be provide in the `target url` output
+of the pprevious step.
 
 ## Determine the Debuggee ID
 
