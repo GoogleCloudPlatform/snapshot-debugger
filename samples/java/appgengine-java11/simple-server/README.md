@@ -29,7 +29,7 @@ wget -qO- https://github.com/GoogleCloudPlatform/cloud-debug-java/releases/lates
 ## Deploy to App Engine Standard
 
 Examine the app.yaml contents, which provides a custom entry point that
-specifies the -agentpath java option to load the agent:
+specifies the `-agentpath` java option to load the agent:
 
 https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/cbe7516dc06d4f8c591b0239fa5cea078787f7c5/samples/java/appgengine-java11/simple-server/app.yaml#L15-L16)
 
@@ -77,3 +77,10 @@ default - 20221117t213436    d-de80f15f     my-project-20221117t213436-447943866
 
 The debuggee ID in this case is  `d-de80f15f`. Using this ID you may now run
 through an [Example workflow](../../../../README.md#example-workflow).
+
+
+## Test
+
+Test:
+
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/80fdb63d3aa4417117f968b7207df2f4ff4f8cd3/README.md
