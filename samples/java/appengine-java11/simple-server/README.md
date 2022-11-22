@@ -35,7 +35,7 @@ wget -qO- https://github.com/GoogleCloudPlatform/cloud-debug-java/releases/lates
 Examine the app.yaml contents, which provides a custom entry point that
 specifies the `-agentpath` java option to load the agent:
 
-https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/ac5c05af60eb739330ca970f183ce52002df3c10/samples/java/appengine-java11/simple-server/app.yaml#L15-L17
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/bb6e9a271a61c31e66018c1a1ad844eec544bcf4/samples/java/appengine-java11/simple-server/app.yaml#L15-L17
 
 Deploy the app with the following:
 
@@ -71,15 +71,16 @@ snapshot-dbg-cli list_debuggees
 ```
 
 The output will resemble the following. The first column will contain an entry
-`<service> - <version>`, which in this case is `default - 20221117t213436`.
+`<service> - <version>`, which in this case is `sample-java11-simple-server -
+20221117t213436`.
 
 ```
-Name                                           ID                                Description
----------------------------------------------  --------------------------------  ----------------------------------------------------------------------------------
-sample-java11-simple-server - 20221122t161333  d-ad4829f7                        jcb-test-firebase-1-sample-java11-simple-server-20221122t161333-448054658875855015
+Name                                           ID          Description
+---------------------------------------------  ----------  -------------------------------------------------------------------------
+sample-java11-simple-server - 20221122t161333  d-ad4829f7  my-project-sample-java11-simple-server-20221122t161333-448054658875855015
 ```
 
-The debuggee ID in this case is  `d-de80f15f`. Using this ID you may now run
+The debuggee ID in this case is  `d-ad4829f7`. Using this ID you may now run
 through an [Example workflow](../../../../README.md#example-workflow).
 
 E.g.
