@@ -1,6 +1,6 @@
 # Using the Java Agent on a Hello World Servlet on GAE Standard with Java 11
 
-> **NOTE**: This example was copied from
+> **Note**: This example was copied from
 [appengine-java11/helloworld-servlet](https://github.com/GoogleCloudPlatform/java-docs-samples/blob/main/appengine-java11/helloworld-servlet)
 and modified for Snapshot Debugger Java agent use.
 
