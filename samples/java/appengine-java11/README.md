@@ -51,16 +51,26 @@ If running in the Google Cloud Shell, to switch to an Open JDK 11 you can use:
    export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 ```
 
+### Servlet Runtime
+
+The Java 11 runtime requires that your application have a `Main` class that
+starts a web server.
+[`appengine-simple-jetty-main`](appengine-simple-jetty-main) is a shared
+artifact that provides a Jetty Web Server for the servlet based runtime.
+Packaged as a jar, the Main Class will load a war file, passed as an argument,
+as the context root of the web application listening to port 8080.  Some samples
+create a `<sample-name>.war` which is used as an argument in the App Engine
+`app.yaml` entrypoint field.
+
 ### App Engine Staging Directory and The Snapshot Debugger Java Agent
 
-The App Engine Plugin will stage all the files to upload into App Engine
-runtime in `${build.directory}/appengine-staging`. When deploying an [Uber
+The App Engine Plugin will stage all the files to upload into App Engine runtime
+in `${build.directory}/appengine-staging`. When deploying an [Uber
 JAR](https://stackoverflow.com/questions/11947037/what-is-an-uber-jar), the JAR
 is automatically copied into this staging directory and uploaded. It's possible
 to copy other files into this staging directory and having them available in the
 deployed App Engine runtime directory. This is required for the examples here as
-the Snapshot Debugger Java
-Agent must be deployed with your application.
+the Snapshot Debugger Java Agent must be deployed with your application.
 
 - To stage the files to be uploaded:
 ```
