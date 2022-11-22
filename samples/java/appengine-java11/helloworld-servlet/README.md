@@ -1,8 +1,8 @@
 # Using the Java Agent on a Hello World Servlet on GAE Standard with Java 11
 
-> **Note**: This example was copied from
-[appengine-java11/helloworld-servlet](https://github.com/GoogleCloudPlatform/java-docs-samples/blob/main/appengine-java11/helloworld-servlet)
-and modified for Snapshot Debugger Java agent use.
+> **Note**
+> This example was copied from
+[appengine-java11/helloworld-servlet](https://github.com/GoogleCloudPlatform/java-docs-samples/blob/main/appengine-java11/helloworld-servlet) and modified for Snapshot Debugger Java agent use.
 
 The Java 11 runtime requires that your application have a `Main` class that
 starts a web server. This sample is dependent on artifact
@@ -33,7 +33,8 @@ assumes this.
   <scope>provided</scope>
 </dependency>
 ```
-> **Note**: this dependency needs to be installed locally.**
+> **Note**
+> This dependency needs to be installed locally.
 
 ### Install dependency locally
 
