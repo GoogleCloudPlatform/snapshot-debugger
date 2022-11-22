@@ -35,7 +35,7 @@ wget -qO- https://github.com/GoogleCloudPlatform/cloud-debug-java/releases/lates
 Examine the app.yaml contents, which provides a custom entry point that
 specifies the `-agentpath` java option to load the agent:
 
-https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/ac5c05af60eb739330ca970f183ce52002df3c10/samples/java/appengine-java11/simple-server/app.yaml#L15-L17
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/bb6e9a271a61c31e66018c1a1ad844eec544bcf4/samples/java/appengine-java11/simple-server/app.yaml#L15-L17
 
 Deploy the app with the following:
 
