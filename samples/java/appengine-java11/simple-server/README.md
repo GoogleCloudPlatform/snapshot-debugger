@@ -8,6 +8,10 @@ and modified for Snapshot Debugger Java agent use.
 ## Setup
 See [Prerequisites](../README.md#Prerequisites).
 
+Ensure your current working directory is
+`samples/java/appengine-java11/simple-server`, as all following instructions
+assumes this.
+
 ## Compile the Source With Full Debug Information Enabled
 
 The `-g` option here is what enables full debug information. Without it
@@ -31,7 +35,7 @@ wget -qO- https://github.com/GoogleCloudPlatform/cloud-debug-java/releases/lates
 Examine the app.yaml contents, which provides a custom entry point that
 specifies the `-agentpath` java option to load the agent:
 
-https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/cbe7516dc06d4f8c591b0239fa5cea078787f7c5/samples/java/appgengine-java11/simple-server/app.yaml#L15-L16)
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/cbe7516dc06d4f8c591b0239fa5cea078787f7c5/samples/java/appgengine-java11/simple-server/app.yaml#L15-L16
 
 Deploy the app with the following:
 
@@ -43,8 +47,8 @@ Make note of the following output entries, which should resemble the following:
 
 ```
 [...snip]
-target service:              [default]
-target version:              [20221117t213436]
+target service:              [sample-java11-simple-server]
+target version:              [20221122t161333]
 target url:                  [https://<your-project-id>.appspot.com]
 [...snip]
 ```
@@ -53,7 +57,7 @@ The service and version will be used to identify your debuggee ID.
 
 ## Navigate To Your App
 
-This will ensure the app is run and is required as your app Your app will not be
+This will ensure the app is run and is required as your app will not be
 debuggable until after the first request has been received.  The URL should be
 provided in the `target url` output of the previous step.
 
@@ -70,9 +74,9 @@ The output will resemble the following. The first column will contain an entry
 `<service> - <version>`, which in this case is `default - 20221117t213436`.
 
 ```
-Name                         ID             Description
----------------------------  -------------  ---------------------------------------------
-default - 20221117t213436    d-de80f15f     my-project-20221117t213436-447943866161740510
+Name                                           ID                                Description
+---------------------------------------------  --------------------------------  ----------------------------------------------------------------------------------
+sample-java11-simple-server - 20221122t161333  d-ad4829f7                        jcb-test-firebase-1-sample-java11-simple-server-20221122t161333-448054658875855015
 ```
 
 The debuggee ID in this case is  `d-de80f15f`. Using this ID you may now run
@@ -83,5 +87,5 @@ E.g.
      the returned breakpoint ID.
 *    Navigate to your application using the `target url` shown in the `gcloud
      app deploy` output. This will trigger the breakpoint and collect the snapshot.
-*    Use the `get_breakpoint` CLI command to retrieve the snapshot using the
+*    Use the `get_snapshot` CLI command to retrieve the snapshot using the
      breakpoint ID created with the `set_snapshot` command.
