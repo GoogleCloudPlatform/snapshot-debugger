@@ -1,6 +1,7 @@
 # Embedded Jetty Server for Google App Engine Standard with Java 11
 
-NOTE: This example was copied from [appengine-java11/appengine-simple-jetty-main](https://github.com/GoogleCloudPlatform/java-docs-samples/tree/main/appengine-java11/appengine-simple-jetty-main) for Snapshot Debugger Java agent use.
+> **NOTE**: This directory was copied from
+[appengine-java11/appengine-simple-jetty-main](https://github.com/GoogleCloudPlatform/java-docs-samples/tree/main/appengine-java11/appengine-simple-jetty-main).
 
 For the Java 11 runtime, your application must have a `Main` class that starts a
 web server. This sample is a shared artifact that provides a `Main` class to

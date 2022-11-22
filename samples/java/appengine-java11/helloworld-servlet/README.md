@@ -1,6 +1,6 @@
 # Using the Java Agent on a Hello World Servlet on GAE Standard with Java 11
 
-NOTE: This example was copied from
+> **NOTE**: This example was copied from
 [appengine-java11/helloworld-servlet](https://github.com/GoogleCloudPlatform/java-docs-samples/blob/main/appengine-java11/helloworld-servlet)
 and modified for Snapshot Debugger Java agent use.
 
@@ -33,7 +33,7 @@ assumes this.
   <scope>provided</scope>
 </dependency>
 ```
-**Note: this dependency needs to be installed locally.**
+> **Note**: this dependency needs to be installed locally.**
 
 ### Install dependency locally
 
@@ -82,7 +82,7 @@ specifies the `-agentpath` java option to load the agent. Of special note is the
 setting of the `cdbg_extra_class_path` option to tell the agent where the
 application class file can be found:
 
-TODO: Add in permanent code link for the app.yaml file.
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/7a013760e3811ec9b89b84e76c72d4226fb164bf/samples/java/appengine-java11/helloworld-servlet/src/main/appengine/app.yaml#L14-L16
 
 This will deploy the contents of `target/appengine-staging`, with the contents
 of the added cdbg directory unchanged:
