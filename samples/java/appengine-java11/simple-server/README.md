@@ -1,4 +1,4 @@
-# Using the Java Agent on a Simple One File Server App in Google App Engine Standard Java 11
+# Using the Java Agent on a Simple One File Server App in GAE Standard Java 11
 
 NOTE: This example was copied from
 [appengine-java11/custom-entrypoint](https://github.com/GoogleCloudPlatform/java-docs-samples/blob/main/appengine-java11/custom-entrypoint)
