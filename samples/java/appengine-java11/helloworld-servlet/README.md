@@ -58,7 +58,7 @@ mvn clean package appengine:stage
 
 Per [App Engine Staging
 Directory](../README.md#app-engine-staging-directory-and-the-snapshot-debugger-java-agent)
-we can add in the Snapshot Debugger Java Agent.
+we add in the Snapshot Debugger Java Agent.
 
 ```
 mkdir target/appengine-staging/cdbg
@@ -67,7 +67,7 @@ wget -qO- https://github.com/GoogleCloudPlatform/cloud-debug-java/releases/lates
 
 ## Extract the WAR file
 
-In this sample app the WAR gets extracted to a random temporary location by
+In this sample app the WAR file gets extracted to a random temporary location by
 Jetty, the Snapshot Debugger Java Agent will not be able to locate the class
 file in order to set breakpoints. To enable it to do so, the WAR file needs to
 be extracted to a known location that the agent can be configured to search for.
@@ -78,7 +78,7 @@ unzip target/appengine-staging/helloworld.war -d target/appengine-staging/cdbg/e
 
 ## Deploy the application
 
-Examine the app.yaml contents, which provides a custom entry point that
+Examine the `app.yaml` contents, which provides a custom entry point that
 specifies the `-agentpath` java option to load the agent. Of special note is the
 setting of the `cdbg_extra_class_path` option to tell the agent where the
 application class file can be found:
@@ -110,7 +110,7 @@ This will ensure the app is run and is required as your app will not be
 debuggable until after the first request has been received. The base URL should
 be provided in the `target url` output of the previous step.
 
-Visit: https://<custom for your project>.appspot.com/hello
+Visit: https://custom-for-your-project.appspot.com/hello
 
 ## Determine the Debuggee ID
 
@@ -122,8 +122,8 @@ snapshot-dbg-cli list_debuggees
 ```
 
 The output will resemble the following. The first column will contain an entry
-`<service> - <version>`, which in this case is `sample-java11-helloworld-servlet
-- 20221122t182924`.
+`<service> - <version>`, which in this case is
+`sample-java11-helloworld-servlet - 20221122t182924`.
 
 ```
 Name                                                ID          Description
