@@ -47,7 +47,7 @@ Make note of the following output entries, which should resemble the following:
 
 ```
 [...snip]
-target service:              [sample-java11-simple-server]
+target service:              [default]
 target version:              [20221122t161333]
 target url:                  [https://<your-project-id>.appspot.com]
 [...snip]
@@ -71,13 +71,12 @@ snapshot-dbg-cli list_debuggees
 ```
 
 The output will resemble the following. The first column will contain an entry
-`<service> - <version>`, which in this case is `sample-java11-simple-server -
-20221117t213436`.
+`<service> - <version>`, which in this case is `default - 20221117t213436`.
 
 ```
-Name                                           ID          Description
----------------------------------------------  ----------  -------------------------------------------------------------------------
-sample-java11-simple-server - 20221122t161333  d-ad4829f7  my-project-sample-java11-simple-server-20221122t161333-448054658875855015
+Name                       ID          Description
+-------------------------- ----------  ------------------------------------------------
+default - 20221122t161333  d-ad4829f7  my-project-id-20221122t161333-448054658875855015
 ```
 
 The debuggee ID in this case is  `d-ad4829f7`. Using this ID you may now run
