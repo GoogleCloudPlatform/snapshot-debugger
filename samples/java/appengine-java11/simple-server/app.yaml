@@ -13,5 +13,4 @@
 # limitations under the License.
 
 runtime: java11
-service: sample-java11-simple-server
 entrypoint: java -agentpath:/workspace/cdbg/cdbg_java_agent.so=--use-firebase=true Main
