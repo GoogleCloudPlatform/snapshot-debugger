@@ -6,3 +6,6 @@ env/
 *.jar
 *.so
 .gcloudignore
+
+# maven
+target/
