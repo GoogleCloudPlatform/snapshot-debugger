@@ -16,7 +16,7 @@ assumes this.
 ## Examine app.yaml and Dockerfile
 
 This example customizes the Java 8 / Jetty 9 runtime by explicitly providing a
-Dockerfile. The purposes of the Dockerfile is to add the Snapshot Debugger Java
+Dockerfile. The purpose of the Dockerfile is to add the Snapshot Debugger Java
 agent to the runtime.
 
 src/main/appengine/app.yaml:
@@ -25,11 +25,7 @@ https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/ef597d47dadff1921d
 
 src/main/docker/Dockerfile:
 
-TODO: Add code permalink
-
-See
-[here](https://cloud.google.com/appengine/docs/flexible/java/dev-jetty9#customize)
-for more information on customizing the Java 8 / Jetty 9 runtime.
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/0868fe074c9504c9c226c93baa4fa9249afc8c68/samples/java/appengine-flexible/helloworld/src/main/docker/Dockerfile#L1-L15
 
 ## Deploy to App Engine Flexible
 
@@ -52,7 +48,7 @@ The service and version will be used to identify your debuggee ID.
 
 ## Navigate To Your App
 
-This will ensure the app is running correctly The URL should be provided in the
+This will ensure the app is running correctly. The URL should be provided in the
 `target url` output of the previous step.
 
 ## Determine the Debuggee ID
@@ -77,8 +73,8 @@ The debuggee ID in this case is  `d-85ad2c65`. Using this ID you may now run
 through an [Example workflow](../../../../README.md#example-workflow).
 
 E.g.
-*    Use the `set_snapshot` CLI command to set a snapshot at `Main.java:33`. Note
-     the returned breakpoint ID.
+*    Use the `set_snapshot` CLI command to set a snapshot at
+     `HelloServlet.java:34`. Note the returned breakpoint ID.
 *    Navigate to your application using the `target url` shown in the `mvn clean
      package appengine:deploy` output. This will trigger the breakpoint and
      collect the snapshot.
