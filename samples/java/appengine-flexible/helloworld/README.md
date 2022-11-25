@@ -2,8 +2,8 @@
 
 > **Note**
 > This example was copied from
-[flexible/helloworld](https://github.com/GoogleCloudPlatform/java-docs-samples/tree/main/flexible/helloworld)
-and modified for Snapshot Debugger Java agent use.
+> [flexible/helloworld](https://github.com/GoogleCloudPlatform/java-docs-samples/tree/main/flexible/helloworld)
+> and modified for Snapshot Debugger Java agent use.
 
 ## Setup
 

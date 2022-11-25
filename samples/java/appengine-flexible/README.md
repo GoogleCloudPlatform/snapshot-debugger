@@ -1,8 +1,9 @@
 # Snapshot Debugger Examples for Google App Engine Flexible Environment
 
-NOTE: This file was copied from
-[java-docs-samples/appengine-flexible/README.md](https://github.com/GoogleCloudPlatform/java-docs-samples/blob/main/appengine-flexible/README.md)
-and modified for the Snapshot Debugger samples here.
+> **NOTE**
+> This file was copied from
+> [java-docs-samples/appengine-flexible/README.md](https://github.com/GoogleCloudPlatform/java-docs-samples/blob/main/appengine-flexible/README.md)
+> and modified for the Snapshot Debugger samples here.
 
 ## Prerequisites
 
@@ -57,8 +58,8 @@ Run the following command to select a region and create an App Engine applicatio
 gcloud app create
 ```
 
-It is safe to run the multiple times in your project, subsequent invocations
-will simply provide an error message saying it has already been done.
+In the event this command was already run on the project, the invocation will
+simply error out and provide an message saying it has already been done.
 
 ### Install the Snapshot Debugger CLI and enable Firebase
 
@@ -83,12 +84,12 @@ If running in the Google Cloud Shell, to switch to an Open JDK 8 you can use:
 ### Available Runtimes
 
 There are two Google provided Java runtimes available:
-    * [The Java 8 / Jetty 9 runtime](https://cloud.google.com/appengine/docs/flexible/java/dev-jetty9)
-        * Provides OpenJDK 8 and Eclipse Jetty 9 with support for the Java
-          Servlet 3.1 Specification.
-    * [The Java 8 runtime](https://cloud.google.com/appengine/docs/flexible/java/dev-java-only)
-        * Does not include any web-serving framework. The only requirement is
-          that your app should listen and respond on port 8080.
+- [The Java 8 / Jetty 9 runtime](https://cloud.google.com/appengine/docs/flexible/java/dev-jetty9)
+  - Provides OpenJDK 8 and Eclipse Jetty 9 with support for the Java Servlet 3.1
+    Specification.
+- [The Java 8 runtime](https://cloud.google.com/appengine/docs/flexible/java/dev-java-only)
+  - Does not include any web-serving framework. The only requirement is that
+    your app should listen and respond on port 8080.
 
 ### Runtime Customization and JAVA_USER_OPTS
 
@@ -97,11 +98,10 @@ Debugger agent. In addition, the JAVA_USER_OPTS environment variable is used to
 set the `-agentpath` JVM option to load the agent. See the links below for more
 information:
 
-    * The Java 8 / Jetty 9 runtime
-        * [Customization](https://cloud.google.com/appengine/docs/flexible/java/dev-jetty9#customize)
-        * [Jetty 9 runtime environment variables](https://cloud.google.com/appengine/docs/flexible/java/dev-jetty9#variables)
-        * [Java 8 runtime environment variables are additionally
-          available](https://cloud.google.com/appengine/docs/flexible/java/dev-java-only#variables)
-    * The Java 8 Runtime
-        * [Customization](https://cloud.google.com/appengine/docs/flexible/java/dev-java-only#customizing)
-        * [Available environment variables](https://cloud.google.com/appengine/docs/flexible/java/dev-java-only#variables)
+- The Java 8 / Jetty 9 runtime
+  - [Customization](https://cloud.google.com/appengine/docs/flexible/java/dev-jetty9#customize)
+  - [Jetty 9 runtime environment variables](https://cloud.google.com/appengine/docs/flexible/java/dev-jetty9#variables)
+  - [Java 8 runtime environment variables are additionally available](https://cloud.google.com/appengine/docs/flexible/java/dev-java-only#variables)
+- The Java 8 Runtime
+  - [Customization](https://cloud.google.com/appengine/docs/flexible/java/dev-java-only#customizing)
+  - [Available environment variables](https://cloud.google.com/appengine/docs/flexible/java/dev-java-only#variables)

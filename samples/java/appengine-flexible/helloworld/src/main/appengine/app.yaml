@@ -12,21 +12,21 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-# Custom indicates a custom runtime will be used and a Dockerfile will be
-# provide to build it.
+# 'custom` indicates a custom runtime will be used and a Dockerfile will be
+# provided to create it.
 runtime: custom
 env: flex
 
-# NOTE: All available environment variables for the Java 8 / Jetty 9 image can
-# be found at the following two locations.
-# https://cloud.google.com/appengine/docs/flexible/java/dev-jetty9#variables
-# https://cloud.google.com/appengine/docs/flexible/java/dev-java-only#variables
+# To note, all available environment variables for the Java 8 / Jetty 9 image
+# can be found at the following two locations:
+#  - https://cloud.google.com/appengine/docs/flexible/java/dev-jetty9#variables
+#  - https://cloud.google.com/appengine/docs/flexible/java/dev-java-only#variables
 env_variables:
-  # This will prevent the runtime from loading the current Cloud Debugger agent
-  # which is present in the base runtime and enabled by default. Loading this
-  # agent would confilict with the Snapshot Debugger agent. Eventually once the
-  # Cloud Debugger has been turned down and the base image will no longer
-  # contain its agent and this won't be necessary.
+  # Prevents the runtime from loading the current Cloud Debugger agent which is
+  # present in the base runtime and enabled by default. Loading this agent
+  # would confilict with the Snapshot Debugger agent. Eventually once the Cloud
+  # Debugger has been turned down the base image will no longer contain the
+  # agent and this won't be necessary.
   DBG_ENABLE: false
 
   # The contents of JAVA_USER_OPTS are added to the java command line. To note,
