@@ -17,13 +17,15 @@ assumes this.
 
 This example customizes the Java 8 / Jetty 9 runtime by explicitly providing a
 Dockerfile. The purpose of the Dockerfile is to add the Snapshot Debugger Java
-agent to the runtime.
+agent to the runtime. The app.yaml file provides configuration information to
+specify a custom runtime is being used and to configure the loading of the
+agent.
 
-src/main/appengine/app.yaml:
+app.yaml:
 
 https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/ef597d47dadff1921dbf5a00a459d72acf1886c3/samples/java/appengine-flexible/helloworld/src/main/appengine/app.yaml#L15-L40
 
-src/main/docker/Dockerfile:
+Dockerfile:
 
 https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/0868fe074c9504c9c226c93baa4fa9249afc8c68/samples/java/appengine-flexible/helloworld/src/main/docker/Dockerfile#L1-L15
 
