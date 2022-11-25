@@ -9,10 +9,10 @@
 
 ### Download Maven
 
-Some of these samples use the [Apache Maven][maven] build system. Before
-getting started, be sure to [download][maven-download] and
-[install][maven-install] it.  When you use Maven as described here, it will
-automatically download the needed client libraries.
+Some of these samples use the [Apache Maven][maven] build system. Before getting
+started, be sure to [download][maven-download] and [install][maven-install] it.
+When you use Maven as described here, it will automatically download the needed
+client libraries.
 
 [maven]: https://maven.apache.org
 [maven-download]: https://maven.apache.org/download.cgi
@@ -96,7 +96,7 @@ There are two Google provided Java runtimes available:
 The runtime customization feature is used in the samples to add the Snapshot
 Debugger agent. In addition, the JAVA_USER_OPTS environment variable is used to
 set the `-agentpath` JVM option to load the agent. See the links below for more
-information:
+information on these options:
 
 - The Java 8 / Jetty 9 runtime
   - [Customization](https://cloud.google.com/appengine/docs/flexible/java/dev-jetty9#customize)

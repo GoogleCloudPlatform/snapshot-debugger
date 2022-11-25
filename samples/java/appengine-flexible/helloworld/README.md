@@ -21,7 +21,7 @@ agent to the runtime.
 
 src/main/appengine/app.yaml:
 
-TODO: Add code permalink
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/ef597d47dadff1921dbf5a00a459d72acf1886c3/samples/java/appengine-flexible/helloworld/src/main/appengine/app.yaml#L15-L40
 
 src/main/docker/Dockerfile:
 
