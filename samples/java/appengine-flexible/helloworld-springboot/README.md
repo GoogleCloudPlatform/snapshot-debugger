@@ -77,7 +77,7 @@ through an [Example workflow](../../../../README.md#example-workflow).
 
 E.g.
 *    Use the `set_snapshot` CLI command to set a snapshot at
-     `HelloServlet.java:34`. Note the returned breakpoint ID.
+     `HelloController.java:26`. Note the returned breakpoint ID.
 *    Navigate to your application using the `target url` shown in the `mvn clean
      package appengine:deploy` output. This will trigger the breakpoint and
      collect the snapshot.
