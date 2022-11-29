@@ -24,11 +24,11 @@ agent.
 
 app.yaml:
 
-https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/ef597d47dadff1921dbf5a00a459d72acf1886c3/samples/java/appengine-flexible/helloworld/src/main/appengine/app.yaml#L15-L40
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/ed767fe00d5b1006ff60ac9c4bf57668b774962f/samples/java/appengine-flexible/helloworld-springboot/src/main/appengine/app.yaml#L15-L34
 
 Dockerfile:
 
-https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/0868fe074c9504c9c226c93baa4fa9249afc8c68/samples/java/appengine-flexible/helloworld/src/main/docker/Dockerfile#L1-L15
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/ed767fe00d5b1006ff60ac9c4bf57668b774962f/samples/java/appengine-flexible/helloworld-springboot/src/main/docker/Dockerfile#L1-L15
 
 ## Deploy to App Engine Flexible
 
