@@ -13,7 +13,7 @@ Ensure your current working directory is
 `samples/java/appengine-flexible/helloworld`, as all following instructions
 assumes this.
 
-## Examine app.yaml and Dockerfile
+## Examine the `app.yaml` and `Dockerfile` files
 
 This example customizes the Java 8 / Jetty 9 runtime by explicitly providing a
 Dockerfile. The purpose of the Dockerfile is to add the Snapshot Debugger Java
