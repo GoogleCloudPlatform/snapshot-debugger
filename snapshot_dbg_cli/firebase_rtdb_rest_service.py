@@ -34,20 +34,24 @@ class FirebaseRtdbRestService:
     self._database_url = database_url
     self._user_output = user_output
 
-  def get(self, db_path, shallow=None):
+  def get(self, db_path, shallow=None, extra_retry_codes=None):
     """Gets the value at the specified path.
 
     Args:
       db_path: The database path to retrieve the value on.
       shallow: If specified will just get the values at the top level of the
         node, nothing further down.
+      extra_retry_codes: A list of extra HTTP error codes that will be retried
+        if the request fails in a addition to the default error codes that are
+        retried.
 
     Returns:
       The value at the specified path if it exists, None otherwise.
     """
     url = self.build_rtdb_url(db_path)
     parameters = ["shallow=true"] if shallow else []
-    return self._http_service.send_request("GET", url, parameters=parameters)
+    return self._http_service.send_request(
+        "GET", url, extra_retry_codes=extra_retry_codes, parameters=parameters)
 
   def set(self, db_path, data):
     url = self.build_rtdb_url(db_path)

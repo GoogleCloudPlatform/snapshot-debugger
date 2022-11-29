@@ -17,7 +17,6 @@ The init command is used to initialize a GCP project with the required Firebase
 resources so Snapshot Debugger can use Firebase as a backend.
 """
 
-import time
 from snapshot_dbg_cli.firebase_types import FIREBASE_MANAGMENT_API_SERVICE
 from snapshot_dbg_cli.firebase_types import FIREBASE_RTDB_MANAGMENT_API_SERVICE
 from snapshot_dbg_cli.firebase_types import DatabaseCreateStatus
@@ -357,10 +356,10 @@ class InitCommand:
       else:
         database_instance = create_response.database_instance
 
-        # Given we've just created the database, the next step will be to write
-        # to it for initialization, we'll give things a moment to settle as a
-        # precaution.
-        time.sleep(2)
+        # Since we've just created the DB, before proceeding we'll wait for it
+        # to be accessible.
+        self.wait_for_rtdb_to_be_accessible(database_instance)
+
     else:
       self.user_output.error(
           f"ERROR Unhandled database get instance status '{status}', this "
@@ -418,3 +417,16 @@ class InitCommand:
 
     if version is None:
       rtdb_service.set_schema_version(schema_version)
+
+  def wait_for_rtdb_to_be_accessible(self, database_instance):
+    # Experimentally, after creation it can take a short time (order of seconds)
+    # to not receive 404s when attempting to access it.
+    db_url = database_instance.database_url
+    self.user_output.normal(
+        f'Waiting for newly created DB {db_url} to be accessible')
+    rtdb_service = self.services.get_firebase_rtdb_rest_service(db_url)
+
+    # We don't care about the return value here. Either the call will return,
+    # indicating success and it was able to access the DB, otherwise it will
+    # throw an exception and the CLI will exit.
+    rtdb_service.get(db_path='', shallow=True, extra_retry_codes=[404])
