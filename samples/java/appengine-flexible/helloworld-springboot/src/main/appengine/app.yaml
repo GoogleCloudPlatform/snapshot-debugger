@@ -18,7 +18,7 @@ env: flex
 env_variables:
   # Prevents the runtime from loading the current Cloud Debugger agent which is
   # present in the base runtime and enabled by default. Loading this agent
-  # would confilict with the Snapshot Debugger agent. Eventually once the Cloud
+  # would conflict with the Snapshot Debugger agent. Eventually once the Cloud
   # Debugger has been turned down the base image will no longer contain the
   # agent and this won't be necessary.
   DBG_ENABLE: false
