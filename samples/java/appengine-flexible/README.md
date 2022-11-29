@@ -34,7 +34,9 @@ access control, billing, and services.
 
 ### Install Google Cloud `gcloud` CLI along with App Engine extension for Java
 
-1. See [Install gcloud](../../README.md#install-google-cloud-gcloud-cli)
+1. [Install](https://cloud.google.com/sdk/docs/install) and
+   [initialize](https://cloud.google.com/sdk/docs/initializing) the Google Cloud
+   CLI.
 1. Install the [gcloud component][managing-components] that includes the App
    Engine extension for Java.
 
