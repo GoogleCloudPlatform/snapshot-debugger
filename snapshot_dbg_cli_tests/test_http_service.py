@@ -284,7 +284,8 @@ class HttpServiceSendRequestTests(unittest.TestCase):
     self.assertEqual(8, self.urlopen_mock.call_count)
 
   def test_extra_retry_codes_works_as_expected(self):
-    # Note, for this test to work, we must use a retriable error code.
+    # Note, for this test to work, we must use an error code that is not one of
+    # the default retriable codes.
     http_error = HTTPError('https://foo.com', 404, 'Not found', {},
                            BytesIO(b'Fake Error Message'))
     self.set_urlopen_exception(http_error)
@@ -584,7 +585,8 @@ class HttpServiceSendTests(unittest.TestCase):
     self.urlopen_mock.assert_called_once_with(ANY, timeout=10)
 
   def test_extra_retry_codes_works_as_expected(self):
-    # Note, for this test to work, we must use a retriable error code.
+    # Note, for this test to work, we must use an error code that is not one of
+    # the default retriable codes.
     http_error = HTTPError('https://foo.com', 404, 'Not found', {},
                            BytesIO(b'Fake Error Message'))
     self.set_urlopen_exception(http_error)
@@ -603,6 +605,22 @@ class HttpServiceSendTests(unittest.TestCase):
     # where 404 is listed as an extra retry code. By default 404 is not one of
     # the errors that gets retried.
     self.assertEqual(3, self.urlopen_mock.call_count)
+
+  def test_extra_retry_codes_does_not_affect_base_codes(self):
+    # Note, for this test to work, we must use a retriable error code.
+    http_error = HTTPError('https://foo.com', 500, 'Not found', {},
+                           BytesIO(b'Fake Error Message'))
+    self.set_urlopen_exception(http_error)
+
+    # Note, we're patching stderr here so no error messages leak out to
+    # the terminal running the test.
+    with self.assertRaises(SilentlyExitError), \
+         patch('sys.stderr'):
+      self.http_service.send(
+          self.test_request, max_retries=1, extra_retry_codes=[404])
+
+    # Shows the 500 error is retried even when extra_retry_codes is set.
+    self.assertEqual(2, self.urlopen_mock.call_count)
 
   def test_timeout_is_configurable(self):
     self.http_service.send(self.test_request, timeout_sec=999)

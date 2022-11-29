@@ -261,8 +261,8 @@ class HttpService:
     """
     retry_count = 0
 
-    # Note, we aren't worried about duplicate codes here being present in
-    # retry_codes.
+    # Note, we aren't worried about duplicate codes in retry_codes, no need to
+    # filter or anything.
     retry_codes = RETRIABLE_HTTP_CODES if extra_retry_codes is None else [
         *RETRIABLE_HTTP_CODES, *extra_retry_codes
     ]
