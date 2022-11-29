@@ -42,3 +42,8 @@ env_variables:
 handlers:
 - url: /.*
   script: this field is required, but ignored
+
+# Set scaling to 1 to minimize resources for the example. This setting should
+# be revisited for production use.
+manual_scaling:
+  instances: 1
