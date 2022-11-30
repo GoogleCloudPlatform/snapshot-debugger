@@ -42,7 +42,7 @@ class FirebaseRtdbRestService:
       shallow: If specified will just get the values at the top level of the
         node, nothing further down.
       extra_retry_codes: A list of extra HTTP error codes that will be retried
-        if the request fails in a addition to the default error codes that are
+        if the request fails in addition to the default error codes that are
         retried.
 
     Returns:

@@ -139,7 +139,7 @@ class HttpService:
         default it will attempt retries, so for cases where a retry is not
         safe, the caller should set the value to 0.
       extra_retry_codes: A list of extra HTTP error codes that will be retried
-        if the request fails in a addition to the default error codes that are
+        if the request fails in addition to the default error codes that are
         retried.
       handle_http_errror: Flag to tell the method if it should handle HTTPError
         exceptions on its own. Callers that want to receive the error, in order
@@ -241,7 +241,7 @@ class HttpService:
         default it will attempt retries, so for cases where a retry is not
         safe, the caller should set the value to 0.
       extra_retry_codes: A list of extra HTTP error codes that will be retried
-        if the request fails in a addition to the default error codes that are
+        if the request fails in addition to the default error codes that are
         retried.
       handle_http_errror: Flag to tell the method if it should handle HTTPError
         exceptions on its own. Callers that want to receive the error, in order

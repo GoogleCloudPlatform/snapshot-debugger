@@ -61,7 +61,7 @@ class FirebaseRtdbRestServiceTests(unittest.TestCase):
 
   def test_get_works_as_expected(self):
     # In this test we don't check the shallow or extra_retry_codes parameters,
-    # it is covered in its own test.
+    # they are covered in their own tests.
     expected_calls = [
         call(
             'GET',

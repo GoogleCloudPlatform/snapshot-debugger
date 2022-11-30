@@ -419,8 +419,8 @@ class InitCommand:
       rtdb_service.set_schema_version(schema_version)
 
   def wait_for_rtdb_to_be_accessible(self, database_instance):
-    # Experimentally, after creation it can take a short time (order of seconds)
-    # to not receive 404s when attempting to access a newly created DB.
+    # Experimentally, it can take a short time (order of seconds) to not receive
+    # 404s when attempting to access a newly created DB.
     db_url = database_instance.database_url
     self.user_output.normal(
         f'Waiting for newly created DB {db_url} to be accessible')
