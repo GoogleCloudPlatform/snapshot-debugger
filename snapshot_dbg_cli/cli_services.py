@@ -97,11 +97,11 @@ class CliServices:
     self._firebase_rtdb_rest_service = None
     self._debugger_rtdb_service = None
 
-  def _get_firebase_rtdb_rest_service(self, database_url):
+  def get_firebase_rtdb_rest_service(self, database_url):
     """Retrieve the Firebase RTDB Rest Service.
 
-    If the database URL is known it can be passed in, otherwise it will be
-    be determined based on the cached args and the project.
+    If the database URL is not known it can be set to None, and it will be
+    determined based on the cached args and the project.
     """
     if self._firebase_rtdb_rest_service is None:
       if database_url is None:
@@ -122,7 +122,7 @@ class CliServices:
     """
     if self._debugger_rtdb_service is None:
       self._debugger_rtdb_service = SnapshotDebuggerRtdbService(
-          self._get_firebase_rtdb_rest_service(database_url),
+          self.get_firebase_rtdb_rest_service(database_url),
           SnapshotDebuggerSchema(), self.user_output)
 
     return self._debugger_rtdb_service

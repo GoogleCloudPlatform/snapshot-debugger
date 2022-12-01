@@ -60,17 +60,19 @@ class FirebaseRtdbRestServiceTests(unittest.TestCase):
             self.user_output_mock).build_rtdb_url('cdbg/breakpoints/active'))
 
   def test_get_works_as_expected(self):
-    # In this test we don't check the shallow parameters, it is covered in its
-    # own test.
+    # In this test we don't check the shallow or extra_retry_codes parameters,
+    # they are covered in their own tests.
     expected_calls = [
         call(
             'GET',
             self.firebase_rtdb_rest_service.build_rtdb_url('cdbg/debuggees'),
+            extra_retry_codes=ANY,
             parameters=ANY),
         call(
             'GET',
             self.firebase_rtdb_rest_service.build_rtdb_url(
                 'cdbg/breakpoints/active'),
+            extra_retry_codes=ANY,
             parameters=ANY),
     ]
 
@@ -86,14 +88,30 @@ class FirebaseRtdbRestServiceTests(unittest.TestCase):
 
   def test_get_shallow_param_works_as_expected(self):
     expected_calls = [
-        call('GET', ANY, parameters=[]),
-        call('GET', ANY, parameters=[]),
-        call('GET', ANY, parameters=['shallow=true']),
+        call('GET', ANY, extra_retry_codes=ANY, parameters=[]),
+        call('GET', ANY, extra_retry_codes=ANY, parameters=[]),
+        call('GET', ANY, extra_retry_codes=ANY, parameters=['shallow=true']),
     ]
 
     self.firebase_rtdb_rest_service.get('cdbg/debuggees')
     self.firebase_rtdb_rest_service.get('cdbg/debuggees', shallow=False)
     self.firebase_rtdb_rest_service.get('cdbg/debuggees', shallow=True)
+
+    self.assertEqual(expected_calls,
+                     self.http_service_mock.send_request.mock_calls)
+
+  def test_get_extra_retry_codes_param_works_as_expected(self):
+    expected_calls = [
+        call('GET', ANY, extra_retry_codes=None, parameters=ANY),
+        call('GET', ANY, extra_retry_codes=[404], parameters=ANY),
+        call('GET', ANY, extra_retry_codes=[404, 405], parameters=ANY),
+    ]
+
+    self.firebase_rtdb_rest_service.get('')
+    self.firebase_rtdb_rest_service.get(
+        '', shallow=None, extra_retry_codes=[404])
+    self.firebase_rtdb_rest_service.get(
+        '', shallow=None, extra_retry_codes=[404, 405])
 
     self.assertEqual(expected_calls,
                      self.http_service_mock.send_request.mock_calls)

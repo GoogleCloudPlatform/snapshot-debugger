@@ -113,6 +113,7 @@ class HttpService:
                    data=None,
                    include_project_header=False,
                    max_retries=DEFAULT_MAX_RETRIES,
+                   extra_retry_codes=None,
                    handle_http_error=True,
                    timeout_sec=DEFAULT_TIMEOUT_SEC):
     """ Sends an HTTP request based on the passed in arguments.
@@ -137,6 +138,9 @@ class HttpService:
       max_retries: How many times to retry the request in case of failure. By
         default it will attempt retries, so for cases where a retry is not
         safe, the caller should set the value to 0.
+      extra_retry_codes: A list of extra HTTP error codes that will be retried
+        if the request fails in addition to the default error codes that are
+        retried.
       handle_http_errror: Flag to tell the method if it should handle HTTPError
         exceptions on its own. Callers that want to receive the error, in order
         to check the error code or message, should set this flag to False. It
@@ -163,6 +167,7 @@ class HttpService:
     return self.send(
         request,
         max_retries=max_retries,
+        extra_retry_codes=extra_retry_codes,
         handle_http_error=handle_http_error,
         timeout_sec=timeout_sec)
 
@@ -218,6 +223,7 @@ class HttpService:
   def send(self,
            request,
            max_retries=DEFAULT_MAX_RETRIES,
+           extra_retry_codes=None,
            handle_http_error=True,
            timeout_sec=DEFAULT_TIMEOUT_SEC):
     """ Sends an HTTP request using the passed in request.
@@ -234,6 +240,9 @@ class HttpService:
       max_retries: How many times to retry the request in case of failure. By
         default it will attempt retries, so for cases where a retry is not
         safe, the caller should set the value to 0.
+      extra_retry_codes: A list of extra HTTP error codes that will be retried
+        if the request fails in addition to the default error codes that are
+        retried.
       handle_http_errror: Flag to tell the method if it should handle HTTPError
         exceptions on its own. Callers that want to receive the error, in order
         to check the error code or message, should set this flag to False. It
@@ -251,6 +260,12 @@ class HttpService:
         HTTPError and handle_http_error was set to False.
     """
     retry_count = 0
+
+    # Note, we aren't worried about duplicate codes in retry_codes, no need to
+    # filter or anything.
+    retry_codes = RETRIABLE_HTTP_CODES if extra_retry_codes is None else [
+        *RETRIABLE_HTTP_CODES, *extra_retry_codes
+    ]
 
     while True:
       send_msg = SENDING_REST_MSG.format(
@@ -272,7 +287,7 @@ class HttpService:
             body_parsed = json.loads(body_parsed)
         break
       except HTTPError as err:
-        if retry_count == max_retries or err.code not in RETRIABLE_HTTP_CODES:
+        if retry_count == max_retries or err.code not in retry_codes:
           if not handle_http_error:
             # This means the caller wants the HTTPError and will handle it on
             # their own.

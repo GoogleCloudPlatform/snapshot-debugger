@@ -32,6 +32,7 @@ from snapshot_dbg_cli.firebase_types import FirebaseProject
 from snapshot_dbg_cli.firebase_types import FirebaseProjectGetResponse
 from snapshot_dbg_cli.firebase_types import FirebaseProjectStatus
 from snapshot_dbg_cli.firebase_management_rest_service import FirebaseManagementRestService
+from snapshot_dbg_cli.firebase_rtdb_rest_service import FirebaseRtdbRestService
 from snapshot_dbg_cli.permissions_rest_service import PermissionsRestService
 from snapshot_dbg_cli.snapshot_debugger_rtdb_service import SnapshotDebuggerRtdbService
 from snapshot_dbg_cli.user_output import UserOutput
@@ -96,9 +97,14 @@ class InitCommandTests(unittest.TestCase):
     self.cli_services.firebase_management_service = \
         self.firebase_management_service_mock
 
-    self.rtdb_service_mock = MagicMock(spec=SnapshotDebuggerRtdbService)
+    self.firebase_rtdb_service_mock = MagicMock(spec=FirebaseRtdbRestService)
+    self.cli_services.get_firebase_rtdb_rest_service = MagicMock(
+        return_value=self.firebase_rtdb_service_mock)
+
+    self.debugger_rtdb_service_mock = MagicMock(
+        spec=SnapshotDebuggerRtdbService)
     self.cli_services.get_snapshot_debugger_rtdb_service = MagicMock(
-        return_value=self.rtdb_service_mock)
+        return_value=self.debugger_rtdb_service_mock)
 
     self.cli_services.get_snapshot_debugger_default_database_id = MagicMock(
         return_value=f'{TEST_PROJECT_ID}-cdbg')
@@ -120,7 +126,8 @@ class InitCommandTests(unittest.TestCase):
             database_instance=build_database_instance(TEST_PROJECT_ID,
                                                       'USER_DATABASE')))
 
-    self.rtdb_service_mock.get_schema_version = MagicMock(return_value='1')
+    self.debugger_rtdb_service_mock.get_schema_version = MagicMock(
+        return_value='1')
 
   def run_cmd(self, testargs, expected_exception=None):
     args = ['cli-test', 'init'] + testargs
@@ -128,11 +135,8 @@ class InitCommandTests(unittest.TestCase):
     # We patch os.environ as some cli arguments can come from environment
     # variables, and if they happen to be set in the terminal running the tests
     # it will affect things.
-    # We patch the sleep to speed the tests up as the init command has a sleep,
-    # which slows the tests down.
     with patch.object(sys, 'argv', args), \
          patch.dict(os.environ, {}, clear=True), \
-         patch('time.sleep', return_value=None), \
          patch('sys.stdout', new_callable=StringIO) as out, \
          patch('sys.stderr', new_callable=StringIO) as err:
       if expected_exception is not None:
@@ -160,7 +164,7 @@ class InitCommandTests(unittest.TestCase):
     self.firebase_management_service_mock.project_get.assert_not_called()
     self.firebase_management_service_mock.rtdb_instance_get.assert_not_called()
     self.cli_services.get_snapshot_debugger_rtdb_service.assert_not_called()
-    self.rtdb_service_mock.get_schema_version.assert_not_called()
+    self.debugger_rtdb_service_mock.get_schema_version.assert_not_called()
 
   def test_permissions_check_done_as_expected(self):
     testargs = []
@@ -179,7 +183,7 @@ class InitCommandTests(unittest.TestCase):
     self.gcloud_service_mock.is_api_enabled.assert_not_called()
     self.firebase_management_service_mock.rtdb_instance_get.assert_not_called()
     self.cli_services.get_snapshot_debugger_rtdb_service.assert_not_called()
-    self.rtdb_service_mock.get_schema_version.assert_not_called()
+    self.debugger_rtdb_service_mock.get_schema_version.assert_not_called()
 
   def test_firebase_management_api_not_enabled(self):
     """Tests the situation where the Firebase Management API is not enabled.
@@ -212,7 +216,7 @@ class InitCommandTests(unittest.TestCase):
     # Ensure the command exited before progressing any further
     self.firebase_management_service_mock.rtdb_instance_get.assert_not_called()
     self.cli_services.get_snapshot_debugger_rtdb_service.assert_not_called()
-    self.rtdb_service_mock.get_schema_version.assert_not_called()
+    self.debugger_rtdb_service_mock.get_schema_version.assert_not_called()
 
   def test_project_not_firebase_enabled(self):
     """Tests the situation where the project is not enabled for Firebase.
@@ -262,7 +266,7 @@ class InitCommandTests(unittest.TestCase):
 
     # Ensure the command exited before progressing any further
     self.cli_services.get_snapshot_debugger_rtdb_service.assert_not_called()
-    self.rtdb_service_mock.get_schema_version.assert_not_called()
+    self.debugger_rtdb_service_mock.get_schema_version.assert_not_called()
 
   def test_rtdb_management_api_gets_enabled_when_not_enabled(self):
     testargs = []
@@ -324,9 +328,12 @@ class InitCommandTests(unittest.TestCase):
         return_value=DatabaseGetResponse(
             status=DatabaseGetStatus.DOES_NOT_EXIST))
 
+    self.firebase_rtdb_service_mock.get = MagicMock(return_value=None)
+
     for test_name, testargs, db_type, expected_database_name in testcases:
       with self.subTest(test_name):
         self.firebase_management_service_mock.rtdb_instance_get.reset_mock()
+        self.firebase_rtdb_service_mock.get.reset_mock()
         database_instance = build_database_instance(expected_database_name,
                                                     db_type)
 
@@ -342,6 +349,9 @@ class InitCommandTests(unittest.TestCase):
             expected_database_name)
         service_mock.rtdb_instance_create.assert_called_once_with(
             database_id=expected_database_name, location='us-central1')
+
+        self.firebase_rtdb_service_mock.get.assert_called_once_with(
+            db_path='', shallow=True, extra_retry_codes=[404])
 
   def test_handles_db_create_fails_precondition_as_expected(self):
     # Testdata: (test_name, testargs, db_type, expected_db_name)
@@ -455,20 +465,23 @@ class InitCommandTests(unittest.TestCase):
   def test_db_not_initialized_when_already_initialized(self):
     # By returning a value here, that indicates the database has been
     # initialized
-    self.rtdb_service_mock.get_schema_version = MagicMock(return_value='1')
+    self.debugger_rtdb_service_mock.get_schema_version = MagicMock(
+        return_value='1')
 
     self.run_cmd(testargs=[])
 
-    self.rtdb_service_mock.set_schema_version.assert_not_called()
+    self.debugger_rtdb_service_mock.set_schema_version.assert_not_called()
 
   def test_db_initialized_when_not_yet_initialized(self):
     # By returning None here, that indicates the database has not been
     # initialized
-    self.rtdb_service_mock.get_schema_version = MagicMock(return_value=None)
+    self.debugger_rtdb_service_mock.get_schema_version = MagicMock(
+        return_value=None)
 
     self.run_cmd(testargs=[])
 
-    self.rtdb_service_mock.set_schema_version.assert_called_once_with('1')
+    self.debugger_rtdb_service_mock.set_schema_version.assert_called_once_with(
+        '1')
 
   def test_db_info_output_after_successful_run(self):
     database_instance = DatabaseInstance({
