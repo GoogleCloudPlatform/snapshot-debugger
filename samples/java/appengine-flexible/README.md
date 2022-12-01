@@ -2,7 +2,7 @@
 
 > **NOTE**
 > This file was copied from
-> [java-docs-samples/appengine-flexible/README.md](https://github.com/GoogleCloudPlatform/java-docs-samples/blob/main/appengine-flexible/README.md)
+> [java-docs-samples/appengine-flexible/README.md](https://github.com/GoogleCloudPlatform/java-docs-samples/blob/main/flexible/README.md)
 > and modified for the Snapshot Debugger samples here.
 
 ## Prerequisites
@@ -100,10 +100,15 @@ Debugger agent. In addition, the JAVA_USER_OPTS environment variable is used to
 set the `-agentpath` JVM option to load the agent. See the links below for more
 information on these options:
 
-- The Java 8 / Jetty 9 runtime
+- The Java 8 / Jetty 9 Runtime
   - [Customization](https://cloud.google.com/appengine/docs/flexible/java/dev-jetty9#customize)
   - [Jetty 9 runtime environment variables](https://cloud.google.com/appengine/docs/flexible/java/dev-jetty9#variables)
   - [Java 8 runtime environment variables are additionally available](https://cloud.google.com/appengine/docs/flexible/java/dev-java-only#variables)
 - The Java 8 Runtime
   - [Customization](https://cloud.google.com/appengine/docs/flexible/java/dev-java-only#customizing)
   - [Available environment variables](https://cloud.google.com/appengine/docs/flexible/java/dev-java-only#variables)
+
+**Sample applications**:
+- [helloworld](helloworld) uses the Java 8 / Jetty 9 runtime
+- [helloworld-springboot](helloworld-springboot) uses the Java 8 Runtime
+

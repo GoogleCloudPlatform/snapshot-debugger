@@ -1,0 +1,43 @@
+# Copyright 2015 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+runtime: custom
+env: flex
+
+env_variables:
+  # Prevents the runtime from loading the current Cloud Debugger agent which is
+  # present in the base runtime and enabled by default. Loading this agent
+  # would conflict with the Snapshot Debugger agent. Eventually once the Cloud
+  # Debugger has been turned down the base image will no longer contain the
+  # agent and this won't be necessary.
+  DBG_ENABLE: false
+
+  # The contents of JAVA_USER_OPTS are added to the java command line. To note,
+  # in this case the Java agent is able to find the class files (enabling it to
+  # set breakpoints) without any extra configuration.  This is because the
+  # jetty.base property gets set and the root.war file is extracted to
+  # 'jetty.base'/webapps/root. There are times however you may need to also
+  # configure cdbg_extra_class_path if the agent cannot find the class files,
+  # see https://github.com/GoogleCloudPlatform/cloud-debug-java#extra-classpath
+  # for more information.
+  JAVA_USER_OPTS: -agentpath:/opt/cdbg/cdbg_java_agent.so=--log_dir=/var/log/app_engine,--use-firebase=true
+
+handlers:
+- url: /.*
+  script: this field is required, but ignored
+
+# Set scaling to 1 to minimize resources for the example. This setting should
+# be revisited for production use.
+manual_scaling:
+  instances: 1
