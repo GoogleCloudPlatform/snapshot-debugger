@@ -9,3 +9,7 @@ env/
 
 # maven
 target/
+
+# npm
+node_modules/
+package-lock.json
