@@ -46,10 +46,6 @@ DEBUGGEE_2 = {
     'description': 'desc 2'
 }
 
-
-def debuggees_to_dict(debuggees):
-  return dict((d['id'], d) for d in debuggees)
-
 SNAPSHOT_ACTIVE =  {
   'action': 'CAPTURE',
   'createTimeUnixMsec': 1649962215426,
@@ -92,6 +88,9 @@ LOGPOINT_COMPLETED =  {
   'logMessageFormat': 'Message 2',
 } # yapf: disable (Subjectively, more readable hand formatted)
 
+def debuggees_to_dict(debuggees):
+  return dict((d['id'], d) for d in debuggees)
+
 
 class SnapshotDebuggerRtdbServiceTests(unittest.TestCase):
   """ Contains the unit tests for the DeleteSnapshotsCommand class.
@@ -130,16 +129,40 @@ class SnapshotDebuggerRtdbServiceTests(unittest.TestCase):
     self.assertEqual('1', version)
 
   def test_get_debuggees_works_as_expected(self):
+    d1 = DEBUGGEE_1.copy()
+    d2 = DEBUGGEE_2.copy()
+    self.firebase_rtdb_service_mock.get = MagicMock(
+        return_value=debuggees_to_dict([d1, d2]))
+
     current_time = 1649962215000888
+    debuggees = self.debugger_rtdb_service.get_debuggees(current_time)
+
+    self.assertEqual([d1, d2], debuggees)
+    self.firebase_rtdb_service_mock.get.assert_called_once_with(
+        self.schema.get_path_debuggees())
+
+  def test_get_debuggees_normalizes_the_debuggees(self):
+    """This test focuses solely on ensuring the debuggees gets normalized.
+
+    The debuggees returned by get_debuggees() should have the
+    debuggee_utils.normalize_debuggee function applied to them.  This ensures
+    all expected fields are set and calling code can assume they exist.
+    """
+    current_time = 1649962215000888
+    debuggee = DEBUGGEE_1.copy()
+    debuggee['registrationTimeUnixMsec'] = current_time
+    debuggee['lastUpdateTimeUnixMsec'] = current_time
+
+    # Ensure it's not there. The call to normalize will populate it.
+    self.assertNotIn('isActive', debuggee)
 
     self.firebase_rtdb_service_mock.get = MagicMock(
-        return_value=debuggees_to_dict([DEBUGGEE_1, DEBUGGEE_2]))
+        return_value=debuggees_to_dict([debuggee]))
 
     debuggees = self.debugger_rtdb_service.get_debuggees(current_time)
 
-    self.assertEqual([DEBUGGEE_1, DEBUGGEE_2], debuggees)
-    self.firebase_rtdb_service_mock.get.assert_called_once_with(
-        self.schema.get_path_debuggees())
+    self.assertIn('isActive', debuggees[0])
+    self.assertTrue(debuggees[0]['isActive'])
 
   def test_validate_debuggee_id_returns_normally_when_id_found(self):
     self.firebase_rtdb_service_mock.get = MagicMock(return_value=DEBUGGEE_1)

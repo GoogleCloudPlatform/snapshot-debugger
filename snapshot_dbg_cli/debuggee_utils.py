@@ -45,7 +45,7 @@ def normalize_debuggee(debuggee, current_time_unix_msec):
   This method ensures all required and expected fields are set. If any required
   field is not set, and cannot be filled in, None will be returned.
 
-  If a breakpoint is returned, the following fields are guaranteed to
+  If a debuggee is returned, the following fields are guaranteed to
   be populated:
 
     id
@@ -66,18 +66,8 @@ def normalize_debuggee(debuggee, current_time_unix_msec):
     registrationTime
     registrationTimeUnixMsec
 
-  If the 'action' field is 'CAPTURE', the breakpoint represents a snapshot, and
-  if it's 'LOG', the breakpoint represents a logpoint.
-
-  Additionally, if the breakpoint represents a logpoint (action is 'LOG'), the
-  following fields will be present:
-
-    logMessageFormat        - Form of 'a: $0, b: $1', used by the agents
-    logMessageFormatString  - Form of 'a: {a}, b: {b}', friendly user version
-    logLevel
-
   Returns:
-    The normalized breakpoint on success, None on failure.
+    The normalized debuggee on success, None on failure.
   """
   if not isinstance(debuggee, dict):
     return None

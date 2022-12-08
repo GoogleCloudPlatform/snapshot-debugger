@@ -32,16 +32,18 @@ snapshot-cdbg-cli list_debuggees
 
 
 Usage: `__main__.py list_debuggees [-h] [--database-url DATABASE_URL] [--format
-FORMAT] [--debug]`
+FORMAT] [--debug] [--include-inactive]`
 
 Used to display a list of the debug targets (debuggees) registered with the
-Snapshot Debugger.
+Snapshot Debugger. By default all active debuggees are returned. To also obtain
+inactive debuggees specify the --include-inactive option.
 
 ### Optional arguments
 
 | Argument                      | Description |
 |-------------------------------|-------------|
 | `-h`, `--help`                | Show this help message and exit. |
+| `--include-inactive`          | Include inactive debuggees. |
 | `--database-url DATABASE_URL` | Specify the database URL for the CLI to use. This should only be used as an override to make the CLI talk to a specific instance and isn't expected to be needed. It is only required if the `--database-id` argument was used with the init command.  This value may be specified either via this command line argument or via the `SNAPSHOT_DEBUGGER_DATABASE_URL` environment variable.  When both are specified, the value from the command line takes precedence. |
 | `--format FORMAT`             | Set the format for printing command output resources. The default is a command-specific human-friendly output format. The supported formats are: `default`, `json` (raw) and `pretty-json` (formatted `json`). |
 | `--debug`                     | Enable CLI debug messages. |

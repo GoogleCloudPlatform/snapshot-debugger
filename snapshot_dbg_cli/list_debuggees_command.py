@@ -21,11 +21,11 @@ import time
 
 DESCRIPTION = """
 Used to display a list of the debug targets (debuggees) registered with the
-Snapshot Debugger. By default all active debuggees are returned. To obtained
+Snapshot Debugger. By default all active debuggees are returned. To also obtain
 inactive debuggees specify the --include-inactive option.
 """
 
-INCLUDE_INACTIVE_HELP = 'Include all debuggees, both active and inactive.'
+INCLUDE_INACTIVE_HELP = 'Include inactive debuggees.'
 
 
 class ListDebuggeesCommand:
@@ -64,10 +64,9 @@ class ListDebuggeesCommand:
       if any(d['activeDebuggeeEnabled'] for d in debuggees):
         debuggees = list(filter(lambda d: d['isActive'], debuggees))
 
-    # We add the second sort parameter on displayName as in the case of older
-    # agents that don't support the 'active debuggee' feature, they will all
-    # have the same lastUpdateTimeUnixMsec of 0, so their will still get some
-    # sorting.
+    # We add the second sort parameter on displayName for older agents that
+    # don't support the 'active debuggee' feature. They will all have the same
+    # lastUpdateTimeUnixMsec of 0, so they will still get some useful sorting.
     debuggees = sorted(
         debuggees,
         key=lambda d: (d['lastUpdateTimeUnixMsec'], d['displayName']),
