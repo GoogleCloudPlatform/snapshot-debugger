@@ -17,23 +17,15 @@ The list_debugees command is used to display a list of the debug targets
 (debuggees) registered with the Snapshot Debugger.
 """
 
+import time
+
 DESCRIPTION = """
 Used to display a list of the debug targets (debuggees) registered with the
-Snapshot Debugger.
+Snapshot Debugger. By default all active debuggees are returned. To obtained
+inactive debuggees specify the --include-inactive option.
 """
 
-
-def validate_debuggee(debuggee):
-  required_fields = ['id']
-
-  return all(k in debuggee for k in required_fields)
-
-
-def get_debuggee_name(debuggee):
-  module = debuggee.get('labels', {}).get('module', 'default')
-  version = debuggee.get('labels', {}).get('version', '')
-
-  return f'{module} - {version}'
+INCLUDE_INACTIVE_HELP = 'Include all debuggees, both active and inactive.'
 
 
 class ListDebuggeesCommand:
@@ -52,28 +44,41 @@ class ListDebuggeesCommand:
     parent_parsers += required_parsers
     parser = args_subparsers.add_parser(
         'list_debuggees', description=DESCRIPTION, parents=parent_parsers)
+    parser.add_argument(
+        '--include-inactive', help=INCLUDE_INACTIVE_HELP, action='store_true')
     parser.set_defaults(func=self.cmd)
 
   def cmd(self, args, cli_services):
     user_output = cli_services.user_output
 
+    current_time_unix_msec = int(time.time() * 1000)
     debugger_rtdb_service = cli_services.get_snapshot_debugger_rtdb_service()
-    debuggees = debugger_rtdb_service.get_debuggees() or {}
+    debuggees = debugger_rtdb_service.get_debuggees(current_time_unix_msec)
 
-    # The result will be a dictionary, convert it to an array, while also
-    # filtering out any invalid entries, such as if it's missing a debuggee ID,
-    # which is a required field.
-    debuggees = list(filter(validate_debuggee, debuggees.values()))
+    if not args.include_inactive:
+      # If there are any debuggees that support the 'active debuggee' feature,
+      # then we go ahead and apply isActive filter. Any debuggees that don't
+      # support it will be filtered out, but given there are debuggees from
+      # newer agents present odds then that debugees without this feature are
+      # inactive.
+      if any(d['activeDebuggeeEnabled'] for d in debuggees):
+        debuggees = list(filter(lambda d: d['isActive'], debuggees))
+
+    # We add the second sort parameter on displayName as in the case of older
+    # agents that don't support the 'active debuggee' feature, they will all
+    # have the same lastUpdateTimeUnixMsec of 0, so their will still get some
+    # sorting.
+    debuggees = sorted(
+        debuggees,
+        key=lambda d: (d['lastUpdateTimeUnixMsec'], d['displayName']),
+        reverse=True)
 
     if args.format.is_a_json_value():
       user_output.json_format(debuggees, pretty=args.format.is_pretty_json())
     else:
       headers = ['Name', 'ID', 'Description']
 
-      values = [[
-          get_debuggee_name(d),
-          d.get('id', ''),
-          d.get('description', '')
-      ] for d in debuggees]
+      values = [[d['displayName'], d['id'], d['description']] for d in debuggees
+               ]
 
       user_output.tabular(headers, values)

@@ -28,23 +28,27 @@ from unittest.mock import call
 from unittest.mock import MagicMock
 from unittest.mock import patch
 
-DEBUGGEE_1 = ({
+DEBUGGEE_1 = {
     'id': '123',
     'labels': {
         'module': 'app123',
         'version': 'v1'
     },
     'description': 'desc 1'
-}, ['app123 - v1', '123', 'desc 1'])
+}
 
-DEBUGGEE_2 = ({
+DEBUGGEE_2 = {
     'id': '456',
     'labels': {
         'module': 'app456',
         'version': 'v2'
     },
     'description': 'desc 2'
-}, ['app456 - v2', '456', 'desc 2'])
+}
+
+
+def debuggees_to_dict(debuggees):
+  return dict((d['id'], d) for d in debuggees)
 
 SNAPSHOT_ACTIVE =  {
   'action': 'CAPTURE',
@@ -126,10 +130,12 @@ class SnapshotDebuggerRtdbServiceTests(unittest.TestCase):
     self.assertEqual('1', version)
 
   def test_get_debuggees_works_as_expected(self):
-    self.firebase_rtdb_service_mock.get = MagicMock(
-        return_value=[DEBUGGEE_1, DEBUGGEE_2])
+    current_time = 1649962215000888
 
-    debuggees = self.debugger_rtdb_service.get_debuggees()
+    self.firebase_rtdb_service_mock.get = MagicMock(
+        return_value=debuggees_to_dict([DEBUGGEE_1, DEBUGGEE_2]))
+
+    debuggees = self.debugger_rtdb_service.get_debuggees(current_time)
 
     self.assertEqual([DEBUGGEE_1, DEBUGGEE_2], debuggees)
     self.firebase_rtdb_service_mock.get.assert_called_once_with(
