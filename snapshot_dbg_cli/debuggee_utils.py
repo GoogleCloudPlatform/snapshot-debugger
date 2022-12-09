@@ -14,7 +14,7 @@
 """This module provides a variety of utilities related to debuggees processing.
 """
 
-from snapshot_dbg_cli.time_utils import convert_unix_msec_to_rfc3339
+import snapshot_dbg_cli.time_utils
 
 MSEC_PER_HOUR = 60 * 60 * 1000
 DEBUGGEE_ACTIVE_THRESHOLD_MSEC = 6 * MSEC_PER_HOUR
@@ -29,14 +29,11 @@ def get_display_name(labels):
 
 
 def set_converted_timestamps(debuggee):
-  conversions = [['registrationTime', 'registrationTimeUnixMsec'],
-                 ['lastUpdateTime', 'lastUpdateTimeUnixMsec']]
+  field_mappings = [('registrationTime', 'registrationTimeUnixMsec'),
+                    ('lastUpdateTime', 'lastUpdateTimeUnixMsec')]
 
-  for c in conversions:
-    if c[0] not in debuggee and c[1] in debuggee:
-      debuggee[c[0]] = convert_unix_msec_to_rfc3339(debuggee[c[1]])
-
-  return debuggee
+  return snapshot_dbg_cli.time_utils.set_converted_timestamps(
+      debuggee, field_mappings)
 
 
 def normalize_debuggee(debuggee, current_time_unix_msec):

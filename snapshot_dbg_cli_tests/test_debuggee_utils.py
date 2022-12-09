@@ -34,7 +34,7 @@ class SnapshotDebuggerDebuggeeUtilsTests(unittest.TestCase):
     changes are done.
     """
 
-    # Note, these tests don't need fully flesched out breakpoints, the function
+    # Note, these tests don't need fully fleshed out debuggees, the function
     # under test only cares about time fields in a dict, so these minimal dicts
     # suffice.
     testcases = [

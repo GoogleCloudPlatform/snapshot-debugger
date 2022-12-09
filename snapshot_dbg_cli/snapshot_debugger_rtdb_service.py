@@ -55,8 +55,8 @@ class SnapshotDebuggerRtdbService:
     debuggees = self.rest_service.get(self.schema.get_path_debuggees()) or {}
 
     # The result will be a dictionary, convert it to an array, while also
-    # filtering out any invalid entries, normalize_debuggee returns None for
-    # invalid debuggee.
+    # filtering out any invalid entries. normalize_debuggee returns None for
+    # invalid debuggees.
     debuggees = [
         dbgee for dbgee_id, dbgee in debuggees.items()
         if normalize_debuggee(dbgee, current_time_unix_msec)

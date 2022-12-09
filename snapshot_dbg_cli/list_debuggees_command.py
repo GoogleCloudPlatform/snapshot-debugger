@@ -22,7 +22,9 @@ import time
 DESCRIPTION = """
 Used to display a list of the debug targets (debuggees) registered with the
 Snapshot Debugger. By default all active debuggees are returned. To also obtain
-inactive debuggees specify the --include-inactive option.
+inactive debuggees specify the --include-inactive option.  A debuggee is
+considered to be active if it currently running or last ran in the past 5-6
+hours.
 """
 
 INCLUDE_INACTIVE_HELP = 'Include inactive debuggees.'

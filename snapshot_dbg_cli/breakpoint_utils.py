@@ -17,9 +17,9 @@ These utilities are useful in multiple snapshot and logpoint commands.
 """
 
 import re
+import snapshot_dbg_cli.time_utils
 
 from snapshot_dbg_cli.status_message import StatusMessage
-from snapshot_dbg_cli.time_utils import convert_unix_msec_to_rfc3339
 
 # Regex that can be used to validate a user inputted location which should be in
 # the format file:line.
@@ -67,14 +67,11 @@ def transform_location_to_file_line(location):
 
 
 def set_converted_timestamps(bp):
-  conversions = [['createTime', 'createTimeUnixMsec'],
-                 ['finalTime', 'finalTimeUnixMsec']]
+  field_mappings = [('createTime', 'createTimeUnixMsec'),
+                    ('finalTime', 'finalTimeUnixMsec')]
 
-  for c in conversions:
-    if c[0] not in bp and c[1] in bp:
-      bp[c[0]] = convert_unix_msec_to_rfc3339(bp[c[1]])
-
-  return bp
+  return snapshot_dbg_cli.time_utils.set_converted_timestamps(
+      bp, field_mappings)
 
 
 # Returns None if there's an issue

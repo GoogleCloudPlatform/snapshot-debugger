@@ -39,3 +39,48 @@ def convert_unix_msec_to_rfc3339(unix_msec):
     # will be '1970-01-01...', which visually will be recognizable as beginning
     # of epoch and that the value was not known.
     return convert_unix_msec_to_rfc3339(0)
+
+
+def set_converted_timestamps(data, field_mappings):
+  """Converts raw unix timestamp fields to human readable versions.
+
+  If the destination field already exists it won't be overwritten.
+
+  Example:
+  data = {
+    fooTimeUnixMsec: 1649962215000
+    barTimeUnixMsec: 1649962216000
+  }
+
+  field_mappings = [
+    ('fooTime', 'fooTimeUnixMsec'),
+    ('barTIme, 'barTimeUnixMsec')
+  ]
+
+  set_converted_timestamps(data, field_mappings)
+  data = {
+    fooTimeUnixMsec: 1649962215000
+    fooTime: '2022-04-14T18:50:15.000000Z'
+    barTimeUnixMsec = 1649962216000
+    barTime: '2022-04-14T18:50:16.000000Z'
+  }
+
+
+  Args:
+    data: The container dict, expected to represent either a breakpoint a
+      debuggee.
+    field_mappings: [(str, str)] List of field mappings. For each entry the
+      first member is the destination field to be set with a human readable
+      timestamp. The second member is the source field and should map to a unix
+      timestamp in data.
+
+  Returns:
+    The data dict that was passed in.
+  """
+
+  for m in field_mappings:
+    if m[0] not in data and m[1] in data:
+      data[m[0]] = convert_unix_msec_to_rfc3339(
+          data[m[1]]) if data[m[1]] != 0 else 'not set'
+
+  return data

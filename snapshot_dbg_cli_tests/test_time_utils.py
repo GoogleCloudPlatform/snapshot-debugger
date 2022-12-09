@@ -17,6 +17,7 @@
 import unittest
 
 from snapshot_dbg_cli.time_utils import convert_unix_msec_to_rfc3339
+from snapshot_dbg_cli.time_utils import set_converted_timestamps
 
 
 class ListDebuggeesCommandTests(unittest.TestCase):
@@ -43,3 +44,77 @@ class ListDebuggeesCommandTests(unittest.TestCase):
                      convert_unix_msec_to_rfc3339(999999999999999))
     self.assertEqual('1970-01-01T00:00:00.000000Z',
                      convert_unix_msec_to_rfc3339('asdf'))
+
+  def test_set_converted_timestamps_one_conversion(self):
+    data = {'fooTimeUnixMsec': 1649962215000}
+
+    field_mappings = [
+        ('fooTime', 'fooTimeUnixMsec'),
+    ]
+
+    expected_data = {
+        'fooTime': '2022-04-14T18:50:15.000000Z',
+        'fooTimeUnixMsec': 1649962215000
+    }
+
+    self.assertIs(data, set_converted_timestamps(data, field_mappings))
+    self.assertEqual(expected_data, data)
+
+  def test_set_converted_timestamps_two_conversions(self):
+    data = {'fooTimeUnixMsec': 1649962215000, 'barTimeUnixMsec': 1649962216000}
+
+    field_mappings = [
+        ('fooTime', 'fooTimeUnixMsec'),
+        ('barTime', 'barTimeUnixMsec'),
+    ]
+
+    expected_data = {
+        'fooTime': '2022-04-14T18:50:15.000000Z',
+        'fooTimeUnixMsec': 1649962215000,
+        'barTime': '2022-04-14T18:50:16.000000Z',
+        'barTimeUnixMsec': 1649962216000
+    }
+
+    self.assertIs(data, set_converted_timestamps(data, field_mappings))
+    self.assertEqual(expected_data, data)
+
+  def test_set_converted_timestamps_does_not_overwrite_if_dest_exists(self):
+    data = {'fooTime': 'already exists', 'fooTimeUnixMsec': 1649962215000}
+
+    field_mappings = [
+        ('fooTime', 'fooTimeUnixMsec'),
+    ]
+
+    expected_data = {
+        'fooTime': 'already exists',
+        'fooTimeUnixMsec': 1649962215000
+    }
+
+    self.assertIs(data, set_converted_timestamps(data, field_mappings))
+    self.assertEqual(expected_data, data)
+
+  def test_set_converted_timestamps_source_does_not_exist(self):
+    """Test ensures if source field doesn't exists nothing bad happens.
+    """
+    data = {'fooTimeUnixMsec': 1649962215000}
+
+    field_mappings = [
+        ('fooTime', 'fooTimeSourceDoesNotExist'),
+    ]
+
+    expected_data = {'fooTimeUnixMsec': 1649962215000}
+
+    self.assertIs(data, set_converted_timestamps(data, field_mappings))
+    self.assertEqual(expected_data, data)
+
+  def test_set_converted_timestamps_source_is_zero(self):
+    data = {'fooTimeUnixMsec': 0}
+
+    field_mappings = [
+        ('fooTime', 'fooTimeUnixMsec'),
+    ]
+
+    expected_data = {'fooTime': 'not set', 'fooTimeUnixMsec': 0}
+
+    self.assertIs(data, set_converted_timestamps(data, field_mappings))
+    self.assertEqual(expected_data, data)
