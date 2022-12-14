@@ -11,18 +11,17 @@ tutorial found in the [Google App Engine Node.js standard environment][appengine
 documentation.
 
 * [Setup](#setup)
-* [Running locally](#running-locally)
 * [Deploying to App Engine](#deploying-to-app-engine)
-* [Running the tests](#running-the-tests)
 
 ## Setup
 
 Before you can run or deploy the sample, you need to do the following:
 
-1.  Refer to the [README.md][snapshot debugger readme] file for instructions on
+1.  Refer to the [../../README.md](snapshot debugger readme) file for instructions on
     setting up the snapshot debugger.
-1.  Refer to the [appengine/README.md][appengine readme] file for instructions on
-    running and deploying.
+1.  Refer to the
+    [https://github.com/GoogleCloudPlatform/nodejs-docs-samples/blob/main/appengine/README.md](appengine readme)
+    file for instructions on running and deploying.
 1.  Install dependencies:
 
         npm install
@@ -31,9 +30,9 @@ Before you can run or deploy the sample, you need to do the following:
 
 The following code changes have been made to enable the Snapshot Debugger:
 
-https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/68f3f8027f6e1b3a2bd812e778c6e7a8fd104d15/samples/node-js/appengine-standard/package.json#L20
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/c7cc477b9a66541f9b6804f0b6ba215547901afc/samples/node-js/appengine-standard/package.json#L18-21
 
-https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/68f3f8027f6e1b3a2bd812e778c6e7a8fd104d15/samples/node-js/appengine-standard/app.js#L17-L20
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/c7cc477b9a66541f9b6804f0b6ba215547901afc/samples/node-js/appengine-standard/app.js#L17-L20
 
 Then deploy to App Engine as usual:
 
