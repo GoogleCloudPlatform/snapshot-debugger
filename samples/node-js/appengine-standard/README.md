@@ -18,10 +18,10 @@ documentation.
 
 Before you can run or deploy the sample, you need to do the following:
 
-1.  Refer to the [snapshot debugger readme](../../README.md) file for
+1.  Refer to the [Snapshot Debugger readme](../../../README.md) file for
     instructions on setting up the snapshot debugger.
 1.  Refer to the
-    [appengine readme](https://github.com/GoogleCloudPlatform/nodejs-docs-samples/blob/main/appengine/README.md)
+    [App Engine readme](https://github.com/GoogleCloudPlatform/nodejs-docs-samples/blob/main/appengine/README.md)
     file for instructions on running and deploying.
 1.  Install dependencies:
 
