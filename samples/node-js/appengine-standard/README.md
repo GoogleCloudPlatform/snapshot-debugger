@@ -29,6 +29,14 @@ Before you can run or deploy the sample, you need to do the following:
 
 ## Deploying to App Engine
 
+The following code changes have been made to enable the Snapshot Debugger:
+
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/68f3f8027f6e1b3a2bd812e778c6e7a8fd104d15/samples/node-js/appengine-standard/package.json#L20
+
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/68f3f8027f6e1b3a2bd812e778c6e7a8fd104d15/samples/node-js/appengine-standard/app.js#L17-L20
+
+Then deploy to App Engine as usual:
+
     gcloud app deploy
 
 

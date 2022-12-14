@@ -15,7 +15,7 @@
 'use strict';
 
 require('@google-cloud/debug-agent').start({
-//  useFirebase: true,
+  useFirebase: true,
   allowExpressions: true,
 });
 
