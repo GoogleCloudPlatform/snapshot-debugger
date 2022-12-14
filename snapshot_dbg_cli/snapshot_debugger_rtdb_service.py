@@ -15,6 +15,7 @@
 """
 
 from snapshot_dbg_cli.breakpoint_utils import normalize_breakpoint
+from snapshot_dbg_cli.debuggee_utils import normalize_debuggee
 from snapshot_dbg_cli.exceptions import SilentlyExitError
 
 import time
@@ -50,8 +51,18 @@ class SnapshotDebuggerRtdbService:
   def set_schema_version(self, version):
     return self.rest_service.set(self.schema.get_path_schema_version(), version)
 
-  def get_debuggees(self):
-    return self.rest_service.get(self.schema.get_path_debuggees())
+  def get_debuggees(self, current_time_unix_msec):
+    debuggees = self.rest_service.get(self.schema.get_path_debuggees()) or {}
+
+    # The result will be a dictionary, convert it to an array, while also
+    # filtering out any invalid entries. normalize_debuggee returns None for
+    # invalid debuggees.
+    debuggees = [
+        dbgee for dbgee_id, dbgee in debuggees.items()
+        if normalize_debuggee(dbgee, current_time_unix_msec)
+    ]
+
+    return debuggees
 
   def validate_debuggee_id(self, debuggee_id):
     """Validates the debuggee ID exists.
@@ -75,6 +86,11 @@ class SnapshotDebuggerRtdbService:
           DEBUGGEE_NOT_FOUND_ERROR_MESSAGE.format(debuggee_id=debuggee_id))
       raise SilentlyExitError
 
+  # Returns the id to use when creating a new breakpoint.
+  # To note, we use the format 'b_<unix epoc seconds>' this ensures the ID
+  # cannot be interpreted as an integer. This is specifically done for the
+  # following reason:
+  #
   # Per
   # https://firebase.googleblog.com/2014/04/best-practices-arrays-in-firebase.html
   # "If all of the keys are integers, and more than half of the keys are between
