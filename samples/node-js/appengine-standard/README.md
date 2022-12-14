@@ -1,13 +1,14 @@
 # Snapshot Debugger Examples for Node.js in the App Engine standard environment
 
-NOTE: This file was copied from
-[nodejs-docs-samples/appengine/hello-world/standard/README.md](https://github.com/GoogleCloudPlatform/nodejs-docs-samples/blob/main/appengine/hello-world/standard/README.md)
+NOTE: This sample application was copied from
+[nodejs-docs-samples/appengine/hello-world/standard](https://github.com/GoogleCloudPlatform/nodejs-docs-samples/blob/main/appengine/hello-world/standard)
 and modified for the Snapshot Debugger samples here.
 
 
 This is the sample application for the
-[Quickstart for Node.js in the App Engine standard environment][tutorial]
-tutorial found in the [Google App Engine Node.js standard environment][appengine]
+[Quickstart for Node.js in the App Engine standard environment](https://cloud.google.com/appengine/docs/standard/nodejs/quickstart)
+tutorial found in the
+[Google App Engine Node.js standard environment](https://cloud.google.com/appengine/docs/standard/nodejs)
 documentation.
 
 * [Setup](#setup)
@@ -17,10 +18,10 @@ documentation.
 
 Before you can run or deploy the sample, you need to do the following:
 
-1.  Refer to the [../../README.md](snapshot debugger readme) file for instructions on
-    setting up the snapshot debugger.
+1.  Refer to the [snapshot debugger readme](../../README.md) file for
+    instructions on setting up the snapshot debugger.
 1.  Refer to the
-    [https://github.com/GoogleCloudPlatform/nodejs-docs-samples/blob/main/appengine/README.md](appengine readme)
+    [appengine readme](https://github.com/GoogleCloudPlatform/nodejs-docs-samples/blob/main/appengine/README.md)
     file for instructions on running and deploying.
 1.  Install dependencies:
 
@@ -30,7 +31,7 @@ Before you can run or deploy the sample, you need to do the following:
 
 The following code changes have been made to enable the Snapshot Debugger:
 
-https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/c7cc477b9a66541f9b6804f0b6ba215547901afc/samples/node-js/appengine-standard/package.json#L18-21
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/c7cc477b9a66541f9b6804f0b6ba215547901afc/samples/node-js/appengine-standard/package.json#L18-L21
 
 https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/c7cc477b9a66541f9b6804f0b6ba215547901afc/samples/node-js/appengine-standard/app.js#L17-L20
 
@@ -54,15 +55,13 @@ based on the output from the `list_debuggees` command.
 snapshot-dbg-cli list_debuggees
 ```
 
-TODO: Not true.  Maybe set the version?  Right now it's completely missing.
-
 The output will resemble the following. The first column will contain an entry
 `<service> - <version>`, which in this case is `default - 20221117t213436`.
 
 ```
 Name                       ID         Description
 -------------------------- ---------- ------------------------------------------------
-default - 20221122t161333  d-ad4829f7 my-project-id-20221122t161333-448054658875855015
+default - 20221122t161333  d-ad4829f7 node app.js version:20221122t161333
 ```
 
 The debuggee ID in this case is  `d-ad4829f7`. Using this ID you may now run
