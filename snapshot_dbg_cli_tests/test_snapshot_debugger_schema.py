@@ -37,6 +37,11 @@ class SnapshotDebuggerSchemaTests(unittest.TestCase):
         self.schema.get_path_debuggees_for_id(debuggee_id='123'),
         'cdbg/debuggees/123')
 
+  def test_get_path_breakpoints_is_correct(self):
+    self.assertEqual(
+        self.schema.get_path_breakpoints(debuggee_id='123'),
+        'cdbg/breakpoints/123')
+
   def test_path_breakpoints_active_is_correct(self):
     self.assertEqual(
         self.schema.get_path_breakpoints_active(debuggee_id='123'),

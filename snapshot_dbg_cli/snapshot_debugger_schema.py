@@ -21,6 +21,8 @@ DEBUGGEES_PATH_FOR_ID = '{root_path}/debuggees/{debuggee_id}'
 
 SCHEMA_VERSION_PATH = '{root_path}/schema_version'
 
+BREAKPOINTS_PATH = '{root_path}/breakpoints/{debuggee_id}'
+
 BREAKPOINTS_ACTIVE_PATH = '{root_path}/breakpoints/{debuggee_id}/active'
 BREAKPOINTS_ACTIVE_PATH_FOR_ID = ('{root_path}/breakpoints/{debuggee_id}'
                                   '/active/{breakpoint_id}')
@@ -50,6 +52,9 @@ class SnapshotDebuggerSchema:
   def get_path_debuggees_for_id(self, debuggee_id):
     return DEBUGGEES_PATH_FOR_ID.format(
         root_path=SNAPSHOT_DEBUGGER_ROOT_PATH, debuggee_id=debuggee_id)
+
+  def get_path_breakpoints(self, debuggee_id):
+    return self._get_path_breakpoints(BREAKPOINTS_PATH, debuggee_id)
 
   def get_path_breakpoints_active(self, debuggee_id):
     return self._get_path_breakpoints(BREAKPOINTS_ACTIVE_PATH, debuggee_id)

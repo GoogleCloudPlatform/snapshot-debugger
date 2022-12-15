@@ -36,6 +36,7 @@ class CliRunTests(unittest.TestCase):
 
   def test_expected_commands_are_registered(self):
     testcases = [
+        ('delete_debuggees', 'Used to delete debuggees'),
         ('delete_logpoints', 'Used to delete logpoints'),
         ('delete_snapshots', 'Used to delete snapshots'),
         ('get_logpoint', 'Used to retrieve a debug logpoint'),

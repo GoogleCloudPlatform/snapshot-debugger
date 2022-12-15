@@ -15,6 +15,11 @@
 """
 
 import datetime
+import time
+
+
+def get_current_time_unix_msec():
+  return int(time.time() * 1000)
 
 
 def convert_unix_msec_to_rfc3339(unix_msec):

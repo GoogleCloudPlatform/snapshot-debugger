@@ -128,6 +128,45 @@ class SnapshotDebuggerRtdbServiceTests(unittest.TestCase):
 
     self.assertEqual('1', version)
 
+  def test_get_debuggee_works_as_expected(self):
+    debuggee = DEBUGGEE_1.copy()
+    self.firebase_rtdb_service_mock.get = MagicMock(return_value=debuggee)
+
+    current_time = 1649962215000888
+    debuggee_id = debuggee['id']
+    obtained_debuggee = self.debugger_rtdb_service.get_debuggee(
+        debuggee_id, current_time)
+
+    self.assertEqual(debuggee, obtained_debuggee)
+    self.firebase_rtdb_service_mock.get.assert_called_once_with(
+        self.schema.get_path_debuggees_for_id(debuggee_id))
+
+  def test_get_debuggee_normalizes_the_debuggee(self):
+    """This test focuses solely on ensuring the debuggee gets normalized.
+
+    The debuggee returned by get_debuggee() should have the
+    debuggee_utils.normalize_debuggee function applied to it.  This ensures all
+    expected fields are set and calling code can assume they exist.
+    """
+    current_time = 1649962215000888
+    debuggee = DEBUGGEE_1.copy()
+    debuggee_id = debuggee['id']
+    debuggee['registrationTimeUnixMsec'] = current_time
+    debuggee['lastUpdateTimeUnixMsec'] = current_time
+
+    # Ensure it's not there. The call to normalize will populate it.
+    self.assertNotIn('isActive', debuggee)
+
+    self.firebase_rtdb_service_mock.get = MagicMock(
+        return_value=debuggees_to_dict([debuggee]))
+
+    self.firebase_rtdb_service_mock.get = MagicMock(return_value=debuggee)
+    obtained_debuggee = self.debugger_rtdb_service.get_debuggee(
+        debuggee_id, current_time)
+
+    self.assertIn('isActive', obtained_debuggee)
+    self.assertTrue(obtained_debuggee['isActive'])
+
   def test_get_debuggees_works_as_expected(self):
     d1 = DEBUGGEE_1.copy()
     d2 = DEBUGGEE_2.copy()
@@ -186,6 +225,21 @@ class SnapshotDebuggerRtdbServiceTests(unittest.TestCase):
         'Debuggee ID 123 was not found.  Specify a debuggee ID found in the '
         'result of the list_debuggees command.\n', err.getvalue())
     self.assertEqual('', out.getvalue())
+
+  def test_delete_debuggees_works_ask_expected(self):
+    d1 = DEBUGGEE_1.copy()
+    d2 = DEBUGGEE_2.copy()
+
+    expected_delete_paths = [
+        call(self.schema.get_path_breakpoints(d1['id'])),
+        call(self.schema.get_path_debuggees_for_id(d1['id'])),
+        call(self.schema.get_path_breakpoints(d2['id'])),
+        call(self.schema.get_path_debuggees_for_id(d2['id'])),
+    ]
+
+    self.debugger_rtdb_service.delete_debuggees([d1, d2])
+    self.assertEqual(expected_delete_paths,
+                     self.firebase_rtdb_service_mock.delete.mock_calls)
 
   def test_get_new_breakpoint_id_works_as_expected_when_id_is_free(self):
     # The method will test the active and final breakpoints paths to see if the

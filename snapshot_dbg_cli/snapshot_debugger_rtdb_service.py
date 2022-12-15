@@ -51,6 +51,22 @@ class SnapshotDebuggerRtdbService:
   def set_schema_version(self, version):
     return self.rest_service.set(self.schema.get_path_schema_version(), version)
 
+  def get_debuggee(self, debuggee_id, current_time_unix_msec):
+    """Retrieves debuggee data for the given debuggee ID.
+
+    Args:
+      debuggee_id: The ID of the debuggee to retrieve.
+
+    Returns:
+      The debuggee (in dict form) if found, None otherwise. If the debuggee
+      was found it will have the debuggee_utils.normalize_debuggee function
+      applied to it to ensure all expected fields are set.
+    """
+    debuggee_path = self.schema.get_path_debuggees_for_id(debuggee_id)
+    debuggee = self.rest_service.get(debuggee_path)
+
+    return normalize_debuggee(debuggee, current_time_unix_msec)
+
   def get_debuggees(self, current_time_unix_msec):
     debuggees = self.rest_service.get(self.schema.get_path_debuggees()) or {}
 
@@ -85,6 +101,18 @@ class SnapshotDebuggerRtdbService:
       self.user_output.error(
           DEBUGGEE_NOT_FOUND_ERROR_MESSAGE.format(debuggee_id=debuggee_id))
       raise SilentlyExitError
+
+  def delete_debuggees(self, debuggees):
+    for d in debuggees:
+      debuggee_id = d['id']
+      breakpoints_path = self.schema.get_path_breakpoints(debuggee_id)
+      debuggee_path = self.schema.get_path_debuggees_for_id(debuggee_id)
+
+      # The order here is deliberate to avoid orphaned breakpoints, the main
+      # debuggee entry is only delete after all of it's breakpoints have been
+      # successfully deleted.
+      self.rest_service.delete(breakpoints_path)
+      self.rest_service.delete(debuggee_path)
 
   # Returns the id to use when creating a new breakpoint.
   # To note, we use the format 'b_<unix epoc seconds>' this ensures the ID
