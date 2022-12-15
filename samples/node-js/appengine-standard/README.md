@@ -65,7 +65,7 @@ default - 20221122t161333  d-ad4829f7 node app.js version:20221122t161333
 ```
 
 The debuggee ID in this case is  `d-ad4829f7`. Using this ID you may now run
-through an [Example workflow](../../../../README.md#example-workflow).
+through an [Example workflow](../../../README.md#example-workflow).
 
 E.g.
 *    Use the `set_snapshot` CLI command to set a snapshot at `app.js:28`.
