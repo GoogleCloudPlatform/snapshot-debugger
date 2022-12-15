@@ -32,7 +32,7 @@ The following code changes have been made to enable the Snapshot Debugger:
 
 https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/43428608e9fd262cd3a4d48c151b6577a8abd5e1/samples/node-js/appengine-flexible/package.json#L18-L21
 
-https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/43428608e9fd262cd3a4d48c151b6577a8abd5e1/samples/node-js/appengine-flexible/app.js#L18-L21
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/43428608e9fd262cd3a4d48c151b6577a8abd5e1/samples/node-js/appengine-flexible/app.js#L17-L20
 
 Then deploy to App Engine as usual:
 
