@@ -1,7 +1,7 @@
 # Snapshot Debugger Examples for Node.js in the App Engine standard environment
 
 NOTE: This sample application was copied from
-[nodejs-docs-samples/appengine/hello-world/standard](https://github.com/GoogleCloudPlatform/nodejs-docs-samples/blob/main/appengine/hello-world/standard)
+[nodejs-docs-samples/appengine/hello-world/standard][sample-source]
 and modified for the Snapshot Debugger samples here.
 
 
@@ -75,3 +75,6 @@ E.g.
      collect the snapshot.
 *    Use the `get_snapshot` CLI command to retrieve the snapshot using the
      breakpoint ID created with the `set_snapshot` command.
+
+[sample-source]: https://github.com/GoogleCloudPlatform/nodejs-docs-samples/tree/main/appengine/hello-world/standard
+

@@ -1,7 +1,7 @@
 # Snapshot Debugger Examples for Node.js in the App Engine flexible environment
 
 NOTE: This sample application was copied from
-[nodejs-docs-samples/appengine/hello-world/flexible](https://github.com/GoogleCloudPlatform/nodejs-docs-samples/blob/main/appengine/hello-world/flexible)
+[nodejs-docs-samples/appengine/hello-world/flexible][sample-source]
 and modified for the Snapshot Debugger samples here.
 
 
@@ -73,3 +73,6 @@ E.g.
      collect the snapshot.
 *    Use the `get_snapshot` CLI command to retrieve the snapshot using the
      breakpoint ID created with the `set_snapshot` command.
+
+[sample-source]: https://github.com/GoogleCloudPlatform/nodejs-docs-samples/blob/main/appengine/hello-world/flexible
+
