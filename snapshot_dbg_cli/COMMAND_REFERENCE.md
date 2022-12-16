@@ -57,8 +57,7 @@ snapshot-cdbg-cli delete_debuggees
 ```
 
 Usage: `__main__.py delete_debuggees [-h] [--database-url DATABASE_URL] [--format
-FORMAT] [--include-inactive] [--include-all] [--quiet] [ID ...]
-[--quiet] [--debuggee-id DEBUGGEE_ID] [ID ...]`
+FORMAT] [--debug] [--include-inactive] [--include-all] [--quiet] [ID ...]
 
 Used to delete debuggees. Deleting a debuggee will also delete all breakpoints
 that belong to the debuggee. You are prompted for confirmation before any
@@ -78,7 +77,7 @@ debuggee is considered stale if it has not run for the past 7 days.
 
 | Arguments                     | Description |
 |-------------------------------|-------------|
-| -h, --help                    | Show this help message and exit. |
+| `-h`, `--help`                | Show this help message and exit. |
 | `--database-url DATABASE_URL` | Specify the database URL for the CLI to use. This should only be used as an override to make the CLI talk to a specific instance and isn't expected to be needed. It is only required if the `--database-id` argument was used with the init command.  This value may be specified either via this command line argument or via the `SNAPSHOT_DEBUGGER_DATABASE_URL` environment variable.  When both are specified, the value from the command line takes precedence. |
 | `--format FORMAT`             | Set the format for printing command output resources. The default is a command-specific human-friendly output format. The supported formats are: `default`, `json` (raw) and `pretty-json` (formatted `json`). |
 | `--debug`                     | Enable CLI debug messages. |
@@ -143,7 +142,7 @@ all active snapshots are returned. To obtain completed snapshots specify the
 
 | Arguments                     | Description |
 |-------------------------------|-------------|
-| -h, --help                    | Show this help message and exit. |
+| `-h`, `--help`                | Show this help message and exit. |
 | `--include-inactive`          | Include completed snapshots. |
 | ` --all-users`                | If set, display snapshots from all users, rather than only the current user. |
 | `--debuggee-id DEBUGGEE_ID`   | Specify the debuggee ID. It must be an ID obtained from the `list_debuggees` command. This value is required, it must be specified either via this command line argument or via the `SNAPSHOT_DEBUGGER_DEBUGGEE_ID` environment variable.  When both are specified, the value from the command line takes precedence. |
@@ -179,7 +178,7 @@ form which is intended to be machine-readable rather than human-readable.
 
 | Arguments                     | Description |
 |-------------------------------|-------------|
-| -h, --help                    | Show this help message and exit. |
+| `-h`, `--help`                | Show this help message and exit. |
 | `--debuggee-id DEBUGGEE_ID`   | Specify the debuggee ID. It must be an ID obtained from the `list_debuggees` command. This value is required, it must be specified either via this command line argument or via the `SNAPSHOT_DEBUGGER_DEBUGGEE_ID` environment variable.  When both are specified, the value from the command line takes precedence. |
 | `--database-url DATABASE_URL` | Specify the database URL for the CLI to use. This should only be used as an override to make the CLI talk to a specific instance and isn't expected to be needed. It is only required if the `--database-id` argument was used with the init command.  This value may be specified either via this command line argument or via the `SNAPSHOT_DEBUGGER_DATABASE_URL` environment variable.  When both are specified, the value from the command line takes precedence. |
 | `--format FORMAT`             | Set the format for printing command output resources. The default is a command-specific human-friendly output format. The supported formats are: `default`, `json` (raw) and `pretty-json` (formatted `json`). |
@@ -213,7 +212,7 @@ confirmation before any snapshots are deleted. To suppress confirmation, use the
 
 | Arguments                     | Description |
 |-------------------------------|-------------|
-| -h, --help                    | Show this help message and exit. |
+| `-h`, `--help`                | Show this help message and exit. |
 | `--include-inactive`          | Include completed snapshots. |
 | `--debuggee-id DEBUGGEE_ID`   | Specify the debuggee ID. It must be an ID obtained from the `list_debuggees` command. This value is required, it must be specified either via this command line argument or via the `SNAPSHOT_DEBUGGER_DEBUGGEE_ID` environment variable.  When both are specified, the value from the command line takes precedence. |
 | `--database-url DATABASE_URL` | Specify the database URL for the CLI to use. This should only be used as an override to make the CLI talk to a specific instance and isn't expected to be needed. It is only required if the `--database-id` argument was used with the init command.  This value may be specified either via this command line argument or via the `SNAPSHOT_DEBUGGER_DATABASE_URL` environment variable.  When both are specified, the value from the command line takes precedence. |
@@ -282,7 +281,7 @@ the --include-inactive option.
 
 | Arguments                     | Description |
 |-------------------------------|-------------|
-| -h, --help                    | Show this help message and exit. |
+| `-h`, `--help`                | Show this help message and exit. |
 | `--include-inactive`          | Include all logpoints which have completed. |
 | ` --all-users`                | If false, display only logpoints created by the current user. Enabled by default, use `--no-all-users` to disable. |
 | ` --no-all-users`             | Disables `--all-users`, which is enabled by default. |
@@ -312,7 +311,7 @@ Used to retrieve a debug logpoint from a debug target (debuggee).
 
 | Arguments                     | Description |
 |-------------------------------|-------------|
-| -h, --help                    | Show this help message and exit. |
+| `-h`, `--help`                | Show this help message and exit. |
 | `--debuggee-id DEBUGGEE_ID`   | Specify the debuggee ID. It must be an ID obtained from the `list_debuggees` command. This value is required, it must be specified either via this command line argument or via the `SNAPSHOT_DEBUGGER_DEBUGGEE_ID` environment variable.  When both are specified, the value from the command line takes precedence. |
 | `--database-url DATABASE_URL` | Specify the database URL for the CLI to use. This should only be used as an override to make the CLI talk to a specific instance and isn't expected to be needed. It is only required if the `--database-id` argument was used with the init command.  This value may be specified either via this command line argument or via the `SNAPSHOT_DEBUGGER_DATABASE_URL` environment variable.  When both are specified, the value from the command line takes precedence. |
 | `--format FORMAT`             | Set the format for printing command output resources. The default is a command-specific human-friendly output format. The supported formats are: `default`, `json` (raw) and `pretty-json` (formatted `json`). |
@@ -343,7 +342,7 @@ confirmation before any logpoints are deleted. To suppress confirmation, use the
 
 | Arguments                     | Description |
 |-------------------------------|-------------|
-| -h, --help                    | Show this help message and exit. |
+| `-h`, `--help`                | Show this help message and exit. |
 | `--include-inactive`          | Include completed logpoints. |
 | `--debuggee-id DEBUGGEE_ID`   | Specify the debuggee ID. It must be an ID obtained from the `list_debuggees` command. This value is required, it must be specified either via this command line argument or via the `SNAPSHOT_DEBUGGER_DEBUGGEE_ID` environment variable.  When both are specified, the value from the command line takes precedence. |
 | `--database-url DATABASE_URL` | Specify the database URL for the CLI to use. This should only be used as an override to make the CLI talk to a specific instance and isn't expected to be needed. It is only required if the `--database-id` argument was used with the init command.  This value may be specified either via this command line argument or via the `SNAPSHOT_DEBUGGER_DATABASE_URL` environment variable.  When both are specified, the value from the command line takes precedence. |

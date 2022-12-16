@@ -76,7 +76,7 @@ def get_debuggee_status(debuggee):
   return 'STALE'
 
 
-def should_delete_debuggee(debuggee, args):
+def should_delete_debuggee_check(debuggee, args):
   if args.include_all:
     return True
 
@@ -142,7 +142,7 @@ class DeleteDebuggeesCommand:
       debugger_rtdb_service = cli_services.get_snapshot_debugger_rtdb_service()
       debuggees = debugger_rtdb_service.get_debuggees(current_time_unix_msec)
       debuggees = list(
-          filter(lambda d: should_delete_debuggee(d, args), debuggees))
+          filter(lambda d: should_delete_debuggee_check(d, args), debuggees))
 
     debuggees = sort_debuggees(debuggees)
 

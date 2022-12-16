@@ -836,7 +836,7 @@ Do you want to continue (Y/n)?
 Deleted 2 debuggees.
 ```
 
-When deleting a debuggee, all breakpoints created for it are also deleted.
+When deleting a debuggee, all breakpoints that belong to it are also deleted.
 
 ### Delete snapshots
 
