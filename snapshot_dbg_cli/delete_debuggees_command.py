@@ -18,6 +18,7 @@ will also delete all breakpoints that belong to the debuggee.
 """
 
 from snapshot_dbg_cli.exceptions import SilentlyExitError
+from snapshot_dbg_cli.debuggee_utils import get_debuggee_status
 from snapshot_dbg_cli.debuggee_utils import sort_debuggees
 from snapshot_dbg_cli.time_utils import get_current_time_unix_msec
 
@@ -50,8 +51,6 @@ This flag is not required when specifying the exact ID of a debuggee.
 
 QUIET_HELP = 'If set, suppresses user confirmation of the command.'
 
-SUMMARY_HEADERS = ['Name', 'ID', 'Last Active', 'Status']
-
 DELETE_ABORTED_QUIET_NOT_ALLOWED_MSG = """
 Delete aborted. Run the command again without the --quiet option specified, it
 cannot be used due to the unknown status of one or more debuggees.
@@ -63,6 +62,8 @@ UNKNOWN).  Be sure they are not in use before proceeding. To avoid this in the
 future install the latest available version of the agent.
 """
 
+SUMMARY_HEADERS = ['Name', 'ID', 'Last Active', 'Status']
+
 
 def transform_to_debuggee_summary(debuggee):
   # Match the fields from SUMMARY_HEADERS
@@ -72,19 +73,6 @@ def transform_to_debuggee_summary(debuggee):
       debuggee['lastUpdateTime'],
       get_debuggee_status(debuggee),
   ]
-
-
-def get_debuggee_status(debuggee):
-  if not debuggee['activeDebuggeeEnabled']:
-    return 'UNKNOWN'
-
-  if debuggee['isActive']:
-    return 'ACTIVE'
-
-  if not debuggee['isStale']:
-    return 'INACTIVE'
-
-  return 'STALE'
 
 
 def should_delete_debuggee_check(debuggee, args):

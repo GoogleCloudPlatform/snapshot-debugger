@@ -17,14 +17,89 @@
 import copy
 import unittest
 
+from snapshot_dbg_cli.debuggee_utils import get_debuggee_status
 from snapshot_dbg_cli.debuggee_utils import get_display_name
 from snapshot_dbg_cli.debuggee_utils import normalize_debuggee
 from snapshot_dbg_cli.debuggee_utils import set_converted_timestamps
+
+DEBUGGEE_ACTIVE = {
+    'id': 'd-123',
+    'labels': {
+        'module': 'app123',
+        'version': 'v1'
+    },
+    'description': 'desc 1',
+    'displayName': 'app123 - v1',
+    'activeDebuggeeEnabled': True,
+    'isActive': True,
+    'isStale': False,
+    'registrationTimeUnixMsec': 1649962215426,
+    'lastUpdateTimeUnixMsec': 1670000000000,
+    'registrationTime': '2022-04-14T18:50:15.426000Z',
+    'lastUpdateTime': '2022-12-02T16:53:20.000000Z',
+}
+
+DEBUGGEE_INACTIVE = {
+    'id': 'd-456',
+    'labels': {
+        'module': 'app456',
+        'version': 'v2'
+    },
+    'description': 'desc 2',
+    'displayName': 'app456 - v2',
+    'activeDebuggeeEnabled': True,
+    'isActive': False,
+    'isStale': False,
+    'registrationTimeUnixMsec': 1649962215426,
+    'lastUpdateTimeUnixMsec': 1669913600000,
+    'registrationTime': '2022-04-14T18:50:15.426000Z',
+    'lastUpdateTime': '2022-12-01T16:53:20.000000Z',
+}
+
+DEBUGGEE_STALE = {
+    'id': 'd-789',
+    'labels': {
+        'module': 'app789',
+        'version': 'v3'
+    },
+    'description': 'desc 3',
+    'displayName': 'app789 - v3',
+    'activeDebuggeeEnabled': True,
+    'isActive': False,
+    'isStale': True,
+    'registrationTimeUnixMsec': 1649962215426,
+    'lastUpdateTimeUnixMsec': 1669308800000,
+    'registrationTime': '2022-04-14T18:50:15.426000Z',
+    'lastUpdateTime': '2022-11-24T16:53:20.000000Z',
+}
+
+DEBUGGEE_UNKNOWN_ACTIVITY = {
+    'id': 'd-100',
+    'labels': {
+        'module': 'app100',
+        'version': 'v3'
+    },
+    'description': 'desc 3',
+    'displayName': 'app100 - v3',
+    'activeDebuggeeEnabled': False,
+    'isActive': False,
+    'isStale': True,
+    'registrationTimeUnixMsec': 0,
+    'lastUpdateTimeUnixMsec': 0,
+    'registrationTime': 'not set',
+    'lastUpdateTime': 'not set',
+}
 
 
 class SnapshotDebuggerDebuggeeUtilsTests(unittest.TestCase):
   """ Contains the unit tests for the breakpoint_utils module.
   """
+
+  def test_get_debuggee_state(self):
+    self.assertEqual('ACTIVE', get_debuggee_status(DEBUGGEE_ACTIVE))
+    self.assertEqual('INACTIVE', get_debuggee_status(DEBUGGEE_INACTIVE))
+    self.assertEqual('STALE', get_debuggee_status(DEBUGGEE_STALE))
+    self.assertEqual('UNKNOWN', get_debuggee_status(DEBUGGEE_UNKNOWN_ACTIVITY))
 
   def test_set_converted_timestamps(self):
     """Verifies the set_converted_timestamps() works as expected.

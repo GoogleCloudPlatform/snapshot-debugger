@@ -501,18 +501,17 @@ on a debuggee will be installed on all running instances of it.
 Run the following command
 
 ```
-snapshot-dbg-cli list_debuggees
+snapshot-dbg-cli list_debuggees --include-inactive
 ```
 
 The output resembles the following:
 
 ```
-Name           ID          Description
--------------  ----------  ----------------------------------------
-test-app - v1  d-24abc4f1  node index.js module:test-app version:v1
-test-app - v2  d-8dd7f149  node index.js module:test-app version:v2
+Name           ID          Description                              Last Active                  Status
+-------------  ----------  ---------------------------------------- ---------------------------  --------
+test-app - v2  d-8dd7f149  node index.js module:test-app version:v2 2022-12-16T21:45:07.812000Z  ACTIVE
+test-app - v1  d-24abc4f1  node index.js module:test-app version:v1 2022-10-16T21:45:07.812000Z  INACTIVE
 ```
-
 
 
 ### Set Snapshots

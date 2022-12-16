@@ -17,6 +17,7 @@ The list_debugees command is used to display a list of the debug targets
 (debuggees) registered with the Snapshot Debugger.
 """
 
+from snapshot_dbg_cli.debuggee_utils import get_debuggee_status
 from snapshot_dbg_cli.debuggee_utils import sort_debuggees
 from snapshot_dbg_cli.time_utils import get_current_time_unix_msec
 
@@ -29,6 +30,21 @@ hours.
 """
 
 INCLUDE_INACTIVE_HELP = 'Include inactive debuggees.'
+
+SUMMARY_HEADERS = headers = [
+    'Name', 'ID', 'Description', 'Last Active', 'Status'
+]
+
+
+def transform_to_debuggee_summary(debuggee):
+  # Match the fields from SUMMARY_HEADERS
+  return [
+      debuggee['displayName'],
+      debuggee['id'],
+      debuggee['description'],
+      debuggee['lastUpdateTime'],
+      get_debuggee_status(debuggee),
+  ]
 
 
 class ListDebuggeesCommand:
@@ -72,9 +88,5 @@ class ListDebuggeesCommand:
     if args.format.is_a_json_value():
       user_output.json_format(debuggees, pretty=args.format.is_pretty_json())
     else:
-      headers = ['Name', 'ID', 'Description']
-
-      values = [[d['displayName'], d['id'], d['description']] for d in debuggees
-               ]
-
-      user_output.tabular(headers, values)
+      values = list(map(transform_to_debuggee_summary, debuggees))
+      user_output.tabular(SUMMARY_HEADERS, values)
