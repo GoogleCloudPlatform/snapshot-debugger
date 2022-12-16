@@ -57,7 +57,7 @@ snapshot-cdbg-cli delete_debuggees
 ```
 
 Usage: `__main__.py delete_debuggees [-h] [--database-url DATABASE_URL] [--format
-FORMAT] [--debug] [--include-inactive] [--include-all] [--quiet] [ID ...]
+FORMAT] [--debug] [--include-inactive] [--include-all] [--quiet] [ID ...]`
 
 Used to delete debuggees. Deleting a debuggee will also delete all breakpoints
 that belong to the debuggee. You are prompted for confirmation before any
