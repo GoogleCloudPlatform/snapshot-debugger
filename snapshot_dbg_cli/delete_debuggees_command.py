@@ -52,6 +52,17 @@ QUIET_HELP = 'If set, suppresses user confirmation of the command.'
 
 SUMMARY_HEADERS = ['Name', 'ID', 'Last Active', 'Status']
 
+DELETE_ABORTED_QUIET_NOT_ALLOWED_MSG = """
+Delete aborted. Run the command again without the --quiet option specified, it
+cannot be used due to the unknown status of one or more debuggees.
+"""
+
+UNKNOWN_DEBUGGEE_STATUS_WARNING_MSG = """
+WARNING, some debuggee entries do not have a last activity time (status is
+UNKNOWN).  Be sure they are not in use before proceeding. To avoid this in the
+future install the latest available version of the agent.
+"""
+
 
 def transform_to_debuggee_summary(debuggee):
   # Match the fields from SUMMARY_HEADERS
@@ -65,7 +76,7 @@ def transform_to_debuggee_summary(debuggee):
 
 def get_debuggee_status(debuggee):
   if not debuggee['activeDebuggeeEnabled']:
-    return 'WARNING UNKNOWN'
+    return 'UNKNOWN'
 
   if debuggee['isActive']:
     return 'ACTIVE'
@@ -83,7 +94,8 @@ def should_delete_debuggee_check(debuggee, args):
   if args.include_inactive:
     return not debuggee['isActive']
 
-  # By default we only delete stale debuggees
+  # By default we only delete stale and unknown debuggees. Debuggees who's last
+  # update time is unknown will have their isStale flag set to true.
   return debuggee['isStale']
 
 
@@ -139,18 +151,26 @@ class DeleteDebuggeesCommand:
                           f"{', '.join(ids_not_found)}")
         raise SilentlyExitError
     else:
-      debugger_rtdb_service = cli_services.get_snapshot_debugger_rtdb_service()
       debuggees = debugger_rtdb_service.get_debuggees(current_time_unix_msec)
       debuggees = list(
           filter(lambda d: should_delete_debuggee_check(d, args), debuggees))
 
     debuggees = sort_debuggees(debuggees)
+    is_unknown_status_entries = any(
+        not d['activeDebuggeeEnabled'] for d in debuggees)
 
     if debuggees:
       user_output.normal('This command will delete the following debuggees:\n')
       values = list(map(transform_to_debuggee_summary, debuggees))
       user_output.tabular(SUMMARY_HEADERS, values)
       user_output.normal('\n')
+
+      if is_unknown_status_entries:
+        if args.quiet:
+          user_output.error(DELETE_ABORTED_QUIET_NOT_ALLOWED_MSG)
+          return
+        else:
+          user_output.normal(UNKNOWN_DEBUGGEE_STATUS_WARNING_MSG)
 
       if not args.quiet and not user_input.prompt_user_to_continue():
         user_output.error('Delete aborted.')

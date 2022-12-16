@@ -109,7 +109,7 @@ class SnapshotDebuggerRtdbService:
       debuggee_path = self.schema.get_path_debuggees_for_id(debuggee_id)
 
       # The order here is deliberate to avoid orphaned breakpoints, the main
-      # debuggee entry is only delete after all of it's breakpoints have been
+      # debuggee entry is only deleted after all of it's breakpoints have been
       # successfully deleted.
       self.rest_service.delete(breakpoints_path)
       self.rest_service.delete(debuggee_path)

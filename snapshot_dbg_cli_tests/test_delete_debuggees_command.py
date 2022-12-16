@@ -219,7 +219,7 @@ class DeleteDebuggeesCommandTests(unittest.TestCase):
         [DEBUGGEE_ACTIVE, DEBUGGEE_INACTIVE, DEBUGGEE_STALE],
         self.rtdb_service_mock.delete_debuggees.call_args.args[0])
 
-  def test_user_prompted_with_logpoint_summary_before_delete(self):
+  def test_user_prompted_with_debuggee_summary_before_delete(self):
     expected_headers = ['Name', 'ID', 'Last Active', 'Status']
     expected_active_row = [
         'app123 - v1', 'd-123', '2022-12-02T16:53:20.000000Z', 'ACTIVE'
@@ -231,7 +231,7 @@ class DeleteDebuggeesCommandTests(unittest.TestCase):
         'app789 - v3', 'd-789', '2022-11-24T16:53:20.000000Z', 'STALE'
     ]
     expected_unknown_activity_row = [
-        'app100 - v3', 'd-100', 'not set', 'WARNING UNKNOWN'
+        'app100 - v3', 'd-100', 'not set', 'UNKNOWN'
     ]
 
     # Setting this flag will ensure all returned debuggees are presented for
@@ -269,6 +269,17 @@ class DeleteDebuggeesCommandTests(unittest.TestCase):
 
         self.user_input_mock.prompt_user_to_continue.assert_called_once()
 
+  def test_warning_emitted_when_unknown_debuggees_present(self):
+    testargs = []
+    self.rtdb_service_mock.get_debuggees = MagicMock(
+        return_value=[DEBUGGEE_UNKNOWN_ACTIVITY])
+
+    _, err = self.run_cmd(testargs)
+
+    # Just check enough of the message to ensure it's emitted as expected.
+    self.assertIn('WARNING, some debuggee entries do not have a last activity',
+                  err.getvalue())
+
   def test_user_prompted_before_delete_answers_no(self):
     testargs = []
     self.rtdb_service_mock.get_debuggees = MagicMock(
@@ -301,6 +312,20 @@ class DeleteDebuggeesCommandTests(unittest.TestCase):
 
     self.rtdb_service_mock.delete_debuggees.assert_called_once()
     self.user_input_mock.prompt_user_to_continue.assert_not_called()
+
+  def test_quiet_mode_aborted_when_unknown_debuggees_present(self):
+    testargs = ['--quiet']
+    self.rtdb_service_mock.get_debuggees = MagicMock(
+        return_value=[DEBUGGEE_UNKNOWN_ACTIVITY])
+
+    out, err = self.run_cmd(testargs)
+
+    self.rtdb_service_mock.delete_debuggees.assert_not_called()
+
+    # Just check enough of the message to ensure it's emitted as expected.
+    self.assertIn('Delete aborted. Run the command again without the --quiet',
+                  err.getvalue())
+    self.assertEqual('', out.getvalue())
 
   def test_no_debuggees_found_delete_not_called(self):
     testargs = ['--quiet']
