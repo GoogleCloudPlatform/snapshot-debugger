@@ -17,7 +17,8 @@ The list_debugees command is used to display a list of the debug targets
 (debuggees) registered with the Snapshot Debugger.
 """
 
-import time
+from snapshot_dbg_cli.debuggee_utils import sort_debuggees
+from snapshot_dbg_cli.time_utils import get_current_time_unix_msec
 
 DESCRIPTION = """
 Used to display a list of the debug targets (debuggees) registered with the
@@ -53,7 +54,7 @@ class ListDebuggeesCommand:
   def cmd(self, args, cli_services):
     user_output = cli_services.user_output
 
-    current_time_unix_msec = int(time.time() * 1000)
+    current_time_unix_msec = get_current_time_unix_msec()
     debugger_rtdb_service = cli_services.get_snapshot_debugger_rtdb_service()
     debuggees = debugger_rtdb_service.get_debuggees(current_time_unix_msec)
 
@@ -66,13 +67,7 @@ class ListDebuggeesCommand:
       if any(d['activeDebuggeeEnabled'] for d in debuggees):
         debuggees = list(filter(lambda d: d['isActive'], debuggees))
 
-    # We add the second sort parameter on displayName for older agents that
-    # don't support the 'active debuggee' feature. They will all have the same
-    # lastUpdateTimeUnixMsec of 0, so they will still get some useful sorting.
-    debuggees = sorted(
-        debuggees,
-        key=lambda d: (d['lastUpdateTimeUnixMsec'], d['displayName']),
-        reverse=True)
+    debuggees = sort_debuggees(debuggees)
 
     if args.format.is_a_json_value():
       user_output.json_format(debuggees, pretty=args.format.is_pretty_json())

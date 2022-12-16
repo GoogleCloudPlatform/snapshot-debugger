@@ -513,6 +513,8 @@ test-app - v1  d-24abc4f1  node index.js module:test-app version:v1
 test-app - v2  d-8dd7f149  node index.js module:test-app version:v2
 ```
 
+
+
 ### Set Snapshots
 
 Snapshots capture local variables and the call stack at a specific line location
@@ -700,34 +702,6 @@ Function              Location
 (anonymous function)  index.js:30
 ```
 
-### Delete snapshots
-
-Delete snapshots with the following command:
-
-```
-snapshot-dbg-cli delete_snapshots --debuggee-id d-8dd7f149 --include-inactive
-```
-
-Where:
-*   `d-8dd7f149` is the debuggee ID
-
-The output resembles the following:
-
-```
-This command will delete the following snapshots:
-
-Status     Location     Condition    ID
----------  -----------  -----------  ------------
-ACTIVE     index.js:28               b-1649959801
-ACTIVE     index.js:27               b-1649959807
-COMPLETED  index.js:19               b-1649702213
-COMPLETED  index.js:22               b-1649702753
-
-
-Do you want to continue (Y/n)? Y
-Deleted 4 snapshots.
-```
-
 ### Set Logpoints
 
 Adds a debug logpoint to a debug target (debuggee). Logpoints inject logging
@@ -831,6 +805,65 @@ Status:             EXPIRED
 Create Time:        2022-08-19T18:14:38.240000Z
 Final Time:         2022-08-20T18:14:39.618000Z
 User Email:         foo1@bar.com
+```
+
+## Cleaning up
+
+The following commands can be used to delete debuggees and breakpoints
+(snapshots and logpoints).
+
+### Delete Debuggees
+
+Run the following command
+
+```
+snapshot-dbg-cli delete_debuggees
+```
+
+The output resembles the following:
+
+```
+This command will delete the following debuggees:
+
+Name                       ID          Last Active                  Status
+-------------------------  ----------  ---------------------------  ------
+default - 20221125t224954  d-39f7082e  2022-12-05T03:13:42.166000Z  STALE
+default - 20221125t154414  d-dba89292  2022-12-04T03:02:48.780000Z  STALE
+
+
+
+Do you want to continue (Y/n)?
+Deleted 2 debuggees.
+```
+
+When deleting a debuggee, all breakpoints that belong to it are also deleted.
+
+### Delete snapshots
+
+Delete snapshots with the following command:
+
+```
+snapshot-dbg-cli delete_snapshots --debuggee-id d-8dd7f149 --include-inactive
+```
+
+Where:
+*   `d-8dd7f149` is the debuggee ID
+
+The output resembles the following:
+
+```
+This command will delete the following snapshots:
+
+Status     Location     Condition    ID
+---------  -----------  -----------  ------------
+ACTIVE     index.js:28               b-1649959801
+ACTIVE     index.js:27               b-1649959807
+COMPLETED  index.js:19               b-1649702213
+COMPLETED  index.js:22               b-1649702753
+
+
+Do you want to continue (Y/n)? Y
+Deleted 4 snapshots.
 ```
 
 

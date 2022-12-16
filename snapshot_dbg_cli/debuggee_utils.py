@@ -103,3 +103,16 @@ def normalize_debuggee(debuggee, current_time_unix_msec):
       debuggee['lastUpdateTimeUnixMsec']) > DEBUGGEE_STALE_THRESHOLD_MSEC
 
   return debuggee
+
+
+def sort_debuggees(debuggees):
+  """Utility to provide a consistent sorting of debuggee entries.
+  """
+
+  # We add the second sort parameter on displayName for older agents that
+  # don't support the 'active debuggee' feature. They will all have the same
+  # lastUpdateTimeUnixMsec of 0, so they will still get some useful sorting.
+  return sorted(
+      debuggees,
+      key=lambda d: (d['lastUpdateTimeUnixMsec'], d['displayName']),
+      reverse=True)
