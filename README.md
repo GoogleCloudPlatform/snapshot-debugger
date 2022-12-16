@@ -513,6 +513,31 @@ test-app - v1  d-24abc4f1  node index.js module:test-app version:v1
 test-app - v2  d-8dd7f149  node index.js module:test-app version:v2
 ```
 
+### Delete Debuggees
+
+Run the following command
+
+```
+snapshot-dbg-cli delete_debuggees
+```
+
+The output resembles the following:
+
+```
+This command will delete the following debuggees:
+
+Name                       ID          Last Active                  Status
+-------------------------  ----------  ---------------------------  ------
+default - 20221125t224954  d-39f7082e  2022-12-05T03:13:42.166000Z  STALE
+default - 20221125t154414  d-dba89292  2022-12-04T03:02:48.780000Z  STALE
+
+
+
+Do you want to continue (Y/n)?
+Deleted 2 debuggees.
+```
+
+
 ### Set Snapshots
 
 Snapshots capture local variables and the call stack at a specific line location

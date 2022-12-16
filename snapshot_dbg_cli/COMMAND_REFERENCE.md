@@ -50,6 +50,42 @@ to be active if it currently running or last ran in the past 5-6 hours.
 | `--format FORMAT`             | Set the format for printing command output resources. The default is a command-specific human-friendly output format. The supported formats are: `default`, `json` (raw) and `pretty-json` (formatted `json`). |
 | `--debug`                     | Enable CLI debug messages. |
 
+## delete_debuggees
+
+```
+snapshot-cdbg-cli delete_debuggees
+```
+
+Usage: `__main__.py delete_debuggees [-h] [--database-url DATABASE_URL] [--format
+FORMAT] [--include-inactive] [--include-all] [--quiet] [ID ...]
+[--quiet] [--debuggee-id DEBUGGEE_ID] [ID ...]`
+
+Used to delete debuggees. Deleting a debuggee will also delete all breakpoints
+that belong to the debuggee. You are prompted for confirmation before any
+debuggees are deleted. To suppress confirmation, use the --quiet option. By
+default only stale debuggees will be deleted. To include other debuggees for
+deletion include either the --include-inactive or --include- all flags. A
+debuggee is considered stale if it has not run for the past 7 days.
+
+
+### Positional arguments
+
+| Arguments     | Description |
+|---------------|-------------|
+| `ID`          | Zero or more debuggee IDs. The specified debugges will be deleted. By default, if no debuggees IDs are specified, all stale debuggees are selected for deletion. A debuggee is considered stale if it has not run for the past 7 days. |
+
+### Optional arguments
+
+| Arguments                     | Description |
+|-------------------------------|-------------|
+| -h, --help                    | Show this help message and exit. |
+| `--database-url DATABASE_URL` | Specify the database URL for the CLI to use. This should only be used as an override to make the CLI talk to a specific instance and isn't expected to be needed. It is only required if the `--database-id` argument was used with the init command.  This value may be specified either via this command line argument or via the `SNAPSHOT_DEBUGGER_DATABASE_URL` environment variable.  When both are specified, the value from the command line takes precedence. |
+| `--format FORMAT`             | Set the format for printing command output resources. The default is a command-specific human-friendly output format. The supported formats are: `default`, `json` (raw) and `pretty-json` (formatted `json`). |
+| `--debug`                     | Enable CLI debug messages. |
+| `--include-inactive`          | If set, include all inactive debuggees. A debuggee is considered to be inactive if it has not run in the past 5-6 hours.  By default, only stale debuggees will be deleted. This flag is not required when specifying the exact ID of a debuggee. |
+| `--include-all`               | If set, include all debuggees. By default, only stale debuggees will be deleted. This flag is not required when specifying the exact ID of a debuggee. |
+| `--quiet`                     | If set, suppresses user confirmation of the command. |
+
 
 ## set_snapshot
 

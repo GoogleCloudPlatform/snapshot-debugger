@@ -22,11 +22,12 @@ from snapshot_dbg_cli.debuggee_utils import sort_debuggees
 from snapshot_dbg_cli.time_utils import get_current_time_unix_msec
 
 DESCRIPTION = """
-Used to delete debuggees. You are prompted for confirmation before any debuggees
-are deleted. To suppress confirmation, use the --quiet option. By default only
-stale debuggees will be deleted. To include other debuggees for deletion include
-either the --include-inactive or --include-all flags.  A debuggee is considered
-stale if it has not run for the past 7 days.
+Used to delete debuggees. Deleting a debuggee will also delete all breakpoints
+that belong to the debuggee.  You are prompted for confirmation before any
+debuggees are deleted. To suppress confirmation, use the --quiet option. By
+default only stale debuggees will be deleted. To include other debuggees for
+deletion include either the --include-inactive or --include-all flags.  A
+debuggee is considered stale if it has not run for the past 7 days.
 """
 
 ID_HELP = """
