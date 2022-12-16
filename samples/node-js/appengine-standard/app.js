@@ -19,7 +19,6 @@ require('@google-cloud/debug-agent').start({
   allowExpressions: true,
 });
 
-// [START gae_node_request_example]
 const express = require('express');
 
 const app = express();
@@ -34,6 +33,5 @@ app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
   console.log('Press Ctrl+C to quit.');
 });
-// [END gae_node_request_example]
 
 module.exports = app;
