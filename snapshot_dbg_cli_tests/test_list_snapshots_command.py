@@ -42,7 +42,7 @@ SNAPSHOT_ACTIVE =  {
   'isFinalState': False,
   'location': {'line': 26, 'path': 'index.js'},
   'userEmail': 'user@foo.com',
-  'createTime': '2022-04-14T18:50:15.852000Z',
+  'createTime': '2022-04-14T18:50:15Z',
 } # yapf: disable (Subjectively, more readable hand formatted)
 
 SNAPSHOT_COMPLETE =  {
@@ -70,8 +70,8 @@ SNAPSHOT_COMPLETE =  {
     },
   ],
   'userEmail': 'user@foo.com',
-  'createTime': '2022-04-14T18:50:16.852000Z',
-  'finalTime': '2022-04-14T18:50:31.274000Z',
+  'createTime': '2022-04-14T18:50:16Z',
+  'finalTime': '2022-04-14T18:50:31Z',
 } # yapf: disable (Subjectively, more readable hand formatted)
 
 SNAPSHOT_EXPIRED =  {
@@ -83,8 +83,8 @@ SNAPSHOT_EXPIRED =  {
   'isFinalState': True,
   'location': {'line': 28, 'path': 'index.js'},
   'userEmail': 'user@foo.com',
-  'createTime': '2022-04-14T18:50:17.852000Z',
-  'finalTime': '2022-04-14T18:50:31.274000Z',
+  'createTime': '2022-04-14T18:50:17Z',
+  'finalTime': '2022-04-14T18:50:31Z',
   'status': {
     'description': {
       'format': 'The snapshot has expired'
@@ -103,8 +103,8 @@ SNAPSHOT_FAILED =  {
   'isFinalState': True,
   'location': {'line': 29, 'path': 'index.js'},
   'userEmail': 'user@foo.com',
-  'createTime': '2022-04-14T18:50:18.852000Z',
-  'finalTime': '2022-04-14T18:50:31.274000Z',
+  'createTime': '2022-04-14T18:50:18Z',
+  'finalTime': '2022-04-14T18:50:31Z',
   'status': {
     'description': {
         'format': 'Invalid snapshot position: index.js:100.'
@@ -123,7 +123,7 @@ SNAPSHOT_WITH_CONDITION =  {
   'isFinalState': False,
   'location': {'line': 30, 'path': 'index.js'},
   'userEmail': 'user@foo.com',
-  'createTime': '2022-04-14T18:50:19.852000Z',
+  'createTime': '2022-04-14T18:50:19Z',
 } # yapf: disable (Subjectively, more readable hand formatted)
 
 class ListSnapshotTests(unittest.TestCase):
@@ -271,11 +271,11 @@ class ListSnapshotTests(unittest.TestCase):
   def test_output_default(self):
     expected_active_row = ('ACTIVE', 'index.js:26', '', '', 'b-1649962215')
     expected_completed_row = ('COMPLETED', 'index.js:27', '',
-                              '2022-04-14T18:50:31.274000Z', 'b-1649962216')
+                              '2022-04-14T18:50:31Z', 'b-1649962216')
     expected_expired_row = ('EXPIRED', 'index.js:28', '',
-                            '2022-04-14T18:50:31.274000Z', 'b-1649962217')
-    expected_failed_row = ('FAILED', 'index.js:29', '',
-                           '2022-04-14T18:50:31.274000Z', 'b-1649962218')
+                            '2022-04-14T18:50:31Z', 'b-1649962217')
+    expected_failed_row = ('FAILED', 'index.js:29', '', '2022-04-14T18:50:31Z',
+                           'b-1649962218')
     expected_with_condition_row = ('ACTIVE', 'index.js:30', 'a == 3', '',
                                    'b-1649962219')
 

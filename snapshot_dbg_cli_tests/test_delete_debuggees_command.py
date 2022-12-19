@@ -46,8 +46,8 @@ DEBUGGEE_ACTIVE = {
     'isStale': False,
     'registrationTimeUnixMsec': 1649962215426,
     'lastUpdateTimeUnixMsec': 1670000000000,
-    'registrationTime': '2022-04-14T18:50:15.426000Z',
-    'lastUpdateTime': '2022-12-02T16:53:20.000000Z',
+    'registrationTime': '2022-04-14T18:50:15Z',
+    'lastUpdateTime': '2022-12-02T16:53:20Z',
 }
 
 DEBUGGEE_INACTIVE = {
@@ -63,8 +63,8 @@ DEBUGGEE_INACTIVE = {
     'isStale': False,
     'registrationTimeUnixMsec': 1649962215426,
     'lastUpdateTimeUnixMsec': 1669913600000,
-    'registrationTime': '2022-04-14T18:50:15.426000Z',
-    'lastUpdateTime': '2022-12-01T16:53:20.000000Z',
+    'registrationTime': '2022-04-14T18:50:15Z',
+    'lastUpdateTime': '2022-12-01T16:53:20Z',
 }
 
 DEBUGGEE_STALE = {
@@ -80,8 +80,8 @@ DEBUGGEE_STALE = {
     'isStale': True,
     'registrationTimeUnixMsec': 1649962215426,
     'lastUpdateTimeUnixMsec': 1669308800000,
-    'registrationTime': '2022-04-14T18:50:15.426000Z',
-    'lastUpdateTime': '2022-11-24T16:53:20.000000Z',
+    'registrationTime': '2022-04-14T18:50:15Z',
+    'lastUpdateTime': '2022-11-24T16:53:20Z',
 }
 
 DEBUGGEE_UNKNOWN_ACTIVITY = {
@@ -222,13 +222,13 @@ class DeleteDebuggeesCommandTests(unittest.TestCase):
   def test_user_prompted_with_debuggee_summary_before_delete(self):
     expected_headers = ['Name', 'ID', 'Last Active', 'Status']
     expected_active_row = [
-        'app123 - v1', 'd-123', '2022-12-02T16:53:20.000000Z', 'ACTIVE'
+        'app123 - v1', 'd-123', '2022-12-02T16:53:20Z', 'ACTIVE'
     ]
     expected_inactive_row = [
-        'app456 - v2', 'd-456', '2022-12-01T16:53:20.000000Z', 'INACTIVE'
+        'app456 - v2', 'd-456', '2022-12-01T16:53:20Z', 'INACTIVE'
     ]
     expected_stale_row = [
-        'app789 - v3', 'd-789', '2022-11-24T16:53:20.000000Z', 'STALE'
+        'app789 - v3', 'd-789', '2022-11-24T16:53:20Z', 'STALE'
     ]
     expected_unknown_activity_row = [
         'app100 - v3', 'd-100', 'not set', 'UNKNOWN'

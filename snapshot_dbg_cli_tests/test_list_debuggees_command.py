@@ -37,6 +37,74 @@ from unittest.mock import patch
 # data returned from the rtdb query, so the first field is the expected json
 # response data.
 
+DEBUGGEE_ACTIVE = ({
+    'id': 'd-123',
+    'labels': {
+        'module': 'app123',
+        'version': 'v1'
+    },
+    'description': 'desc 1',
+    'displayName': 'app123 - v1',
+    'activeDebuggeeEnabled': True,
+    'isActive': True,
+    'isStale': False,
+    'registrationTimeUnixMsec': 1649962215426,
+    'lastUpdateTimeUnixMsec': 1670000000000,
+    'registrationTime': '2022-04-14T18:50:15Z',
+    'lastUpdateTime': '2022-12-02T16:53:20Z',
+}, ['app123 - v1', 'd-123', 'desc 1', '2022-12-02T16:53:20Z', 'ACTIVE'])
+
+DEBUGGEE_INACTIVE = ({
+    'id': 'd-456',
+    'labels': {
+        'module': 'app456',
+        'version': 'v2'
+    },
+    'description': 'desc 2',
+    'displayName': 'app456 - v2',
+    'activeDebuggeeEnabled': True,
+    'isActive': False,
+    'isStale': False,
+    'registrationTimeUnixMsec': 1649962215426,
+    'lastUpdateTimeUnixMsec': 1669913600000,
+    'registrationTime': '2022-04-14T18:50:15Z',
+    'lastUpdateTime': '2022-12-01T16:53:20Z',
+}, ['app456 - v2', 'd-456', 'desc 2', '2022-12-01T16:53:20Z', 'INACTIVE'])
+
+DEBUGGEE_STALE = ({
+    'id': 'd-789',
+    'labels': {
+        'module': 'app789',
+        'version': 'v3'
+    },
+    'description': 'desc 3',
+    'displayName': 'app789 - v3',
+    'activeDebuggeeEnabled': True,
+    'isActive': False,
+    'isStale': True,
+    'registrationTimeUnixMsec': 1649962215426,
+    'lastUpdateTimeUnixMsec': 1669308800000,
+    'registrationTime': '2022-04-14T18:50:15Z',
+    'lastUpdateTime': '2022-11-24T16:53:20Z',
+}, ['app789 - v3', 'd-789', 'desc 3', '2022-11-24T16:53:20Z', 'STALE'])
+
+DEBUGGEE_UNKNOWN_ACTIVITY = ({
+    'id': 'd-100',
+    'labels': {
+        'module': 'app100',
+        'version': 'v3'
+    },
+    'description': 'desc 3',
+    'displayName': 'app100 - v3',
+    'activeDebuggeeEnabled': False,
+    'isActive': False,
+    'isStale': True,
+    'registrationTimeUnixMsec': 0,
+    'lastUpdateTimeUnixMsec': 0,
+    'registrationTime': 'not set',
+    'lastUpdateTime': 'not set',
+}, ['app100 - v3', 'd-100', 'desc 3', 'not set', 'UNKNOWN'])
+
 debuggee1 = ({
     'id': '123',
     'labels': {
@@ -49,10 +117,10 @@ debuggee1 = ({
     'isActive': True,
     'isStale': False,
     'registrationTimeUnixMsec': 1649962215426,
-    'lastUpdateTimeUnixMsec': 1670000000001,
-    'registrationTime': '2022-04-14T18:50:15.426000Z',
-    'lastUpdateTime': '2022-12-02T16:53:20.001000Z',
-}, ['app123 - v1', '123', 'desc 1'])
+    'lastUpdateTimeUnixMsec': 1670000001000,
+    'registrationTime': '2022-04-14T18:50:15Z',
+    'lastUpdateTime': '2022-12-02T16:53:21Z',
+}, ['app123 - v1', '123', 'desc 1', '2022-12-02T16:53:21Z', 'ACTIVE'])
 
 debuggee2 = ({
     'id': '456',
@@ -66,10 +134,10 @@ debuggee2 = ({
     'isActive': True,
     'isStale': False,
     'registrationTimeUnixMsec': 1649962215426,
-    'lastUpdateTimeUnixMsec': 1670000000002,
-    'registrationTime': '2022-04-14T18:50:15.426000Z',
-    'lastUpdateTime': '2022-12-02T16:53:20.002000Z',
-}, ['app456 - v2', '456', 'desc 2'])
+    'lastUpdateTimeUnixMsec': 1670000002000,
+    'registrationTime': '2022-04-14T18:50:15Z',
+    'lastUpdateTime': '2022-12-02T16:53:22Z',
+}, ['app456 - v2', '456', 'desc 2', '2022-12-02T16:53:22Z', 'ACTIVE'])
 
 debuggee3 = ({
     'agentVersion': 'google.com/node-gcp/v6.0.0',
@@ -94,10 +162,13 @@ debuggee3 = ({
     'isActive': True,
     'isStale': False,
     'registrationTimeUnixMsec': 1649962215426,
-    'lastUpdateTimeUnixMsec': 1670000000003,
-    'registrationTime': '2022-04-14T18:50:15.426000Z',
-    'lastUpdateTime': '2022-12-02T16:53:20.003000Z',
-}, ['test-app - v1', 'd-ff02524f', 'node index.js module:test-app version:v1'])
+    'lastUpdateTimeUnixMsec': 1670000003000,
+    'registrationTime': '2022-04-14T18:50:15Z',
+    'lastUpdateTime': '2022-12-02T16:53:23Z',
+}, [
+    'test-app - v1', 'd-ff02524f', 'node index.js module:test-app version:v1',
+    '2022-12-02T16:53:23Z', 'ACTIVE'
+])
 
 
 class ListDebuggeesCommandTests(unittest.TestCase):
@@ -144,7 +215,7 @@ class ListDebuggeesCommandTests(unittest.TestCase):
     self.rtdb_service_mock.get_debuggees.assert_called_once()
 
   def test_output_format_default(self):
-    expected_headers = ['Name', 'ID', 'Description']
+    expected_headers = ['Name', 'ID', 'Description', 'Last Active', 'Status']
 
     testcases = [
       ('No debuggees present', {}, []),
@@ -163,11 +234,32 @@ class ListDebuggeesCommandTests(unittest.TestCase):
          [debuggee1[0], debuggee2[0], debuggee3[0]],
          [debuggee1[1], debuggee2[1], debuggee3[1]]
       ),
+      (
+        'Debuggee Active',
+        [DEBUGGEE_ACTIVE[0]],
+        [DEBUGGEE_ACTIVE[1]]
+      ),
+      (
+        'Debuggee Inactive',
+        [DEBUGGEE_INACTIVE[0]],
+        [DEBUGGEE_INACTIVE[1]]
+      ),
+      (
+        'Debuggee Stale',
+        [DEBUGGEE_STALE[0]],
+        [DEBUGGEE_STALE[1]]
+      ),
+      (
+        'Debuggee Unknown Activity',
+        [DEBUGGEE_UNKNOWN_ACTIVITY[0]],
+        [DEBUGGEE_UNKNOWN_ACTIVITY[1]]
+      ),
     ] # yapf: disable (Subjectively, testcases more readable hand formatted)
 
     for test_name, debuggees_response, expected_tabular_data in testcases:
       with self.subTest(test_name):
-        testargs = []
+        # This will ensure the exact debuggee list returned gets emitted.
+        testargs = ['--include-inactive']
         self.user_output_mock.reset_mock()
         self.rtdb_service_mock.get_debuggees = MagicMock(
             return_value=debuggees_response)

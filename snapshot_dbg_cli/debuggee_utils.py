@@ -36,6 +36,19 @@ def set_converted_timestamps(debuggee):
       debuggee, field_mappings)
 
 
+def get_debuggee_status(debuggee):
+  if not debuggee['activeDebuggeeEnabled']:
+    return 'UNKNOWN'
+
+  if debuggee['isActive']:
+    return 'ACTIVE'
+
+  if not debuggee['isStale']:
+    return 'INACTIVE'
+
+  return 'STALE'
+
+
 def normalize_debuggee(debuggee, current_time_unix_msec):
   """Validates and normalizes a debuggee.
 

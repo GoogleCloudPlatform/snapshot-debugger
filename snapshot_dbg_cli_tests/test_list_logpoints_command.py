@@ -44,7 +44,7 @@ LOGPOINT_ACTIVE =  {
   'isFinalState': False,
   'location': {'line': 26, 'path': 'index.js'},
   'userEmail': 'user_a@foo.com',
-  'createTime': '2022-04-14T18:50:15.852000Z',
+  'createTime': '2022-04-14T18:50:15Z',
 } # yapf: disable (Subjectively, more readable hand formatted)
 
 # NOTE: It would actually be unexpected to receive a logpoint that is complete
@@ -63,8 +63,8 @@ LOGPOINT_COMPLETE =  {
   'isFinalState': True,
   'location': {'line': 27, 'path': 'index.js'},
   'userEmail': 'user_b@foo.com',
-  'createTime': '2022-04-14T18:50:16.852000Z',
-  'finalTime': '2022-04-14T18:50:31.274000Z',
+  'createTime': '2022-04-14T18:50:16',
+  'finalTime': '2022-04-14T18:50:31Z',
 } # yapf: disable (Subjectively, more readable hand formatted)
 
 LOGPOINT_EXPIRED =  {
@@ -78,8 +78,8 @@ LOGPOINT_EXPIRED =  {
   'isFinalState': True,
   'location': {'line': 28, 'path': 'index.js'},
   'userEmail': 'user_c@foo.com',
-  'createTime': '2022-04-14T18:50:17.852000Z',
-  'finalTime': '2022-04-14T18:50:31.274000Z',
+  'createTime': '2022-04-14T18:50:17Z',
+  'finalTime': '2022-04-14T18:50:31Z',
   'status': {
     'description': {
       'format': 'The logpoint has expired'
@@ -101,8 +101,8 @@ LOGPOINT_FAILED =  {
   'isFinalState': True,
   'location': {'line': 29, 'path': 'index.js'},
   'userEmail': 'user_d@foo.com',
-  'createTime': '2022-04-14T18:50:18.852000Z',
-  'finalTime': '2022-04-14T18:50:31.274000Z',
+  'createTime': '2022-04-14T18:50:18Z',
+  'finalTime': '2022-04-14T18:50:31Z',
   'status': {
     'description': {
         'format': 'No code found at line 29'
@@ -124,7 +124,7 @@ LOGPOINT_WITH_CONDITION =  {
   'isFinalState': False,
   'location': {'line': 30, 'path': 'index.js'},
   'userEmail': 'user_e@foo.com',
-  'createTime': '2022-04-14T18:50:19.852000Z',
+  'createTime': '2022-04-14T18:50:19Z',
 } # yapf: disable (Subjectively, more readable hand formatted)
 
 class ListLogpointTests(unittest.TestCase):

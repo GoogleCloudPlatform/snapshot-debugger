@@ -59,9 +59,9 @@ The output will resemble the following. The first column will contain an entry
 `<service> - <version>`, which in this case is `default - 20221117t213436`.
 
 ```
-Name                       ID         Description
--------------------------- ---------- ------------------------------------------------
-default - 20221122t161333  d-ad4829f7 node app.js version:20221122t161333
+Name                       ID          Description                          Last Active           Status
+-------------------------  ----------  -----------------------------------  --------------------  ------
+default - 20221122t161333  d-ad4829f7  node app.js version:20221122t161333  2022-11-22T16:15:00Z  ACTIVE
 ```
 
 The debuggee ID in this case is  `d-ad4829f7`. Using this ID you may now run

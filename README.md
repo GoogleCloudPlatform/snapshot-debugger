@@ -501,18 +501,17 @@ on a debuggee will be installed on all running instances of it.
 Run the following command
 
 ```
-snapshot-dbg-cli list_debuggees
+snapshot-dbg-cli list_debuggees --include-inactive
 ```
 
 The output resembles the following:
 
 ```
-Name           ID          Description
--------------  ----------  ----------------------------------------
-test-app - v1  d-24abc4f1  node index.js module:test-app version:v1
-test-app - v2  d-8dd7f149  node index.js module:test-app version:v2
+Name           ID          Description                              Last Active           Status
+-------------  ----------  ---------------------------------------- --------------------  --------
+test-app - v2  d-8dd7f149  node index.js module:test-app version:v2 2022-12-16T21:45:07Z  ACTIVE
+test-app - v1  d-24abc4f1  node index.js module:test-app version:v1 2022-10-16T21:45:07Z  INACTIVE
 ```
-
 
 
 ### Set Snapshots
@@ -636,12 +635,12 @@ Where:
 The output resembles the following:
 
 ```
-Status     Location     Condition    CompletedTime                ID
----------  -----------  -----------  ---------------------------  ------------
-ACTIVE     index.js:21                                            b-1648008775
-ACTIVE     index.js:21                                            b-1648044994
-ACTIVE     index.js:21                                            b-1648045010
-COMPLETED  index.js:21               2022-03-23T02:52:23.558000Z  b-1648003845
+Status     Location     Condition    CompletedTime         ID
+---------  -----------  -----------  --------------------  ------------
+ACTIVE     index.js:21                                     b-1648008775
+ACTIVE     index.js:21                                     b-1648044994
+ACTIVE     index.js:21                                     b-1648045010
+COMPLETED  index.js:21               2022-03-23T02:52:23Z  b-1648003845
 ```
 
 ### Get snapshot
@@ -667,8 +666,8 @@ Location:    index.js:30
 Condition:   No condition set.
 Expressions: No expressions set.
 Status:      Complete
-Create Time: 2022-05-13T14:14:01.444000Z
-Final Time:  2022-05-13T14:14:02.516000Z
+Create Time: 2022-05-13T14:14:01Z
+Final Time:  2022-05-13T14:14:02Z
 
 -------------------------------------------------------------------------------
 | Evaluated Expressions
@@ -802,8 +801,8 @@ Log Message Format: a == 3
 Location:           Main.java:23
 Condition:          No condition set
 Status:             EXPIRED
-Create Time:        2022-08-19T18:14:38.240000Z
-Final Time:         2022-08-20T18:14:39.618000Z
+Create Time:        2022-08-19T18:14:38Z
+Final Time:         2022-08-20T18:14:39Z
 User Email:         foo1@bar.com
 ```
 
@@ -825,10 +824,10 @@ The output resembles the following:
 ```
 This command will delete the following debuggees:
 
-Name                       ID          Last Active                  Status
--------------------------  ----------  ---------------------------  ------
-default - 20221125t224954  d-39f7082e  2022-12-05T03:13:42.166000Z  STALE
-default - 20221125t154414  d-dba89292  2022-12-04T03:02:48.780000Z  STALE
+Name                       ID          Last Active           Status
+-------------------------  ----------  --------------------  ------
+default - 20221125t224954  d-39f7082e  2022-12-05T03:13:42Z  STALE
+default - 20221125t154414  d-dba89292  2022-12-04T03:02:48Z  STALE
 
 
 

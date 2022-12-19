@@ -41,7 +41,7 @@ SNAPSHOT_ACTIVE =  {
   'isFinalState': False,
   'location': {'line': 26, 'path': 'index.js'},
   'userEmail': 'foo@bar.com',
-  'createTime': '2022-04-14T18:50:15.852000Z',
+  'createTime': '2022-04-14T18:50:15Z',
 } # yapf: disable (Subjectively, more readable hand formatted)
 
 SNAPSHOT_COMPLETE =  {
@@ -91,8 +91,8 @@ SNAPSHOT_COMPLETE =  {
     }
   ],
   'userEmail': 'foo@bar.com',
-  'createTime': '2022-04-14T18:50:15.852000Z',
-  'finalTime': '2022-04-14T18:50:31.274000Z',
+  'createTime': '2022-04-14T18:50:15Z',
+  'finalTime': '2022-04-14T18:50:31Z',
 } # yapf: disable (Subjectively, more readable hand formatted)
 
 SNAPSHOT_EXPIRED =  {
@@ -104,8 +104,8 @@ SNAPSHOT_EXPIRED =  {
   'isFinalState': True,
   'location': {'line': 26, 'path': 'index.js'},
   'userEmail': 'foo@bar.com',
-  'createTime': '2022-04-14T18:50:15.852000Z',
-  'finalTime': '2022-04-14T18:50:31.274000Z',
+  'createTime': '2022-04-14T18:50:15Z',
+  'finalTime': '2022-04-14T18:50:31Z',
   'status': {
     'description': {
       'format': 'The snapshot has expired'
@@ -124,8 +124,8 @@ SNAPSHOT_FAILED =  {
   'isFinalState': True,
   'location': {'line': 100, 'path': 'index.js'},
   'userEmail': 'foo@bar.com',
-  'createTime': '2022-04-14T18:50:15.852000Z',
-  'finalTime': '2022-04-14T18:50:31.274000Z',
+  'createTime': '2022-04-14T18:50:15Z',
+  'finalTime': '2022-04-14T18:50:31Z',
   'status': {
     'description': {
         'format': 'Invalid snapshot position: index.js:100.'
@@ -146,7 +146,7 @@ LOGPOINT_ACTIVE =  {
   'isFinalState': False,
   'location': {'line': 26, 'path': 'index.js'},
   'userEmail': 'user_a@foo.com',
-  'createTime': '2022-04-14T18:50:15.852000Z',
+  'createTime': '2022-04-14T18:50:15Z',
 } # yapf: disable (Subjectively, more readable hand formatted)
 
 class GetSnapshotTests(unittest.TestCase):
@@ -296,7 +296,7 @@ class GetSnapshotTests(unittest.TestCase):
         'Condition:   a == 3\n'
         "Expressions: ['a', 'b', 'a+b']\n"
         'Status:      Active\n'
-        'Create Time: 2022-04-14T18:50:15.852000Z\n'
+        'Create Time: 2022-04-14T18:50:15Z\n'
         'Final Time:  \n')
 
     expected_summary_with_condition = expected_summary_active
@@ -306,7 +306,7 @@ class GetSnapshotTests(unittest.TestCase):
         'Condition:   No condition set\n'
         "Expressions: ['a', 'b', 'a+b']\n"
         'Status:      Active\n'
-        'Create Time: 2022-04-14T18:50:15.852000Z\n'
+        'Create Time: 2022-04-14T18:50:15Z\n'
         'Final Time:  \n')
 
     expected_summary_condition_empty = expected_summary_without_condition
@@ -318,7 +318,7 @@ class GetSnapshotTests(unittest.TestCase):
         'Condition:   a == 3\n'
         'Expressions: No expressions set\n'
         'Status:      Active\n'
-        'Create Time: 2022-04-14T18:50:15.852000Z\n'
+        'Create Time: 2022-04-14T18:50:15Z\n'
         'Final Time:  \n')
 
     expected_summary_expressions_empty = expected_summary_without_expressions
@@ -328,16 +328,16 @@ class GetSnapshotTests(unittest.TestCase):
         'Condition:   a == 3\n'
         "Expressions: ['a', 'b', 'a+b']\n"
         'Status:      Complete\n'
-        'Create Time: 2022-04-14T18:50:15.852000Z\n'
-        'Final Time:  2022-04-14T18:50:31.274000Z\n')
+        'Create Time: 2022-04-14T18:50:15Z\n'
+        'Final Time:  2022-04-14T18:50:31Z\n')
 
     expected_summary_expired = (
         expected_header + 'Location:    index.js:26\n'
         'Condition:   a == 3\n'
         "Expressions: ['a', 'b', 'a+b']\n"
         'Status:      The snapshot has expired\n'
-        'Create Time: 2022-04-14T18:50:15.852000Z\n'
-        'Final Time:  2022-04-14T18:50:31.274000Z\n')
+        'Create Time: 2022-04-14T18:50:15Z\n'
+        'Final Time:  2022-04-14T18:50:31Z\n')
 
     expected_summary_failed = (
         expected_header + 'Location:    index.js:100\n'
@@ -345,8 +345,8 @@ class GetSnapshotTests(unittest.TestCase):
         "Expressions: ['a', 'b', 'a+b']\n"
         'Status:      ERROR: Invalid snapshot position: index.js:100. '
         '(refers to: BREAKPOINT_SOURCE_LOCATION)\n'
-        'Create Time: 2022-04-14T18:50:15.852000Z\n'
-        'Final Time:  2022-04-14T18:50:31.274000Z\n')
+        'Create Time: 2022-04-14T18:50:15Z\n'
+        'Final Time:  2022-04-14T18:50:31Z\n')
 
     # We tag each testcase with information on wether the summary section is the
     # only expected output from the test. Since the condition/expressions tests
