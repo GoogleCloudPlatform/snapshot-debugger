@@ -44,7 +44,7 @@ LOGPOINT_ACTIVE =  {
   'isFinalState': False,
   'location': {'line': 26, 'path': 'index.js'},
   'userEmail': 'user_a@foo.com',
-  'createTime': '2022-04-14T18:50:15.852000Z',
+  'createTime': '2022-04-14T18:50:15Z',
 } # yapf: disable (Subjectively, more readable hand formatted)
 
 LOGPOINT_WITH_CONDITION =  {
@@ -59,7 +59,7 @@ LOGPOINT_WITH_CONDITION =  {
   'isFinalState': False,
   'location': {'line': 27, 'path': 'index.js'},
   'userEmail': 'user_b@foo.com',
-  'createTime': '2022-04-14T18:50:16.852000Z',
+  'createTime': '2022-04-14T18:50:16Z',
 } # yapf: disable (Subjectively, more readable hand formatted)
 
 LOGPOINT_EXPIRED =  {
@@ -73,8 +73,8 @@ LOGPOINT_EXPIRED =  {
   'isFinalState': True,
   'location': {'line': 28, 'path': 'index.js'},
   'userEmail': 'user_c@foo.com',
-  'createTime': '2022-04-14T18:50:17.852000Z',
-  'finalTime': '2022-04-14T18:50:31.274000Z',
+  'createTime': '2022-04-14T18:50:17Z',
+  'finalTime': '2022-04-14T18:50:31Z',
   'status': {
     'description': {
       'format': 'The logpoint has expired'
@@ -91,7 +91,7 @@ SNAPSHOT_ACTIVE =  {
   'isFinalState': False,
   'location': {'line': 26, 'path': 'index.js'},
   'userEmail': 'user@foo.com',
-  'createTime': '2022-04-14T18:50:15.852000Z',
+  'createTime': '2022-04-14T18:50:15Z',
 } # yapf: disable (Subjectively, more readable hand formatted)
 
 class DeleteLogpointsCommandTests(unittest.TestCase):

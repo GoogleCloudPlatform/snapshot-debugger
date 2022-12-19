@@ -35,8 +35,8 @@ DEBUGGEE_ACTIVE = {
     'isStale': False,
     'registrationTimeUnixMsec': 1649962215426,
     'lastUpdateTimeUnixMsec': 1670000000000,
-    'registrationTime': '2022-04-14T18:50:15.426000Z',
-    'lastUpdateTime': '2022-12-02T16:53:20.000000Z',
+    'registrationTime': '2022-04-14T18:50:15Z',
+    'lastUpdateTime': '2022-12-02T16:53:20Z',
 }
 
 DEBUGGEE_INACTIVE = {
@@ -52,8 +52,8 @@ DEBUGGEE_INACTIVE = {
     'isStale': False,
     'registrationTimeUnixMsec': 1649962215426,
     'lastUpdateTimeUnixMsec': 1669913600000,
-    'registrationTime': '2022-04-14T18:50:15.426000Z',
-    'lastUpdateTime': '2022-12-01T16:53:20.000000Z',
+    'registrationTime': '2022-04-14T18:50:15Z',
+    'lastUpdateTime': '2022-12-01T16:53:20Z',
 }
 
 DEBUGGEE_STALE = {
@@ -69,8 +69,8 @@ DEBUGGEE_STALE = {
     'isStale': True,
     'registrationTimeUnixMsec': 1649962215426,
     'lastUpdateTimeUnixMsec': 1669308800000,
-    'registrationTime': '2022-04-14T18:50:15.426000Z',
-    'lastUpdateTime': '2022-11-24T16:53:20.000000Z',
+    'registrationTime': '2022-04-14T18:50:15Z',
+    'lastUpdateTime': '2022-11-24T16:53:20Z',
 }
 
 DEBUGGEE_UNKNOWN_ACTIVITY = {
@@ -121,7 +121,7 @@ class SnapshotDebuggerDebuggeeUtilsTests(unittest.TestCase):
             },
             {
                 'registrationTimeUnixMsec': 1649962215000,
-                'registrationTime': '2022-04-14T18:50:15.000000Z'
+                'registrationTime': '2022-04-14T18:50:15Z'
             },
         ),
         (
@@ -142,7 +142,7 @@ class SnapshotDebuggerDebuggeeUtilsTests(unittest.TestCase):
             },
             {
                 'lastUpdateTimeUnixMsec': 1649962215000,
-                'lastUpdateTime': '2022-04-14T18:50:15.000000Z'
+                'lastUpdateTime': '2022-04-14T18:50:15Z'
             },
         ),
         (
@@ -164,9 +164,9 @@ class SnapshotDebuggerDebuggeeUtilsTests(unittest.TestCase):
             },
             {
                 'registrationTimeUnixMsec': 1649962215000,
-                'registrationTime': '2022-04-14T18:50:15.000000Z',
+                'registrationTime': '2022-04-14T18:50:15Z',
                 'lastUpdateTimeUnixMsec': 1649962215001,
-                'lastUpdateTime': '2022-04-14T18:50:15.001000Z'
+                'lastUpdateTime': '2022-04-14T18:50:15Z'
             },
         ),
     ]
@@ -343,8 +343,8 @@ class SnapshotDebuggerDebuggeeUtilsTests(unittest.TestCase):
         'description': 'foo msg',
         'registrationTimeUnixMsec': 1649962215426,
         'lastUpdateTimeUnixMsec': 1649962230637,
-        'registrationTime': '2022-04-14T18:50:15.426000Z',
-        'lastUpdateTime': '2022-04-14T18:50:30.637000Z',
+        'registrationTime': '2022-04-14T18:50:15Z',
+        'lastUpdateTime': '2022-04-14T18:50:30Z',
         'displayName': 'foo - v1',
     }
 
@@ -353,8 +353,8 @@ class SnapshotDebuggerDebuggeeUtilsTests(unittest.TestCase):
         ('description', ''),
         ('registrationTimeUnixMsec', 0),
         ('lastUpdateTimeUnixMsec', 0),
-        ('registrationTime', '2022-04-14T18:50:15.426000Z'),
-        ('lastUpdateTime', '2022-04-14T18:50:30.637000Z'),
+        ('registrationTime', '2022-04-14T18:50:15Z'),
+        ('lastUpdateTime', '2022-04-14T18:50:30Z'),
         ('displayName', 'foo - v1'),
     ]
 

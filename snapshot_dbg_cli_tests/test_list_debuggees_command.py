@@ -50,9 +50,9 @@ DEBUGGEE_ACTIVE = ({
     'isStale': False,
     'registrationTimeUnixMsec': 1649962215426,
     'lastUpdateTimeUnixMsec': 1670000000000,
-    'registrationTime': '2022-04-14T18:50:15.426000Z',
-    'lastUpdateTime': '2022-12-02T16:53:20.000000Z',
-}, ['app123 - v1', 'd-123', 'desc 1', '2022-12-02T16:53:20.000000Z', 'ACTIVE'])
+    'registrationTime': '2022-04-14T18:50:15Z',
+    'lastUpdateTime': '2022-12-02T16:53:20Z',
+}, ['app123 - v1', 'd-123', 'desc 1', '2022-12-02T16:53:20Z', 'ACTIVE'])
 
 DEBUGGEE_INACTIVE = ({
     'id': 'd-456',
@@ -67,11 +67,9 @@ DEBUGGEE_INACTIVE = ({
     'isStale': False,
     'registrationTimeUnixMsec': 1649962215426,
     'lastUpdateTimeUnixMsec': 1669913600000,
-    'registrationTime': '2022-04-14T18:50:15.426000Z',
-    'lastUpdateTime': '2022-12-01T16:53:20.000000Z',
-}, [
-    'app456 - v2', 'd-456', 'desc 2', '2022-12-01T16:53:20.000000Z', 'INACTIVE'
-])
+    'registrationTime': '2022-04-14T18:50:15Z',
+    'lastUpdateTime': '2022-12-01T16:53:20Z',
+}, ['app456 - v2', 'd-456', 'desc 2', '2022-12-01T16:53:20Z', 'INACTIVE'])
 
 DEBUGGEE_STALE = ({
     'id': 'd-789',
@@ -86,9 +84,9 @@ DEBUGGEE_STALE = ({
     'isStale': True,
     'registrationTimeUnixMsec': 1649962215426,
     'lastUpdateTimeUnixMsec': 1669308800000,
-    'registrationTime': '2022-04-14T18:50:15.426000Z',
-    'lastUpdateTime': '2022-11-24T16:53:20.000000Z',
-}, ['app789 - v3', 'd-789', 'desc 3', '2022-11-24T16:53:20.000000Z', 'STALE'])
+    'registrationTime': '2022-04-14T18:50:15Z',
+    'lastUpdateTime': '2022-11-24T16:53:20Z',
+}, ['app789 - v3', 'd-789', 'desc 3', '2022-11-24T16:53:20Z', 'STALE'])
 
 DEBUGGEE_UNKNOWN_ACTIVITY = ({
     'id': 'd-100',
@@ -119,10 +117,10 @@ debuggee1 = ({
     'isActive': True,
     'isStale': False,
     'registrationTimeUnixMsec': 1649962215426,
-    'lastUpdateTimeUnixMsec': 1670000000001,
-    'registrationTime': '2022-04-14T18:50:15.426000Z',
-    'lastUpdateTime': '2022-12-02T16:53:20.001000Z',
-}, ['app123 - v1', '123', 'desc 1', '2022-12-02T16:53:20.001000Z', 'ACTIVE'])
+    'lastUpdateTimeUnixMsec': 1670000001000,
+    'registrationTime': '2022-04-14T18:50:15Z',
+    'lastUpdateTime': '2022-12-02T16:53:21Z',
+}, ['app123 - v1', '123', 'desc 1', '2022-12-02T16:53:21Z', 'ACTIVE'])
 
 debuggee2 = ({
     'id': '456',
@@ -136,10 +134,10 @@ debuggee2 = ({
     'isActive': True,
     'isStale': False,
     'registrationTimeUnixMsec': 1649962215426,
-    'lastUpdateTimeUnixMsec': 1670000000002,
-    'registrationTime': '2022-04-14T18:50:15.426000Z',
-    'lastUpdateTime': '2022-12-02T16:53:20.002000Z',
-}, ['app456 - v2', '456', 'desc 2', '2022-12-02T16:53:20.002000Z', 'ACTIVE'])
+    'lastUpdateTimeUnixMsec': 1670000002000,
+    'registrationTime': '2022-04-14T18:50:15Z',
+    'lastUpdateTime': '2022-12-02T16:53:22Z',
+}, ['app456 - v2', '456', 'desc 2', '2022-12-02T16:53:22Z', 'ACTIVE'])
 
 debuggee3 = ({
     'agentVersion': 'google.com/node-gcp/v6.0.0',
@@ -164,12 +162,12 @@ debuggee3 = ({
     'isActive': True,
     'isStale': False,
     'registrationTimeUnixMsec': 1649962215426,
-    'lastUpdateTimeUnixMsec': 1670000000003,
-    'registrationTime': '2022-04-14T18:50:15.426000Z',
-    'lastUpdateTime': '2022-12-02T16:53:20.003000Z',
+    'lastUpdateTimeUnixMsec': 1670000003000,
+    'registrationTime': '2022-04-14T18:50:15Z',
+    'lastUpdateTime': '2022-12-02T16:53:23Z',
 }, [
     'test-app - v1', 'd-ff02524f', 'node index.js module:test-app version:v1',
-    '2022-12-02T16:53:20.003000Z', 'ACTIVE'
+    '2022-12-02T16:53:23Z', 'ACTIVE'
 ])
 
 

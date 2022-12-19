@@ -42,7 +42,7 @@ LOGPOINT_ACTIVE =  {
   'isFinalState': False,
   'location': {'line': 26, 'path': 'index.js'},
   'userEmail': 'user_a@foo.com',
-  'createTime': '2022-04-14T18:50:15.852000Z',
+  'createTime': '2022-04-14T18:50:15Z',
 } # yapf: disable (Subjectively, more readable hand formatted)
 
 LOGPOINT_EXPIRED =  {
@@ -56,8 +56,8 @@ LOGPOINT_EXPIRED =  {
   'isFinalState': True,
   'location': {'line': 28, 'path': 'index.js'},
   'userEmail': 'user_c@foo.com',
-  'createTime': '2022-04-14T18:50:17.852000Z',
-  'finalTime': '2022-04-14T18:50:31.274000Z',
+  'createTime': '2022-04-14T18:50:17Z',
+  'finalTime': '2022-04-14T18:50:31Z',
   'status': {
     'description': {
       'format': 'The logpoint has expired'
@@ -78,8 +78,8 @@ LOGPOINT_FAILED =  {
   'isFinalState': True,
   'location': {'line': 29, 'path': 'index.js'},
   'userEmail': 'user_d@foo.com',
-  'createTime': '2022-04-14T18:50:18.852000Z',
-  'finalTime': '2022-04-14T18:50:31.274000Z',
+  'createTime': '2022-04-14T18:50:18Z',
+  'finalTime': '2022-04-14T18:50:31Z',
   'status': {
     'description': {
         'format': 'No code found at line 29'
@@ -101,7 +101,7 @@ LOGPOINT_WITH_CONDITION =  {
   'isFinalState': False,
   'location': {'line': 30, 'path': 'index.js'},
   'userEmail': 'user_e@foo.com',
-  'createTime': '2022-04-14T18:50:19.852000Z',
+  'createTime': '2022-04-14T18:50:19Z',
 } # yapf: disable (Subjectively, more readable hand formatted)
 
 SNAPSHOT_ACTIVE =  {
@@ -113,7 +113,7 @@ SNAPSHOT_ACTIVE =  {
   'isFinalState': False,
   'location': {'line': 26, 'path': 'index.js'},
   'userEmail': 'foo@bar.com',
-  'createTime': '2022-04-14T18:50:15.852000Z',
+  'createTime': '2022-04-14T18:50:15Z',
 } # yapf: disable (Subjectively, more readable hand formatted)
 
 class GetLogpointTests(unittest.TestCase):
@@ -247,15 +247,14 @@ class GetLogpointTests(unittest.TestCase):
     logpoint_user_email_missing = logpoint_active.copy()
     del logpoint_user_email_missing['userEmail']
 
-    expected_summary_active = (
-        'Logpoint ID:        b-1649962215\n'
-        'Log Message Format: a: {a}\n'
-        'Location:           index.js:26\n'
-        'Condition:          No condition set\n'
-        'Status:             ACTIVE\n'
-        'Create Time:        2022-04-14T18:50:15.852000Z\n'
-        'Final Time:         \n'
-        'User Email:         user_a@foo.com\n')
+    expected_summary_active = ('Logpoint ID:        b-1649962215\n'
+                               'Log Message Format: a: {a}\n'
+                               'Location:           index.js:26\n'
+                               'Condition:          No condition set\n'
+                               'Status:             ACTIVE\n'
+                               'Create Time:        2022-04-14T18:50:15Z\n'
+                               'Final Time:         \n'
+                               'User Email:         user_a@foo.com\n')
 
     expected_summary_with_condition = (
         'Logpoint ID:        b-1649962219\n'
@@ -263,7 +262,7 @@ class GetLogpointTests(unittest.TestCase):
         'Location:           index.js:30\n'
         'Condition:          a == 3\n'
         'Status:             ACTIVE\n'
-        'Create Time:        2022-04-14T18:50:19.852000Z\n'
+        'Create Time:        2022-04-14T18:50:19Z\n'
         'Final Time:         \n'
         'User Email:         user_e@foo.com\n')
 
@@ -273,7 +272,7 @@ class GetLogpointTests(unittest.TestCase):
         'Location:           index.js:30\n'
         'Condition:          No condition set\n'
         'Status:             ACTIVE\n'
-        'Create Time:        2022-04-14T18:50:19.852000Z\n'
+        'Create Time:        2022-04-14T18:50:19Z\n'
         'Final Time:         \n'
         'User Email:         user_e@foo.com\n')
 
@@ -281,15 +280,14 @@ class GetLogpointTests(unittest.TestCase):
     # present but empty should produce the same result.
     expected_summary_condition_empty = expected_summary_without_condition
 
-    expected_summary_expired = (
-        'Logpoint ID:        b-1649962217\n'
-        'Log Message Format: c: {c}\n'
-        'Location:           index.js:28\n'
-        'Condition:          No condition set\n'
-        'Status:             EXPIRED\n'
-        'Create Time:        2022-04-14T18:50:17.852000Z\n'
-        'Final Time:         2022-04-14T18:50:31.274000Z\n'
-        'User Email:         user_c@foo.com\n')
+    expected_summary_expired = ('Logpoint ID:        b-1649962217\n'
+                                'Log Message Format: c: {c}\n'
+                                'Location:           index.js:28\n'
+                                'Condition:          No condition set\n'
+                                'Status:             EXPIRED\n'
+                                'Create Time:        2022-04-14T18:50:17Z\n'
+                                'Final Time:         2022-04-14T18:50:31Z\n'
+                                'User Email:         user_c@foo.com\n')
 
     expected_summary_failed = (
         'Logpoint ID:        b-1649962218\n'
@@ -297,8 +295,8 @@ class GetLogpointTests(unittest.TestCase):
         'Location:           index.js:29\n'
         'Condition:          No condition set\n'
         'Status:             SOURCE_LOCATION: No code found at line 29\n'
-        'Create Time:        2022-04-14T18:50:18.852000Z\n'
-        'Final Time:         2022-04-14T18:50:31.274000Z\n'
+        'Create Time:        2022-04-14T18:50:18Z\n'
+        'Final Time:         2022-04-14T18:50:31Z\n'
         'User Email:         user_d@foo.com\n')
 
     expected_summary_user_email_missing = (
@@ -307,7 +305,7 @@ class GetLogpointTests(unittest.TestCase):
         'Location:           index.js:26\n'
         'Condition:          No condition set\n'
         'Status:             ACTIVE\n'
-        'Create Time:        2022-04-14T18:50:15.852000Z\n'
+        'Create Time:        2022-04-14T18:50:15Z\n'
         'Final Time:         \n'
         'User Email:         \n')
 

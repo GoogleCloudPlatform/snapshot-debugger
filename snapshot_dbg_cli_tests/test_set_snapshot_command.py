@@ -39,7 +39,7 @@ TEST_SNAPSHOT =  {
   'isFinalState': False,
   'location': {'line': 26, 'path': 'index.js'},
   'userEmail': 'user@foo.com',
-  'createTime': '2022-04-14T18:50:15.852000Z',
+  'createTime': '2022-04-14T18:50:15Z',
 } # yapf: disable (Subjectively, more readable hand formatted)
 
 

@@ -67,9 +67,9 @@ The output will resemble the following. The first column will contain an entry
 `<service> - <version>`, which in this case is `default - 20221125t224954`.
 
 ```
-Name                       ID         Description                                       Last Active                  Status
--------------------------  ---------- ------------------------------------------------  ---------------------------  ------
-default - 20221125t224954  d-62259477 my-project-id-20221125t224954-448130606220701265  2022-11-25T22:50:00.812000Z  ACTIVE
+Name                       ID         Description                                       Last Active           Status
+-------------------------  ---------- ------------------------------------------------  --------------------  ------
+default - 20221125t224954  d-62259477 my-project-id-20221125t224954-448130606220701265  2022-11-25T22:50:00Z  ACTIVE
 ```
 
 The debuggee ID in this case is  `d-62259477`. Using this ID you may now run

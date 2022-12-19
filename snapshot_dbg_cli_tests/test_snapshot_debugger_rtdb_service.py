@@ -53,7 +53,7 @@ SNAPSHOT_ACTIVE =  {
   'isFinalState': False,
   'location': {'line': 26, 'path': 'index.js'},
   'userEmail': 'user@foo.com',
-  'createTime': '2022-04-14T18:50:15.852000Z',
+  'createTime': '2022-04-14T18:50:15Z',
 } # yapf: disable (Subjectively, more readable hand formatted)
 
 SNAPSHOT_COMPLETED =  {
@@ -63,7 +63,7 @@ SNAPSHOT_COMPLETED =  {
   'isFinalState': True,
   'location': {'line': 28, 'path': 'index.js'},
   'userEmail': 'user@foo.com',
-  'createTime': '2022-04-14T18:50:15.852000Z',
+  'createTime': '2022-04-14T18:50:15Z',
 } # yapf: disable (Subjectively, more readable hand formatted)
 
 LOGPOINT_ACTIVE =  {
@@ -73,7 +73,7 @@ LOGPOINT_ACTIVE =  {
   'isFinalState': False,
   'location': {'line': 26, 'path': 'index.js'},
   'userEmail': 'user@foo.com',
-  'createTime': '2022-04-14T18:50:15.852000Z',
+  'createTime': '2022-04-14T18:50:15Z',
   'logMessageFormat': 'Message 1',
 } # yapf: disable (Subjectively, more readable hand formatted)
 
@@ -84,7 +84,7 @@ LOGPOINT_COMPLETED =  {
   'isFinalState': True,
   'location': {'line': 28, 'path': 'index.js'},
   'userEmail': 'user@foo.com',
-  'createTime': '2022-04-14T18:50:15.852000Z',
+  'createTime': '2022-04-14T18:50:15Z',
   'logMessageFormat': 'Message 2',
 } # yapf: disable (Subjectively, more readable hand formatted)
 

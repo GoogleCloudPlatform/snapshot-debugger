@@ -32,7 +32,7 @@ SNAPSHOT_ACTIVE =  {
   'isFinalState': False,
   'location': {'line': 26, 'path': 'index.js'},
   'userEmail': 'foo@bar.com',
-  'createTime': '2022-04-14T18:50:15.426000Z',
+  'createTime': '2022-04-14T18:50:15Z',
 } # yapf: disable (Subjectively, more readable hand formatted)
 
 SNAPSHOT_COMPLETE =  {
@@ -43,8 +43,8 @@ SNAPSHOT_COMPLETE =  {
   'isFinalState': True,
   'location': {'line': 26, 'path': 'index.js'},
   'userEmail': 'foo@bar.com',
-  'createTime': '2022-04-14T18:50:15.426000Z',
-  'finalTime': '2022-04-14T18:50:30.637000Z',
+  'createTime': '2022-04-14T18:50:15Z',
+  'finalTime': '2022-04-14T18:50:30Z',
 } # yapf: disable (Subjectively, more readable hand formatted)
 
 class SnapshotDebuggerBreakpointUtilsTests(unittest.TestCase):
@@ -120,7 +120,7 @@ class SnapshotDebuggerBreakpointUtilsTests(unittest.TestCase):
             },
             {
                 'createTimeUnixMsec': 1649962215000,
-                'createTime': '2022-04-14T18:50:15.000000Z'
+                'createTime': '2022-04-14T18:50:15Z'
             },
         ),
         (
@@ -141,7 +141,7 @@ class SnapshotDebuggerBreakpointUtilsTests(unittest.TestCase):
             },
             {
                 'finalTimeUnixMsec': 1649962215000,
-                'finalTime': '2022-04-14T18:50:15.000000Z'
+                'finalTime': '2022-04-14T18:50:15Z'
             },
         ),
         (
@@ -163,9 +163,9 @@ class SnapshotDebuggerBreakpointUtilsTests(unittest.TestCase):
             },
             {
                 'createTimeUnixMsec': 1649962215000,
-                'createTime': '2022-04-14T18:50:15.000000Z',
+                'createTime': '2022-04-14T18:50:15Z',
                 'finalTimeUnixMsec': 1649962215001,
-                'finalTime': '2022-04-14T18:50:15.001000Z'
+                'finalTime': '2022-04-14T18:50:15Z'
             },
         ),
     ]
@@ -363,7 +363,7 @@ class SnapshotDebuggerBreakpointUtilsTests(unittest.TestCase):
       'isFinalState': False,
       'location': {'line': 26, 'path': 'index.js'},
       'userEmail': 'user_a@foo.com',
-      'createTime': '2022-04-14T18:50:15.852000Z',
+      'createTime': '2022-04-14T18:50:15Z',
     } # yapf: disable (Subjectively, more readable hand formatted)
 
     self.assertEqual(get_logpoint_short_status(logpoint), 'ACTIVE')
@@ -386,8 +386,8 @@ class SnapshotDebuggerBreakpointUtilsTests(unittest.TestCase):
       'isFinalState': True,
       'location': {'line': 27, 'path': 'index.js'},
       'userEmail': 'user_b@foo.com',
-      'createTime': '2022-04-14T18:50:16.852000Z',
-      'finalTime': '2022-04-14T18:50:31.274000Z',
+      'createTime': '2022-04-14T18:50:16Z',
+      'finalTime': '2022-04-14T18:50:31Z',
     } # yapf: disable (Subjectively, more readable hand formatted)
 
     self.assertEqual(get_logpoint_short_status(logpoint), 'COMPLETED')
@@ -404,8 +404,8 @@ class SnapshotDebuggerBreakpointUtilsTests(unittest.TestCase):
       'isFinalState': True,
       'location': {'line': 28, 'path': 'index.js'},
       'userEmail': 'user_c@foo.com',
-      'createTime': '2022-04-14T18:50:17.852000Z',
-      'finalTime': '2022-04-14T18:50:31.274000Z',
+      'createTime': '2022-04-14T18:50:17Z',
+      'finalTime': '2022-04-14T18:50:31Z',
       'status': {
         'description': {
           'format': 'The logpoint has expired'
@@ -430,8 +430,8 @@ class SnapshotDebuggerBreakpointUtilsTests(unittest.TestCase):
       'isFinalState': True,
       'location': {'line': 29, 'path': 'index.js'},
       'userEmail': 'user_d@foo.com',
-      'createTime': '2022-04-14T18:50:18.852000Z',
-      'finalTime': '2022-04-14T18:50:31.274000Z',
+      'createTime': '2022-04-14T18:50:18Z',
+      'finalTime': '2022-04-14T18:50:31Z',
       'status': {
         'description': {
             'format': 'No code found at line 29'
@@ -458,8 +458,8 @@ class SnapshotDebuggerBreakpointUtilsTests(unittest.TestCase):
       'isFinalState': True,
       'location': {'line': 29, 'path': 'index.js'},
       'userEmail': 'user_d@foo.com',
-      'createTime': '2022-04-14T18:50:18.852000Z',
-      'finalTime': '2022-04-14T18:50:31.274000Z',
+      'createTime': '2022-04-14T18:50:18Z',
+      'finalTime': '2022-04-14T18:50:31Z',
       'status': {
         'description': {
             'format': 'No code found at line 29'

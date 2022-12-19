@@ -25,24 +25,18 @@ class ListDebuggeesCommandTests(unittest.TestCase):
   """
 
   def test_convert_unix_msec_to_rfc3339(self):
-    self.assertEqual('2022-04-14T18:50:15.000000Z',
+    self.assertEqual('2022-04-14T18:50:15Z',
                      convert_unix_msec_to_rfc3339(1649962215000))
-    self.assertEqual('2022-04-14T18:50:15.001000Z',
-                     convert_unix_msec_to_rfc3339(1649962215001))
-    self.assertEqual('2022-04-14T18:50:15.010000Z',
-                     convert_unix_msec_to_rfc3339(1649962215010))
-    self.assertEqual('2022-04-14T18:50:15.100000Z',
-                     convert_unix_msec_to_rfc3339(1649962215100))
-    self.assertEqual('2022-04-14T18:50:15.426000Z',
-                     convert_unix_msec_to_rfc3339(1649962215426))
+    self.assertEqual('2022-04-14T18:50:16Z',
+                     convert_unix_msec_to_rfc3339(1649962216000))
 
     # For any invalid input, the function will default to using a value of 0,
     # which represents the epoch (1970-01-01). This way the function can still
     # return a properly formatting string, and the value is recognizable as
     # indicating there was an issue and the actual time is not known.
-    self.assertEqual('1970-01-01T00:00:00.000000Z',
+    self.assertEqual('1970-01-01T00:00:00Z',
                      convert_unix_msec_to_rfc3339(999999999999999))
-    self.assertEqual('1970-01-01T00:00:00.000000Z',
+    self.assertEqual('1970-01-01T00:00:00Z',
                      convert_unix_msec_to_rfc3339('asdf'))
 
   def test_set_converted_timestamps_one_conversion(self):
@@ -53,7 +47,7 @@ class ListDebuggeesCommandTests(unittest.TestCase):
     ]
 
     expected_data = {
-        'fooTime': '2022-04-14T18:50:15.000000Z',
+        'fooTime': '2022-04-14T18:50:15Z',
         'fooTimeUnixMsec': 1649962215000
     }
 
@@ -69,9 +63,9 @@ class ListDebuggeesCommandTests(unittest.TestCase):
     ]
 
     expected_data = {
-        'fooTime': '2022-04-14T18:50:15.000000Z',
+        'fooTime': '2022-04-14T18:50:15Z',
         'fooTimeUnixMsec': 1649962215000,
-        'barTime': '2022-04-14T18:50:16.000000Z',
+        'barTime': '2022-04-14T18:50:16Z',
         'barTimeUnixMsec': 1649962216000
     }
 

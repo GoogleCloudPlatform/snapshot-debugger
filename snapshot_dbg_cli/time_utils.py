@@ -31,14 +31,13 @@ def convert_unix_msec_to_rfc3339(unix_msec):
     unix_msec: The Unix timestamp, represented in milliseconds since the epoch.
 
   Returns:
-    An RFC3339 encoded timestamp string in format: "%Y-%m-%dT%H:%M:%S.%fZ".
+    An RFC3339 encoded timestamp string in format: "%Y-%m-%dT%H:%M:%SZ".
   """
   try:
     seconds = unix_msec / 1000
-    msec = unix_msec % 1000
     timestamp = seconds
     dt = datetime.datetime.fromtimestamp(timestamp, tz=datetime.timezone.utc)
-    return dt.strftime(f'%Y-%m-%dT%H:%M:%S.{msec:03}000') + 'Z'
+    return dt.strftime('%Y-%m-%dT%H:%M:%S') + 'Z'
   except (OverflowError, OSError, TypeError, ValueError):
     # By using 0, we'll still get the expected formatted string, and the value
     # will be '1970-01-01...', which visually will be recognizable as beginning
@@ -65,9 +64,9 @@ def set_converted_timestamps(data, field_mappings):
   set_converted_timestamps(data, field_mappings)
   data = {
     fooTimeUnixMsec: 1649962215000
-    fooTime: '2022-04-14T18:50:15.000000Z'
+    fooTime: '2022-04-14T18:50:15Z'
     barTimeUnixMsec = 1649962216000
-    barTime: '2022-04-14T18:50:16.000000Z'
+    barTime: '2022-04-14T18:50:16Z'
   }
 
 
