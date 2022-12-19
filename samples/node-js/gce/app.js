@@ -17,6 +17,10 @@
 require('@google-cloud/debug-agent').start({
   useFirebase: true,
   allowExpressions: true,
+  serviceContext: {
+    service: 'sample-service',
+    version: 'version-1'
+  },
 });
 
 const express = require('express');
