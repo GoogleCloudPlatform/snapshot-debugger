@@ -50,8 +50,7 @@ The output will resemble the following. The first column will contain an entry
 
 ```
 Name                       ID         Description
--------------------------- ----------
-------------------------------------------------
+-------------------------- ---------- ------------------------------------------------
 sample-service - version-1 d-ad4829f7 node app.js module:sample-service version:version-1
 ```
 
