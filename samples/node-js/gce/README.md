@@ -1,7 +1,7 @@
 # Snapshot Debugger Example for Node.js on Google Compute Engine
 
 NOTE: This sample application was copied from
-[nodejs-docs-samples/appengine/hello-world/standard][sample-source]
+[nodejs-getting-started/gce][sample-source]
 and modified for the Snapshot Debugger samples here.
 
 This folder contains the sample code for the [Deploying to Google Compute
