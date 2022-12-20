@@ -34,12 +34,6 @@ Then deploy to App Engine as usual:
 
     gcloud app deploy
 
-## Navigate To Your App
-
-This will ensure the app is run and is required as your app will not be
-debuggable until after the first request has been received.  The URL should be
-provided in the `target url` output of the previous step.
-
 ## Determine the Debuggee ID
 
 Based on the service and version you'll be able to identify your debuggee ID
