@@ -26,10 +26,9 @@ Before you can run or deploy the sample, you need to do the following:
 
 The following code changes have been made to enable the Snapshot Debugger:
 
-### TODO ###
-https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/c7cc477b9a66541f9b6804f0b6ba215547901afc/samples/python/appengine-standard/requirements.txt#L2
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/33f8756c5adb7684650adbe0d81ebbc6f5051c4c/samples/python/appengine-standard/requirements.txt#L2
 
-https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/c7cc477b9a66541f9b6804f0b6ba215547901afc/samples/python/appengine-standard/main.py#L17-L21
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/33f8756c5adb7684650adbe0d81ebbc6f5051c4c/samples/python/appengine-standard/main.py#L17-L21
 
 Then deploy to App Engine as usual:
 
