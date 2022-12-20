@@ -26,10 +26,9 @@ Before you can run or deploy the sample, you need to do the following:
 
 The following code changes have been made to enable the Snapshot Debugger:
 
-# TODO
-https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/33f8756c5adb7684650adbe0d81ebbc6f5051c4c/samples/python/appengine-standard/requirements.txt#L4
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/ae8358fb69ae8f9df10e4675d59671d950e0d6c1/samples/python/appengine-flexible/requirements.txt#L4
 
-https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/33f8756c5adb7684650adbe0d81ebbc6f5051c4c/samples/python/appengine-standard/main.py#L17-L21
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/ae8358fb69ae8f9df10e4675d59671d950e0d6c1/samples/python/appengine-flexible/main.py#L17-L21
 
 Then deploy to App Engine as usual:
 
@@ -50,14 +49,13 @@ based on the output from the `list_debuggees` command.
 snapshot-dbg-cli list_debuggees
 ```
 
-# TODO
 The output will resemble the following. The first column will contain an entry
-`<service> - <version>`, which in this case is `default - 20221117t213436`.
+`<service> - <version>`, which in this case is `default - 20221122t161333`.
 
 ```
-Name                       ID          Description                          Last Active           Status
--------------------------  ----------  -----------------------------------  --------------------  ------
-default - 20221122t161333  d-ad4829f7  node app.js version:20221122t161333  2022-11-22T16:15:00Z  ACTIVE
+Name                       ID          Description                    Last Active           Status
+-------------------------  ----------  -----------------------------  --------------------  ------
+default - 20221122t161333  d-ad4829f7  my-project-id-20221122t161333  2022-11-22T16:15:00Z  ACTIVE
 ```
 
 The debuggee ID in this case is  `d-ad4829f7`. Using this ID you may now run
