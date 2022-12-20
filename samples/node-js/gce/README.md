@@ -36,6 +36,18 @@ gcloud compute instances create my-app-instance \
   --tags http-server
 ```
 
+It will take some time for your instance to become available.  You can check
+the progress of the instance creation:
+
+```
+gcloud compute instances get-serial-port-output my-app-instance --zone us-central1-a
+```
+
+NOTE: The application code is being downloaded to the GCE instance from the main
+branch of the snapshot-debugger Github repository.  If you make local changes to
+the application, they will not be present in the GCE instance unless you also
+alter `startup-script.sh` to download your version of the code.
+
 ## Determine the Debuggee ID
 
 Based on the service and version you'll be able to identify your debuggee ID
@@ -61,11 +73,13 @@ E.g.
 *    Use the `set_snapshot` CLI command to set a snapshot at `app.js:31`.
      Note the returned breakpoint ID.
 *    Navigate to your application using the ip address shown in the
-     `gcloud compute instances list` output. This will trigger the breakpoint
-     and collect the snapshot.
+     `gcloud compute instances list` output on port 8080. Alternatively,
+     ssh to the instance and `curl localhost:8080`. Either approach will trigger
+     the breakpoint and collect the snapshot.
      *   Note: You may need to set up a firewall to be able to access the
-         webserver.  Follow the [getting started on gce][tutorial-gce]
-         instructions to learn how to set it up.
+         webserver through the external ip address.  Follow the
+         [getting started on gce][tutorial-gce] instructions to learn how to
+         set it up.
 *    Use the `get_snapshot` CLI command to retrieve the snapshot
      using the breakpoint ID created with the `set_snapshot` command.
 
