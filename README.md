@@ -11,20 +11,9 @@ than 10ms to the request latency only when the application state is captured. In
 most cases, this isn’t noticeable by users.
 
 
-## Preview Limitations
+## Limitations
 
-During the preview phase, only [GCE](https://cloud.google.com/compute), and
-local debugging are supported.
-
-
-### Upcoming Features
-
-* App Engine support for Java, Python 3, and Node.js
-
-Note:
-
-*  All upcoming features will be implemented before the
-   [Cloud Debugger shutdown](https://cloud.google.com/debugger/docs/deprecations)
+*  Java 8 on App Engine Standard is not currently supported
 *  Python 2.7 will not be supported
 
 
