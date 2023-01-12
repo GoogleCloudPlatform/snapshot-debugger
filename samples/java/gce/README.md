@@ -20,7 +20,7 @@ The webapp is extracted to `${jetty.base}/webapps/root`:
 https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/a6ab2b094c4e3b522aea2c61f3c4abbe87f2e211/samples/java/gce/startup-script.sh#L52-L72
 
 Install and configure the Snapshot Debugger Java Agent:
-https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/a6ab2b094c4e3b522aea2c61f3c4abbe87f2e211/samples/java/gce/startup-script.sh#L88-L90
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/532c05d16db38a5540aa168cbde75d681553373a/samples/java/gce/startup-script.sh#L31-L33
 https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/a6ab2b094c4e3b522aea2c61f3c4abbe87f2e211/samples/java/gce/startup-script.sh#L84
 
 Here the following configurations were provided:
@@ -72,7 +72,8 @@ snapshot-dbg-cli list_debuggees
 ```
 
 The output will resemble the following. The first column will contain an entry
-`sample-service - version-1`, which was set in app.js.
+`gce-java-sample - v1`, which is based on the module and version set via the
+agent configuration.
 
 ```
 Name                  ID          Description                    Last Active           Status
