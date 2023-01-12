@@ -45,7 +45,7 @@ public class Main {
     // it is suitable for serving root context requests. It is expecting the
     // first argument passed in is the directory containing an exploded
     // webapp.
-    WebAppContext webapp = new WebAppContext("/", args[0]);
+    WebAppContext webapp = new WebAppContext(args[0], "/");
     ClassList classlist = ClassList.setServerDefault(server);
 
     // Enable Annotation Scanning.

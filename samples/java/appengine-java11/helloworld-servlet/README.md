@@ -43,7 +43,7 @@ Move into the directory to install, and then move back.
 
 ```
 pushd ../appengine-simple-jetty-main
-mvm install
+mvn install
 popd
 ```
 
