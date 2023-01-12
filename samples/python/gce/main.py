@@ -15,6 +15,12 @@
 from flask import Flask
 app = Flask(__name__)
 
+try:
+  import googleclouddebugger
+  googleclouddebugger.enable(module='gce-python-sample', version='v1')
+except ImportError:
+  pass
+
 
 @app.route('/', methods=['GET'])
 def say_hello():
