@@ -24,7 +24,7 @@ pip install --upgrade pip virtualenv
 export HOME=/root
 git clone -b python-gce https://github.com/GoogleCloudPlatform/snapshot-debugger.git /tmp/app
 mkdir /opt/app
-cp -r /tmp/app/gce /opt/app
+cp -r /tmp/app/samples/python/gce /opt/app
 
 # Install Cloud Ops Agent
 sudo bash /opt/app/gce/add-google-cloud-ops-agent-repo.sh --also-install
