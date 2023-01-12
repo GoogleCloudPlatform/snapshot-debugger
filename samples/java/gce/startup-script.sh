@@ -65,9 +65,9 @@ cd samples/java/gce
 #     the classes to set breakpoints.
 #   - Additionally, the java agent will automatically look in
 #     ${jetty.base}/webapps/root/WEB-INF/[lib, classes] ('ROOT' is also
-#     checked)'. If a different name other than 'root' or 'ROOT' is used for the
+#     checked). If a different name other than 'root' or 'ROOT' is used for the
 #     directory name the 'cdbg_extra_class_path' agent parameter would need to
-#     be provided to the agnet. See
+#     be provided to the agent. See
 #     https://github.com/GoogleCloudPlatform/cloud-debug-java#extra-classpath
 #     for more information.
 mvn clean package -q

@@ -12,7 +12,8 @@ instructions on configuring, running, and deploying this sample.
 
 The following customizations have been made to enable the Snapshot Debugger:
 
-Extra scopes are required, see [Create and configure a Compute Engine instance](https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/samples-java-gce/samples/java/gce/README.md#create-and-configure-a-compute-engine-instance)
+Extra scopes are required, see [Create and configure a Compute Engine
+instance][create-instance]
 https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/a6ab2b094c4e3b522aea2c61f3c4abbe87f2e211/samples/java/gce/README.md?plain=1#L30
 
 The webapp is extracted to `${jetty.base}/webapps/root`:
@@ -21,6 +22,14 @@ https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/a6ab2b094c4e3b522a
 Install and configure the Snapshot Debugger Java Agent:
 https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/a6ab2b094c4e3b522aea2c61f3c4abbe87f2e211/samples/java/gce/startup-script.sh#L88-L90
 https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/a6ab2b094c4e3b522aea2c61f3c4abbe87f2e211/samples/java/gce/startup-script.sh#L84
+
+Here the following configurations were provided:
+* `com.google.cdbg.module` sets a name for your app, such as MyApp, Backend, or
+  Frontend.
+* `com.google.cdbg.version` sets a version, such as v1.0, build_147, or
+  v20170714.
+
+See [Naming and Versioning][naming-and-versioning] for more information.
 
 ## Create and configure a Compute Engine instance
 
@@ -99,3 +108,5 @@ gcloud compute instances delete my-app-instance \
 
 [tutorial-gce]: https://cloud.google.com/java/getting-started/getting-started-on-compute-engine
 [sample-source]: https://github.com/GoogleCloudPlatform/getting-started-java/tree/main/gce
+[naming-and-versioning]: https://github.com/GoogleCloudPlatform/cloud-debug-java/blob/main/README.md#naming-and-versioning
+[create-instance]: https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/samples-java-gce/samples/java/gce/README.md#create-and-configure-a-compute-engine-instance
