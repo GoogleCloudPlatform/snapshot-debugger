@@ -28,6 +28,10 @@ apt-get install -yq openjdk-11-jdk git maven wget curl
 
 mvn --version
 
+# Install the Snapshot Debugger
+mkdir /opt/cdbg
+wget -qO- https://github.com/GoogleCloudPlatform/cloud-debug-java/releases/latest/download/cdbg_java_agent_gce.tar.gz | tar xvz -C /opt/cdbg
+
 # Jetty Setup
 mkdir -p /opt/jetty/temp
 mkdir -p /var/log/jetty
@@ -45,9 +49,11 @@ java -jar /opt/jetty/start.jar --create-startd --add-to-start=setuid
 cd /
 
 # Clone the source repository.
-# TODO: Update to pull from snapshot-debugger repo.
-git clone https://github.com/GoogleCloudPlatform/getting-started-java
-cd getting-started-java/gce
+# TODO: Update to not need the branch checkout
+git clone https://github.com/GoogleCloudPlatform/snapshot-debugger.git /opt/app/snapshot-debugger
+cd /opt/app/snapshot-debugger
+git checkout samples-java-gce
+cd samples/java/gce
 
 # Build the .war file and then unpack it to /opt/jetty/webapps/root
 # Notes:
@@ -84,10 +90,6 @@ echo "JETTY_HOME=/opt/jetty" > /etc/default/jetty
   echo "JAVA_OPTIONS='-agentpath:/opt/cdbg/cdbg_java_agent.so=--use-firebase=true -Dcom.google.cdbg.version=v1 -Dcom.google.cdbg.module=gce-java-sample -Djetty.http.port=80'"
   echo "JETTY_LOGS=/var/log/jetty"
 } >> /etc/default/jetty
-
-# Install and configure the Snapshot Debugger agent
-mkdir /opt/cdbg
-wget -qO- https://github.com/GoogleCloudPlatform/cloud-debug-java/releases/latest/download/cdbg_java_agent_gce.tar.gz | tar xvz -C /opt/cdbg
 
 # Reload daemon to pick up new service
 systemctl daemon-reload
