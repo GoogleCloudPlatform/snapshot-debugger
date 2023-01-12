@@ -21,7 +21,10 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.Configuration.ClassList;
 import org.eclipse.jetty.webapp.WebAppContext;
 
-/** Simple Jetty Main that can execute a WAR file when passed as an argument. */
+/**
+ * Simple Jetty Main that can execute a directory containing an exploded webapp
+ * when passed as an argument.
+ */
 public class Main {
 
   public static void main(String[] args) throws Exception {
@@ -39,10 +42,10 @@ public class Main {
 
     // The WebAppContext is the interface to provide configuration for a web
     // application. In this example, the context path is being set to "/" so
-    // it is suitable for serving root context requests.
-    WebAppContext webapp = new WebAppContext();
-    webapp.setContextPath("/");
-    webapp.setWar(args[0]);
+    // it is suitable for serving root context requests. It is expecting the
+    // first argument passed in is the directory containing an exploded
+    // webapp.
+    WebAppContext webapp = new WebAppContext("/", args[0]);
     ClassList classlist = ClassList.setServerDefault(server);
 
     // Enable Annotation Scanning.

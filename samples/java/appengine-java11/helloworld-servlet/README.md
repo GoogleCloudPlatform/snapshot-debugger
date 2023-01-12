@@ -7,7 +7,8 @@
 The Java 11 runtime requires that your application have a `Main` class that
 starts a web server. This sample is dependent on artifact
 [`appengine-simple-jetty-main`](../appengine-simple-jetty-main) to provide a
-`Main` class that starts an embedded Jetty server that loads a WAR file.
+`Main` class that starts an embedded Jetty server that loads a directory
+containing a webapp.
 
 This example will use the App Engine Plugin to first build and stage the
 application. It will make some custom changes to the staging directory to add
@@ -67,13 +68,13 @@ wget -qO- https://github.com/GoogleCloudPlatform/cloud-debug-java/releases/lates
 
 ## Extract the WAR file
 
-In this sample app the WAR file gets extracted to a random temporary location by
-Jetty, the Snapshot Debugger Java Agent will not be able to locate the class
-file in order to set breakpoints. To enable it to do so, the WAR file needs to
-be extracted to a known location that the agent can be configured to search for.
+As noted in [Servlet Runtime](../README.md#servlet-runtime), for the Snapshot
+Debugger Java agent to be able to find the class files, we must use directories
+containing the webapp, and not WAR files.
 
 ```
-unzip target/appengine-staging/helloworld.war -d target/appengine-staging/cdbg/extra
+unzip target/appengine-staging/helloworld.war -d target/appengine-staging/helloworld
+rm target/appengine-staging/helloworld.war
 ```
 
 ## Deploy the application
