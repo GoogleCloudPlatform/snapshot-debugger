@@ -13,9 +13,9 @@ running, and deploying this sample.
 
 The following code changes have been made to enable the Snapshot Debugger:
 
-TODO: code change
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/467950b7c62d9e5260b3ac6b236a74334875f023/samples/python/gce/main.py#L18-L25
 
-TODO: additional dependency
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/467950b7c62d9e5260b3ac6b236a74334875f023/samples/python/gce/requirements.txt#L4
 
 ## Create and configure a Compute Engine instance
 
@@ -61,16 +61,16 @@ The output will resemble the following. The first column will contain an entry
 `sample-service - version-1`, which was set in TODO.
 
 ```
-Name                       ID         Description
--------------------------- ---------- ------------------------------------------------
-sample-service - version-1 d-ad4829f7 TODO
+Name                   ID         Description
+---------------------- ---------- ----------------------------------
+gce-python-sample - v1 d-ad4829f7 my-project-id-gce-python-sample-v1
 ```
 
 The debuggee ID in this case is  `d-ad4829f7`. Using this ID you may now run
 through an [Example workflow](../../../README.md#example-workflow).
 
 E.g.
-*    Use the `set_snapshot` CLI command to set a snapshot at `TODO`.
+*    Use the `set_snapshot` CLI command to set a snapshot at `main.py:30`.
      Note the returned breakpoint ID.
 *    Navigate to your application using the ip address shown in the
      `gcloud compute instances list` output on port 8080. Alternatively,
