@@ -24,7 +24,7 @@ echo "Project ID: ${PROJECTID}"
 
 # Install dependencies from apt
 apt-get update
-apt-get install -yq openjdk-11-jdk git maven wget curl
+apt-get install -yq openjdk-11-jdk git maven wget curl unzip
 
 mvn --version
 
@@ -50,10 +50,8 @@ cd /
 
 # Clone the source repository.
 # TODO: Update to not need the branch checkout
-git clone https://github.com/GoogleCloudPlatform/snapshot-debugger.git /opt/app/snapshot-debugger
-cd /opt/app/snapshot-debugger
-git checkout samples-java-gce
-cd samples/java/gce
+git clone -b samples-java-gce https://github.com/GoogleCloudPlatform/snapshot-debugger.git /opt/app/snapshot-debugger
+cd /opt/app/snapshot-debugger/samples/java/gce
 
 # Build the .war file and then unpack it to /opt/jetty/webapps/root
 # Notes:
@@ -71,12 +69,7 @@ cd samples/java/gce
 #     https://github.com/GoogleCloudPlatform/cloud-debug-java#extra-classpath
 #     for more information.
 mvn clean package -q
-WAR_FILE=`pwd`/target/getting-started-gce-1.0-SNAPSHOT.war
-mkdir /opt/jetty/webapps/root
-pushd /opt/jetty/webapps/root
-jar -xvf ${WAR_FILE}
-popd
-
+unzip target/getting-started-gce-1.0-SNAPSHOT.war -d /opt/jetty/webapps/root
 
 # Make sure "jetty" owns everything.
 chown --recursive jetty /opt/jetty
