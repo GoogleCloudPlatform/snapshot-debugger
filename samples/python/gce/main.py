@@ -17,7 +17,10 @@ app = Flask(__name__)
 
 try:
   import googleclouddebugger
-  googleclouddebugger.enable(module='gce-python-sample', version='v1')
+  googleclouddebugger.enable(
+          use_firebase=True,
+          module='gce-python-sample',
+          version='v1')
 except ImportError:
   pass
 
