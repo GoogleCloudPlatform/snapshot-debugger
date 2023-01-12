@@ -1,4 +1,4 @@
-# Snapshot Debugger Example for Node.js on Google Compute Engine
+# Snapshot Debugger Example for Java on Google Compute Engine
 
 NOTE: This sample application was copied from
 [getting-started-java/gce][sample-source]
@@ -10,9 +10,17 @@ instructions on configuring, running, and deploying this sample.
 
 ## Enabling Snapshot Debugger
 
-Examine the following customizations for enabling the Snapshot Debugger:
+The following customizations have been made to enable the Snapshot Debugger:
 
-TODO: Add permalinks
+Extra scopes are required, see [Create and configure a Compute Engine instance](https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/samples-java-gce/samples/java/gce/README.md#create-and-configure-a-compute-engine-instance)
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/a6ab2b094c4e3b522aea2c61f3c4abbe87f2e211/samples/java/gce/README.md?plain=1#L30
+
+The webapp is extracted to `${jetty.base}/webapps/root`:
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/a6ab2b094c4e3b522aea2c61f3c4abbe87f2e211/samples/java/gce/startup-script.sh#L52-L72
+
+Install and configure the Snapshot Debugger Java Agent:
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/a6ab2b094c4e3b522aea2c61f3c4abbe87f2e211/samples/java/gce/startup-script.sh#L88-L90
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/a6ab2b094c4e3b522aea2c61f3c4abbe87f2e211/samples/java/gce/startup-script.sh#L84
 
 ## Create and configure a Compute Engine instance
 
