@@ -14,14 +14,14 @@ The following customizations have been made to enable the Snapshot Debugger:
 
 Extra scopes are required, see [Create and configure a Compute Engine
 instance][create-instance]
-https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/6fb6edef0915574f8b0b57bfddf2bad8454093bf/samples/java/gce/README.md?plain=1#L47
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/de500a8316598cbd539ffce9e983f244329d7aab/samples/java/gce/README.md?plain=1#L47
 
 The webapp is extracted to `${jetty.base}/webapps/root`:
-https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/6fb6edef0915574f8b0b57bfddf2bad8454093bf/samples/java/gce/startup-script.sh#L56-L72
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/de500a8316598cbd539ffce9e983f244329d7aab/samples/java/gce/startup-script.sh#L56-L72
 
 Install and configure the Snapshot Debugger Java Agent:
-https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/6fb6edef0915574f8b0b57bfddf2bad8454093bf/samples/java/gce/startup-script.sh#L31-L33
-https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/6fb6edef0915574f8b0b57bfddf2bad8454093bf/samples/java/gce/startup-script.sh#L83
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/de500a8316598cbd539ffce9e983f244329d7aab/samples/java/gce/startup-script.sh#L31-L33
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/de500a8316598cbd539ffce9e983f244329d7aab/samples/java/gce/startup-script.sh#L83
 
 Here the following configuration was provided:
 * `com.google.cdbg.module` sets a name for your app, such as MyApp, Backend, or
@@ -110,4 +110,4 @@ gcloud compute instances delete my-app-instance \
 [tutorial-gce]: https://cloud.google.com/java/getting-started/getting-started-on-compute-engine
 [sample-source]: https://github.com/GoogleCloudPlatform/getting-started-java/tree/main/gce
 [naming-and-versioning]: https://github.com/GoogleCloudPlatform/cloud-debug-java/blob/main/README.md#naming-and-versioning
-[create-instance]: https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/samples-java-gce/samples/java/gce/README.md#create-and-configure-a-compute-engine-instance
+[create-instance]: https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/main/samples/java/gce/README.md#create-and-configure-a-compute-engine-instance

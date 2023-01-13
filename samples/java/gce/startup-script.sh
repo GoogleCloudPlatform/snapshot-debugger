@@ -50,7 +50,7 @@ cd /
 
 # Clone the source repository.
 # TODO: Update to not need the branch checkout
-git clone -b samples-java-gce https://github.com/GoogleCloudPlatform/snapshot-debugger.git /opt/app/snapshot-debugger
+git clone https://github.com/GoogleCloudPlatform/snapshot-debugger.git /opt/app/snapshot-debugger
 cd /opt/app/snapshot-debugger/samples/java/gce
 
 # Build the .war file and then unpack it to /opt/jetty/webapps/root
