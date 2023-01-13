@@ -31,6 +31,11 @@ Here the following configuration was provided:
 
 See [Naming and Versioning][naming-and-versioning] for more information.
 
+## Setup
+
+Run through the steps listed in
+[GCE Prerequisites](../../gce_samples_prerequisites.md).
+
 ## Create and configure a Compute Engine instance
 
 Note that the Snapshot Debugger requires the following access scopes:
