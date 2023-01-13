@@ -58,12 +58,12 @@ snapshot-dbg-cli list_debuggees
 ```
 
 The output will resemble the following. The first column will contain an entry
-`sample-service - version-1`, which was set in app.js.
+`gce-nodejs-sample - v1`, which was set in app.js.
 
 ```
-Name                       ID         Description
--------------------------- ---------- ------------------------------------------------
-sample-service - version-1 d-ad4829f7 node app.js module:sample-service version:version-1
+Name                   ID         Description
+---------------------- ---------- -----------------------------------------------
+gce-nodejs-sample - v1 d-ad4829f7 node app.js module:gce-nodejs-sample version:v1
 ```
 
 The debuggee ID in this case is  `d-ad4829f7`. Using this ID you may now run
