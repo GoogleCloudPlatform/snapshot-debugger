@@ -44,7 +44,7 @@ need the `roles/firebasedatabase.admin` role.
 * **Add the role**
 
     ```
-    gcloud projects add-iam-policy-binding jcb-gce-fresh-test \
+    gcloud projects add-iam-policy-binding [YOUR PROJECT ID] \
         --member=serviceAccount:[SERVICE ACCOUNT EMAIL ADDRESS] \
         --role=roles/firebasedatabase.admin
     ```

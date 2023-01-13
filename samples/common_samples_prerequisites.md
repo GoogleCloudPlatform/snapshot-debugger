@@ -15,8 +15,8 @@ access control, billing, and services.
 ## Install the Snapshot Debugger CLI and enable Firebase
 
 Follow the instructions beginning at [Before you
-begin](../../../README.md#before-you-begin) through to and including [Enable
+begin](../README.md#before-you-begin) through to and including [Enable
 Firebase for your Google Cloud
-Project](../../../README.md#enable-firebase-for-your-google-cloud-project) to
+Project](../README.md#enable-firebase-for-your-google-cloud-project) to
 get the Snapshot Debugger CLI installed and your project configured to use
 Firebase.
