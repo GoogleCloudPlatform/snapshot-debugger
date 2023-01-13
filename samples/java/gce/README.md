@@ -23,7 +23,7 @@ Install and configure the Snapshot Debugger Java Agent:
 https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/6fb6edef0915574f8b0b57bfddf2bad8454093bf/samples/java/gce/startup-script.sh#L31-L33
 https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/6fb6edef0915574f8b0b57bfddf2bad8454093bf/samples/java/gce/startup-script.sh#L83
 
-Here the following configurations were provided:
+Here the following configuration was provided:
 * `com.google.cdbg.module` sets a name for your app, such as MyApp, Backend, or
   Frontend.
 * `com.google.cdbg.version` sets a version, such as v1.0, build_147, or
