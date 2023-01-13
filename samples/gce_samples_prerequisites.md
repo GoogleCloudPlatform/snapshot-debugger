@@ -11,7 +11,7 @@ The Compute Engine API (compute.googleapis.com) must be enabled.
 1. Check if it's already enabled.
 
     ```
-    gcloud  services list --enabled | grep compute.googleapis.com
+    gcloud services list --enabled | grep compute.googleapis.com
     ```
 
     If the entry was found, it is enabled. If not, proceed to step 2 to enable
@@ -20,7 +20,7 @@ The Compute Engine API (compute.googleapis.com) must be enabled.
 2. Enable the API if it is not already renabled.
 
     ```
-    gcloud  services enable compute.googleapis.com
+    gcloud services enable compute.googleapis.com
     ```
 
 ## Configure Service Account Role
