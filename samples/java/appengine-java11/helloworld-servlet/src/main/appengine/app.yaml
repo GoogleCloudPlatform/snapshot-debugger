@@ -12,4 +12,4 @@
 #  limitations under the License.
 
 runtime: java11
-entrypoint: 'java -agentpath:/workspace/cdbg/cdbg_java_agent.so=--use-firebase=true,--cdbg_extra_class_path=/workspace/cdbg/extra/WEB-INF/classes:/workspace/cdbg/extra/WEB-INF/lib -cp "*" com.example.appengine.demo.jettymain.Main helloworld.war'
+entrypoint: 'java -agentpath:/workspace/cdbg/cdbg_java_agent.so=--use-firebase=true,--cdbg_extra_class_path=/workspace/helloworld/WEB-INF/classes:/workspace/helloworld/WEB-INF/lib -cp "*" com.example.appengine.demo.jettymain.Main /workspace/helloworld'

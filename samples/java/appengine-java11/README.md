@@ -57,10 +57,18 @@ The Java 11 runtime requires that your application have a `Main` class that
 starts a web server.
 [`appengine-simple-jetty-main`](appengine-simple-jetty-main) is a shared
 artifact that provides a Jetty Web Server for the servlet based runtime.
-Packaged as a jar, the Main Class will load a war file, passed as an argument,
-as the context root of the web application listening to port 8080.  Some samples
-create a `<sample-name>.war` which is used as an argument in the App Engine
-`app.yaml` entrypoint field.
+Packaged as a jar, the Main Class will load a directory containing a webapp
+passed as an argument, as the context root of the web application listening to
+port 8080.  Some samples will use this runtime and provide the exploded webapp
+directory as an argument in the App Engine `app.yaml` entrypoint field.
+
+To note, the original
+[java-docs-samples/appengine-java11/appengine-simple-jetty-main](https://github.com/GoogleCloudPlatform/java-docs-samples/tree/main/appengine-java11/appengine-simple-jetty-main)
+works by accepting a WAR file. Here we have modified it to take in a directory
+containing the webapp (the exploded WAR file) instead. The reason for this is
+that when Jetty explodes a WAR file it is placed in a temp directory, which
+means the Snapshot Debugger Java agent will not be able to find the class files
+and will be unable to set breakpoints.
 
 ### App Engine Staging Directory and The Snapshot Debugger Java Agent
 
