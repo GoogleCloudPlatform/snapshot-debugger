@@ -17,6 +17,11 @@ https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/176053bbd9366bfa5f
 
 https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/d99f0ba821a94203440ba6213378843e172ce214/samples/node-js/gce/package.json#L18-L21
 
+## Setup
+
+Run through the steps listed in
+[GCE Prerequisites](../../gce_samples_prerequisites.md).
+
 ## Create and configure a Compute Engine instance
 
 Note that the Snapshot Debugger requires the following access scopes:

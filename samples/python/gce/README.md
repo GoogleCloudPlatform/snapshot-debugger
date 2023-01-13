@@ -17,6 +17,11 @@ https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/8d8d03a5e1c90ba781
 
 https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/8d8d03a5e1c90ba7817eddadb09ab5f247d45e0f/samples/python/gce/requirements.txt#L4
 
+## Setup
+
+Run through the steps listed in
+[GCE Prerequisites](../../gce_samples_prerequisites.md).
+
 ## Create and configure a Compute Engine instance
 
 Note that the Snapshot Debugger requires the following access scopes:
