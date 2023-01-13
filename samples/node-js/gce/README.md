@@ -13,7 +13,7 @@ running, and deploying this sample.
 
 The following code changes have been made to enable the Snapshot Debugger:
 
-https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/d055bb60c04356ad64695c8853cbfdc59ebe2fdc/samples/node-js/gce/app.js#L17-L24
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/176053bbd9366bfa5f93ef6e9c3aeadff006bff8/samples/node-js/gce/app.js#L17-L24
 
 https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/d99f0ba821a94203440ba6213378843e172ce214/samples/node-js/gce/package.json#L18-L21
 
@@ -58,12 +58,12 @@ snapshot-dbg-cli list_debuggees
 ```
 
 The output will resemble the following. The first column will contain an entry
-`sample-service - version-1`, which was set in app.js.
+`gce-nodejs-sample - v1`, which was set in app.js.
 
 ```
-Name                       ID         Description
--------------------------- ---------- ------------------------------------------------
-sample-service - version-1 d-ad4829f7 node app.js module:sample-service version:version-1
+Name                   ID         Description
+---------------------- ---------- -----------------------------------------------
+gce-nodejs-sample - v1 d-ad4829f7 node app.js module:gce-nodejs-sample version:v1
 ```
 
 The debuggee ID in this case is  `d-ad4829f7`. Using this ID you may now run
