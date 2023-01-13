@@ -4,8 +4,8 @@ NOTE: This sample application was copied from
 [getting-started-python/gce][sample-source]
 and modified for the Snapshot Debugger samples here.
 
-This folder contains the sample code for the [Deploying to Google Compute
-Engine][tutorial-gce]
+This folder contains the sample code for the [Getting started with Python on
+Compute Engine][tutorial-gce]
 tutorial. Please refer to the tutorial for instructions on configuring,
 running, and deploying this sample.
 
