@@ -14,14 +14,14 @@ The following customizations have been made to enable the Snapshot Debugger:
 
 Extra scopes are required, see [Create and configure a Compute Engine
 instance][create-instance]
-https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/a6ab2b094c4e3b522aea2c61f3c4abbe87f2e211/samples/java/gce/README.md?plain=1#L30
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/6fb6edef0915574f8b0b57bfddf2bad8454093bf/samples/java/gce/README.md?plain=1#L47
 
 The webapp is extracted to `${jetty.base}/webapps/root`:
-https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/a6ab2b094c4e3b522aea2c61f3c4abbe87f2e211/samples/java/gce/startup-script.sh#L52-L72
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/6fb6edef0915574f8b0b57bfddf2bad8454093bf/samples/java/gce/startup-script.sh#L56-L72
 
 Install and configure the Snapshot Debugger Java Agent:
-https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/532c05d16db38a5540aa168cbde75d681553373a/samples/java/gce/startup-script.sh#L31-L33
-https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/a6ab2b094c4e3b522aea2c61f3c4abbe87f2e211/samples/java/gce/startup-script.sh#L84
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/6fb6edef0915574f8b0b57bfddf2bad8454093bf/samples/java/gce/startup-script.sh#L31-L33
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/6fb6edef0915574f8b0b57bfddf2bad8454093bf/samples/java/gce/startup-script.sh#L83
 
 Here the following configurations were provided:
 * `com.google.cdbg.module` sets a name for your app, such as MyApp, Backend, or
