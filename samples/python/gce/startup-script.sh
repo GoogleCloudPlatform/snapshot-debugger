@@ -22,7 +22,7 @@ pip install --upgrade pip virtualenv
 
 # Fetch source code
 export HOME=/root
-git clone -b python-gce https://github.com/GoogleCloudPlatform/snapshot-debugger.git /tmp/app
+git clone https://github.com/GoogleCloudPlatform/snapshot-debugger.git /tmp/app
 mkdir /opt/app
 cp -r /tmp/app/samples/python/gce /opt/app
 

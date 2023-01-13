@@ -13,9 +13,9 @@ running, and deploying this sample.
 
 The following code changes have been made to enable the Snapshot Debugger:
 
-https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/467950b7c62d9e5260b3ac6b236a74334875f023/samples/python/gce/main.py#L18-L25
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/8d8d03a5e1c90ba7817eddadb09ab5f247d45e0f/samples/python/gce/main.py#L18-25
 
-https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/467950b7c62d9e5260b3ac6b236a74334875f023/samples/python/gce/requirements.txt#L4
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/8d8d03a5e1c90ba7817eddadb09ab5f247d45e0f/samples/python/gce/requirements.txt#L4
 
 ## Create and configure a Compute Engine instance
 
@@ -58,7 +58,7 @@ snapshot-dbg-cli list_debuggees
 ```
 
 The output will resemble the following. The first column will contain an entry
-`sample-service - version-1`, which was set in TODO.
+`gce-python-sample - v1`, which was set in main.py.
 
 ```
 Name                   ID         Description
