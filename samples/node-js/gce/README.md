@@ -13,7 +13,7 @@ running, and deploying this sample.
 
 The following code changes have been made to enable the Snapshot Debugger:
 
-https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/d055bb60c04356ad64695c8853cbfdc59ebe2fdc/samples/node-js/gce/app.js#L17-L24
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/176053bbd9366bfa5f93ef6e9c3aeadff006bff8/samples/node-js/gce/app.js#L17-L24
 
 https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/d99f0ba821a94203440ba6213378843e172ce214/samples/node-js/gce/package.json#L18-L21
 
