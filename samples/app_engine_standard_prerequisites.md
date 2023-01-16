@@ -2,8 +2,8 @@
 
 ## Project Setup
 
-Follow the appropriate instructions for your target language to create your
-App Engine Project.
+Follow the appropriate instructions for your target language to create/confgure
+your App Engine enabled project.
 
 * [Java](https://cloud.google.com/appengine/docs/standard/java-gen2/building-app/creating-project)
 * [Node.js](https://cloud.google.com/appengine/docs/standard/nodejs/building-app/creating-project)

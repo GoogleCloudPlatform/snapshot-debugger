@@ -137,7 +137,8 @@ through an [Example workflow](../../../../README.md#example-workflow).
 E.g.
 *    Use the `set_snapshot` CLI command to set a snapshot at
      `HelloAppEngine.java:32`. Note the returned breakpoint ID.
-*    Navigate to your application using the `target url` shown in the `gcloud
-     app deploy` output. This will trigger the breakpoint and collect the snapshot.
+*    Navigate to your application to `<target url>/hello` using the `target url`
+     shown in the `gcloud app deploy` output. This will trigger the breakpoint
+     and collect the snapshot.
 *    Use the `get_snapshot` CLI command to retrieve the snapshot using the
      breakpoint ID created with the `set_snapshot` command.

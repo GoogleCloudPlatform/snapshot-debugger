@@ -8,7 +8,7 @@ and modified for the Snapshot Debugger samples here.
 
 ### Setup the Project and the Snapshot Debugger CLI
 
-1.  Perform all [Prerequisite Steps](../../app_engine_standard_prerequisties.md)
+1.  Perform all [Prerequisite Steps](../../app_engine_standard_prerequisites.md)
 
 ### Download Maven
 
@@ -20,6 +20,14 @@ automatically download the needed client libraries.
 [maven]: https://maven.apache.org
 [maven-download]: https://maven.apache.org/download.cgi
 [maven-install]: https://maven.apache.org/install.html
+
+### Install Google Cloud `gcloud` CLI App Engine extension for Java
+
+1. `gcloud` should already have been installed as part of an earlier step, if
+   not [install][install-gcloud] and [initialize][initialize-gcloud] the Google
+   Cloud CLI.
+1. Install the [gcloud component][managing-components] that includes the App
+   Engine extension for Java.
 
 ### Google Cloud Shell, Open JDK 11 setup:
 

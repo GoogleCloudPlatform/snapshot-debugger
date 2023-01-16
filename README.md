@@ -371,6 +371,7 @@ The debugger is now ready for use with your app.
 ### Local
 
 Download service account credentials from Firebase.
+
     1. Navigate to your project in the Firebase console service account page.
        Replace `PROJECT_ID` with your project’s ID.
 
