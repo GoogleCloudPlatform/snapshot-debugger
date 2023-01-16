@@ -372,14 +372,14 @@ The debugger is now ready for use with your app.
 
 Download service account credentials from Firebase.
 
-    1. Navigate to your project in the Firebase console service account page.
-       Replace `PROJECT_ID` with your project’s ID.
+1. Navigate to your project in the Firebase console service account page.
+   Replace `PROJECT_ID` with your project’s ID.
 
     ```
     https://console.firebase.google.com/project/PROJECT_ID/settings/serviceaccounts/adminsdk
     ```
 
-    2. Click **Generate new private key** and save the key locally.
+2. Click **Generate new private key** and save the key locally.
 
 
 Language specific instructions:
