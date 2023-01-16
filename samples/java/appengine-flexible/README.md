@@ -7,6 +7,10 @@
 
 ## Prerequisites
 
+### Setup the Project and the Snapshot Debugger CLI
+
+1.  Perform all [Prerequisite Steps](../../app_engine_flexible_prerequisites.md)
+
 ### Download Maven
 
 Some of these samples use the [Apache Maven][maven] build system. Before getting
@@ -18,25 +22,11 @@ client libraries.
 [maven-download]: https://maven.apache.org/download.cgi
 [maven-install]: https://maven.apache.org/install.html
 
-### Create a Project in the Google Cloud Platform Console
+### Install Google Cloud `gcloud` CLI App Engine extension for Java
 
-If you haven't already created a project, create one now. Projects enable you to
-manage all Google Cloud Platform resources for your app, including deployment,
-access control, billing, and services.
-
-1. Open the [Cloud Platform Console][cloud-console].
-1. In the drop-down menu at the top, select **Create a project**.
-1. Give your project a name.
-1. Make a note of the project ID, which might be different from the project
-   name. The project ID is used in commands and in configurations.
-
-[cloud-console]: https://console.cloud.google.com/
-
-### Install Google Cloud `gcloud` CLI along with App Engine extension for Java
-
-1. [Install](https://cloud.google.com/sdk/docs/install) and
-   [initialize](https://cloud.google.com/sdk/docs/initializing) the Google Cloud
-   CLI.
+1. `gcloud` should already have been installed as part of an earlier step, if
+   not [install][install-gcloud] and [initialize][initialize-gcloud] the Google
+   Cloud CLI.
 1. Install the [gcloud component][managing-components] that includes the App
    Engine extension for Java.
 
@@ -49,28 +39,10 @@ access control, billing, and services.
    gcloud components install app-engine-java
    ```
 
+[install-gcloud]: https://cloud.google.com/sdk/docs/install
+[initialize-gcloud]: https://cloud.google.com/sdk/docs/initializing
 [managing-components]: https://cloud.google.com/sdk/docs/managing-components
 [external-package-managers]: https://cloud.google.com/sdk/docs/components#external_package_managers
-
-### Create an App Engine application
-
-Run the following command to select a region and create an App Engine application:
-
-```
-gcloud app create
-```
-
-In the event this command was already run on the project, the invocation will
-simply error out and provide an message saying it has already been done.
-
-### Install the Snapshot Debugger CLI and enable Firebase
-
-Follow the instructions beginning at [Before you
-begin](../../../README.md#before-you-begin) through to and including [Enable
-Firebase for your Google Cloud
-Project](../../../README.md#enable-firebase-for-your-google-cloud-project) to
-get the Snapshot Debugger CLI installed and your project configured to use
-Firebase.
 
 ### Google Cloud Shell, Open JDK 8 setup:
 
