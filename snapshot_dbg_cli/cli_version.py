@@ -22,7 +22,7 @@ from snapshot_dbg_cli.exceptions import SilentlyExitError
 from snapshot_dbg_cli.http_service import HttpService
 from snapshot_dbg_cli.user_output import UserOutput
 
-VERSION = 'SNAPSHOT_DEBUGGER_CLI_VERSION_0_3_0'
+VERSION = 'SNAPSHOT_DEBUGGER_CLI_VERSION_0_3_1'
 
 VERSION_PATTERN = 'SNAPSHOT_DEBUGGER_CLI_VERSION_[0-9]+_[0-9]+_[0-9]+'
 
