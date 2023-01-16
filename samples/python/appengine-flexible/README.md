@@ -17,10 +17,7 @@ documentation.
 
 Before you can run or deploy the sample, you need to do the following:
 
-1.  Refer to the [Snapshot Debugger readme](../../../README.md) file for
-    instructions on setting up the snapshot debugger.
-1.  Refer to the [getting started documentation][create-cloud-project]
-    for instructions on setting up your Cloud project.
+1.  Perform all [Prerequisite Steps](../../app_engine_flexible_prerequisites.md)
 
 ## Deploying to App Engine
 
@@ -65,6 +62,3 @@ E.g.
      breakpoint ID created with the `set_snapshot` command.
 
 [sample-source]: https://github.com/GoogleCloudPlatform/python-docs-samples/tree/main/appengine/flexible/hello_world
-[create-cloud-project]: https://cloud.google.com/appengine/docs/standard/python3/building-app/creating-gcp-project
-
-
