@@ -17,7 +17,7 @@ More complete documentation about getting started in App Engine can be found in
 
 Before you can run or deploy the sample, you need to do the following:
 
-1.  Perform all [Prerequisite Steps](../../app_engine_standard_prerequisties.md)
+1.  Perform all [Prerequisite Steps](../../app_engine_standard_prerequisites.md)
 1.  Refer to the [getting started documentation][create-cloud-project]
     for instructions on setting up your Cloud project.
 
