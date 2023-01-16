@@ -12,6 +12,8 @@ access control, billing, and services.
 1. Make a note of the project ID, which might be different from the project
    name. The project ID is used in commands and in configurations.
 
+[cloud-console]: https://console.cloud.google.com/
+
 ## Enable Compute Engine API
 
 The Compute Engine API (compute.googleapis.com) must be enabled.

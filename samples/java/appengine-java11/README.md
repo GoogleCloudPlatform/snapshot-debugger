@@ -29,6 +29,11 @@ automatically download the needed client libraries.
 1. Install the [gcloud component][managing-components] that includes the App
    Engine extension for Java.
 
+[install-gcloud]: https://cloud.google.com/sdk/docs/install
+[initialize-gcloud]: https://cloud.google.com/sdk/docs/initializing
+[managing-components]: https://cloud.google.com/sdk/docs/managing-components
+[external-package-managers]: https://cloud.google.com/sdk/docs/components#external_package_managers
+
 ### Google Cloud Shell, Open JDK 11 setup:
 
 If running in the Google Cloud Shell, to switch to an Open JDK 11 you can use:
