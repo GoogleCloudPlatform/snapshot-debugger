@@ -29,6 +29,15 @@ automatically download the needed client libraries.
 1. Install the [gcloud component][managing-components] that includes the App
    Engine extension for Java.
 
+   If you used the `apt` or `yum` package managers to install the gcloud CLI,
+   [use those same package managers to install the gcloud component][external-package-managers].
+
+   Otherwise, use the following command:
+
+   ```
+   gcloud components install app-engine-java
+   ```
+
 [install-gcloud]: https://cloud.google.com/sdk/docs/install
 [initialize-gcloud]: https://cloud.google.com/sdk/docs/initializing
 [managing-components]: https://cloud.google.com/sdk/docs/managing-components
