@@ -25,7 +25,8 @@ client libraries.
 ### Install Google Cloud `gcloud` CLI App Engine extension for Java
 
 1. `gcloud` should already have been installed as part of an earlier step, if
-    not [install](install) and [initialize](initializing) the Google Cloud CLI.
+   not [install][install-gcloud] and [initialize][initialize-gcloud] the Google
+   Cloud CLI.
 1. Install the [gcloud component][managing-components] that includes the App
    Engine extension for Java.
 
@@ -38,8 +39,8 @@ client libraries.
    gcloud components install app-engine-java
    ```
 
-[install]: https://cloud.google.com/sdk/docs/install
-[initialize]: https://cloud.google.com/sdk/docs/initializing
+[install-gcloud]: https://cloud.google.com/sdk/docs/install
+[initialize-gcloud]: https://cloud.google.com/sdk/docs/initializing
 [managing-components]: https://cloud.google.com/sdk/docs/managing-components
 [external-package-managers]: https://cloud.google.com/sdk/docs/components#external_package_managers
 

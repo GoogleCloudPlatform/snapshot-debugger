@@ -1,4 +1,4 @@
-# Prerequisite Steps For The App Engine Standard Samples
+# Prerequisite Steps For The App Engine Flexible Samples
 
 ## Project Setup
 
