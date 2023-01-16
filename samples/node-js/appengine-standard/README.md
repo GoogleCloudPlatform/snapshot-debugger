@@ -18,7 +18,7 @@ documentation.
 
 Before you can run or deploy the sample, you need to do the following:
 
-1.  Perform all [Prerequisite Steps](../../app_engine_standard_prerequisties.md)
+1.  Perform all [Prerequisite Steps](../../app_engine_standard_prerequisites.md)
 1.  Install dependencies:
 
         npm install
