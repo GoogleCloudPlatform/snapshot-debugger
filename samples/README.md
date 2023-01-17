@@ -5,20 +5,14 @@ Java, Python and Node.js applications across different Google Cloud
 environments.
 
 The accompanying README files in the subdirectories contain the relevant
-information for each sample. For more information on the Snapshot Debugger and
-the agents see the following:
+information for each sample.
 
-* [Snapshot Debugger](https://github.com/GoogleCloudPlatform/snapshot-debugger)
-* [Java Agent](https://github.com/GoogleCloudPlatform/cloud-debug-java)
-* [NodeJS Agent](https://github.com/googleapis/cloud-debug-nodejs)
-* [Python Agent](https://github.com/GoogleCloudPlatform/cloud-debug-python)
+For more information on the Snapshot Debugger see [Snapshot
+Debugger](https://github.com/GoogleCloudPlatform/snapshot-debugger)
 
+For more information on the agents, as well as how to run them locally, see the
+agent specific documentation:
 
-## Notes on running locally
-
-It's also possible to run things outside of a Google Cloud environment, such
-as locally. See the following for agent specific information on doing so:
-
-* [Java](https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/main/docs/java.md#running-locally)
-* [Node.js](https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/main/docs/node-js.md#running-locally)
-* [Python](https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/main/docs/python.md#running-locally)
+* [Java](https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/main/docs/java.md)
+* [Node.js](https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/main/docs/node-js.md)
+* [Python](https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/main/docs/python.md)
