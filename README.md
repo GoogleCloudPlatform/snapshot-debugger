@@ -241,17 +241,23 @@ your Firebase project. It’s safe to run the `snapshot-dbg-cli init
 
 ## Set up Snapshot Debugger in your Google Cloud project
 
+### Working Samples
+
 Working examples of using the Snapshot Debugger with Java, Python and Node.js
 applications across different Google Cloud environments can be found in:
 
-
 * [snapshot-debugger/samples][samples]
-
-In addition, the [README.md][notes-local] in that directory contains notes for
-running the application and agent locally.
 
 [samples]: https://github.com/GoogleCloudPlatform/snapshot-debugger/tree/main/samples
 [notes-local]: https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/main/samples/README.md#notes-on-running-locally
+
+### Agent Documentation
+
+See the following for agent specific documentation:
+
+* [Java](https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/main/docs/java.md)
+* [Node.js](https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/main/docs/node-js.md)
+* [Python](https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/main/docs/python.md)
 
 ## Example workflow
 
