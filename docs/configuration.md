@@ -1,6 +1,6 @@
 # Required Project Configuration for Snapshot Debugger
 
-The project level configurations described here are to enable the Snapshot
+The project level configuration described here is to enable the Snapshot
 Debugger agent to communicate with the Firebase RTDB backend.
 
 ## Access Scopes
