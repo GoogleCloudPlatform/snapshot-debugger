@@ -45,3 +45,42 @@ for the Firebase Console view.
 
 [enable-firebase]: https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/main/README.md#enable-firebase-for-your-google-cloud-project
 [blaze-plan-setup]: https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/main/README.md#blaze-plan-rtdb-setup
+
+## Your Debuggee Is Not Found
+
+### Symptom
+
+When you run the `snapshot-dbg-cli list_debuggees` command, a debuggee you
+expect to be present is not shown.
+
+### Resolution
+
+There are a variety of potential causes for this, run through the following:
+
+#### Wake your application up
+
+For environments such as App Engine Standard, your application may not actually
+be running. This can be the case if one of the following holds:
+
+* You have just deployed your application and it has not yet received a request
+* Enough time has passed since it last serviced a request, as a result the
+  instance count may have been scaled to 0
+
+Simply hitting your application's endpoint will cause your application to run,
+and should cause the debuggee to be listed by `snapshot-dbg-cli list_debuggees`.
+
+#### Ensure the required access scopes are in place
+
+Ensure the required access scopes are configured for your environment so that
+the Snapshot Debugger Agent is able to communicate with the Firebase RTDB
+backend. See [Required Access Scopes][access-scopes] for more information.
+
+#### Ensure the service account has the required permissions
+
+Ensure the service account running your service has the required permissions.
+See [Required Permissions][required-permissions] for more information. If you
+set the permission, wait a few minutes before checking to see if the debuggee
+now appears.
+
+[access-scopes]: https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/main/docs/configuration.md#access-scopes
+[required-permissions]: https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/main/docs/configuration.md#service-account-permissions
