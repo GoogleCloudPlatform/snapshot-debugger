@@ -49,5 +49,5 @@ running applications in the App Engine Flexible environment require the
 
     gcloud projects add-iam-policy-binding [YOUR PROJECT ID] \
         --member=serviceAccount:[SERVICE ACCOUNT EMAIL ADDRESS] \
-        --role=roles/roles/appengineflex.serviceAgent
+        --role=roles/appengineflex.serviceAgent
     ```
