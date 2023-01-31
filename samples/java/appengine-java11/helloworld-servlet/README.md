@@ -84,7 +84,7 @@ specifies the `-agentpath` java option to load the agent. Of special note is the
 setting of the `cdbg_extra_class_path` option to tell the agent where the
 application class file can be found:
 
-https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/6eae86b081a212b5c2912718c3e93b1871ea1f25/samples/java/appengine-java11/helloworld-servlet/src/main/appengine/app.yaml#L14-L15
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/53825cb779cb5a1cddc6ae257de5ecdf7b0e83cd/samples/java/appengine-java11/helloworld-servlet/src/main/appengine/app.yaml#L14-L15
 
 This will deploy the contents of `target/appengine-staging`, with the contents
 of the added cdbg directory unchanged:
