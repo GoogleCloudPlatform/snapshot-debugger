@@ -131,11 +131,12 @@ class SetSnapshotCommandTests(unittest.TestCase):
     self.rtdb_service_mock.set_breakpoint.assert_not_called()
 
   def test_snapshot_data_is_correct(self):
-    # (Test Name, CLI Args, account, breakpoint ID),
+    # (Test Name, CLI Args, account, breakpoint ID, expected_data),
     testcases = [
         ('Location 1', ['foo.py:10'], 'foo@bar.com', 'b-1650000000',
          {
              'id': 'b-1650000000',
+             'action': 'CAPTURE',
              'location': {'path': 'foo.py', 'line': 10},
              'userEmail': 'foo@bar.com',
              'createTimeUnixMsec': {'.sv': 'timestamp'},
@@ -144,6 +145,7 @@ class SetSnapshotCommandTests(unittest.TestCase):
         ('Location 2', ['bar.py:20'], 'foo@bar.com', 'b-1650000000',
          {
              'id': 'b-1650000000',
+             'action': 'CAPTURE',
              'location': {'path': 'bar.py', 'line': 20},
              'userEmail': 'foo@bar.com',
              'createTimeUnixMsec': {'.sv': 'timestamp'},
@@ -152,6 +154,7 @@ class SetSnapshotCommandTests(unittest.TestCase):
         ('Email', ['foo.py:10'], 'test-email@foo.com', 'b-1650000000',
          {
              'id': 'b-1650000000',
+             'action': 'CAPTURE',
              'location': {'path': 'foo.py', 'line': 10},
              'userEmail': 'test-email@foo.com',
              'createTimeUnixMsec': {'.sv': 'timestamp'},
@@ -160,6 +163,7 @@ class SetSnapshotCommandTests(unittest.TestCase):
         ('Breakpoint ID', ['foo.py:10'], 'foo@bar.com', 'b-1651111111',
          {
              'id': 'b-1651111111',
+             'action': 'CAPTURE',
              'location': {'path': 'foo.py', 'line': 10},
              'userEmail': 'foo@bar.com',
              'createTimeUnixMsec': {'.sv': 'timestamp'},
@@ -169,6 +173,7 @@ class SetSnapshotCommandTests(unittest.TestCase):
          'foo@bar.com', 'b-1650000000',
          {
              'id': 'b-1650000000',
+             'action': 'CAPTURE',
              'location': {'path': 'foo.py', 'line': 10},
              'userEmail': 'foo@bar.com',
              'createTimeUnixMsec': {'.sv': 'timestamp'},
@@ -179,6 +184,7 @@ class SetSnapshotCommandTests(unittest.TestCase):
          'b-1650000000',
          {
              'id': 'b-1650000000',
+             'action': 'CAPTURE',
              'location': {'path': 'foo.py', 'line': 10},
              'userEmail': 'foo@bar.com',
              'createTimeUnixMsec': {'.sv': 'timestamp'},
@@ -189,6 +195,7 @@ class SetSnapshotCommandTests(unittest.TestCase):
          'b-1650000000',
          {
              'id': 'b-1650000000',
+             'action': 'CAPTURE',
              'location': {'path': 'foo.py', 'line': 10},
              'userEmail': 'foo@bar.com',
              'createTimeUnixMsec': {'.sv': 'timestamp'},
@@ -199,6 +206,7 @@ class SetSnapshotCommandTests(unittest.TestCase):
          'b-1650000000',
          {
              'id': 'b-1650000000',
+             'action': 'CAPTURE',
              'location': {'path': 'foo.py', 'line': 10},
              'userEmail': 'foo@bar.com',
              'createTimeUnixMsec': {'.sv': 'timestamp'},
@@ -216,6 +224,7 @@ class SetSnapshotCommandTests(unittest.TestCase):
          'b-1650000000',
          {
              'id': 'b-1650000000',
+             'action': 'CAPTURE',
              'location': {'path': 'foo.py', 'line': 10},
              'userEmail': 'foo@bar.com',
              'createTimeUnixMsec': {'.sv': 'timestamp'},
@@ -234,6 +243,7 @@ class SetSnapshotCommandTests(unittest.TestCase):
          'b-1650000000',
          {
              'id': 'b-1650000000',
+             'action': 'CAPTURE',
              'location': {'path': 'foo.py', 'line': 10},
              'userEmail': 'foo@bar.com',
              'createTimeUnixMsec': {'.sv': 'timestamp'},
