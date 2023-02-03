@@ -104,6 +104,7 @@ class SetSnapshotCommand:
     debugger_rtdb_service.validate_debuggee_id(args.debuggee_id)
 
     snapshot_data = {
+        'action': 'CAPTURE',
         'location': args.location,
         'userEmail': cli_services.account
     }
