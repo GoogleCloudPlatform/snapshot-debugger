@@ -1,4 +1,4 @@
-# Using the Java Agent on a Hello World Servlet on GAE Standard with Java 11
+# Using the Java Agent on HelloWorld for GAE Standard with Java 8
 
 > **Note**
 > This example was copied from
