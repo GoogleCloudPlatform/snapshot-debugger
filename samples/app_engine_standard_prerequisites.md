@@ -6,6 +6,7 @@ Follow the appropriate instructions for your target language to create/confgure
 your App Engine enabled project.
 
 * [Java](https://cloud.google.com/appengine/docs/standard/java-gen2/building-app/creating-project)
+* [Java 8](https://cloud.google.com/appengine/docs/legacy/standard/java/console)
 * [Node.js](https://cloud.google.com/appengine/docs/standard/nodejs/building-app/creating-project)
 * [Python](https://cloud.google.com/appengine/docs/standard/python3/building-app/creating-gcp-project)
 

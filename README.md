@@ -13,7 +13,6 @@ most cases, this isn’t noticeable by users.
 
 ## Limitations
 
-*  Java 8 on App Engine Standard is not currently supported
 *  Python 2.7 will not be supported
 
 
