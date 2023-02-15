@@ -42,7 +42,7 @@ Examine the `appengine-web.xml` contents, which provides the
 `agentpath` config entries of agents to load. Each entry begins with the
 relative path in the user's deployment to the agent .so file.
 
-TODO: Add permalink
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/bf9dd9874b47c046fba99628c97ad61d4725a8be/samples/java/appengine-java8/helloworld/src/main/webapp/WEB-INF/appengine-web.xml#L21-L23
 
 This will deploy the contents of `target/appengine-staging`, with the contents
 of the added cdbg directory unchanged:
