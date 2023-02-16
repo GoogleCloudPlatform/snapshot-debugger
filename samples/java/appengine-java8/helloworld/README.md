@@ -28,7 +28,10 @@ mvn clean package appengine:stage
 
 Per [App Engine Staging
 Directory](../README.md#app-engine-staging-directory-and-the-snapshot-debugger-java-agent)
-we add in the Snapshot Debugger Java Agent.
+we add in the Snapshot Debugger Java Agent. Of special note, it is downloading
+the `cdbg_java_agent_gae_java8.tar.gz` package. This version contains the
+`cdbg_java_agent_internals.jar` split into multiple jar files to fit under the
+[32M App Engine Java8 limit](../README.md#32m-file-limit).
 
 ```
 mkdir target/appengine-staging/cdbg
@@ -100,3 +103,16 @@ E.g.
      and collect the snapshot.
 *    Use the `get_snapshot` CLI command to retrieve the snapshot using the
      breakpoint ID created with the `set_snapshot` command.
+
+## Troubleshooting
+
+### Can't see Debuggee (via list_debuggees)
+
+Be sure you navidate to `<target url>/hello` to wake the application up.  In App
+Engine Standard the newly deployed application will not actually run until it
+receives a request.
+
+### Snapshot Not Triggering
+
+Be sure you hit the **/hello** endpoint under the `target url`, this will ensure
+the code in `HelloAppEngine.java` gets runs.

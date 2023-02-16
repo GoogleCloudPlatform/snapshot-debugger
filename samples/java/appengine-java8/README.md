@@ -4,6 +4,9 @@ NOTE: This file was copied from
 [java-docs-samples/appengine-java8/README.md](https://github.com/GoogleCloudPlatform/java-docs-samples/blob/main/appengine-java8/README.md)
 and modified for the Snapshot Debugger samples here.
 
+This README provides general information about Snapshot Debugger & GAE Java8. To
+see a full working example go to [helloworld/README.md](helloworld/README.md).
+
 ## Prerequisites
 
 ### Setup the Project and the Snapshot Debugger CLI
@@ -64,7 +67,7 @@ Debugger Java Agent must be deployed with your application.
 
 - To stage the files to be uploaded:
 ```
-mvn appengine:stage
+mvn package appengine:stage
 ```
 
 This means the deploy would be done in three stages,
@@ -87,3 +90,12 @@ the `GAE_AGENTPATH_OPTS` environment variable must be configured in the
 `agentpath` config entries of agents to load. Each entry begins with the
 relative path in the user's deployment to the agent .so file.  See
 [helloworld](helloworld/README.md#deploy-the-application) for an example.
+
+### 32M File Limit
+
+Deployed files on Java 8 App Engine have a limit of 32M. As a result the
+`cdbg_java_agent_internals.jar` file must be split (currently it is ~52M).  The
+Java agent build produces a special GAE Java8 specific package,
+[cdbg_java_agent_gae_java8.tar.gz][agent-tgz] which contains the split jar file.
+
+[agent-tgz]: https://github.com/GoogleCloudPlatform/cloud-debug-java/releases/latest/download/cdbg_java_agent_gae_java8.tar.gz

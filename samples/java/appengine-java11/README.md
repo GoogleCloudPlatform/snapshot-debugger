@@ -85,5 +85,5 @@ the Snapshot Debugger Java Agent must be deployed with your application.
 
 - To stage the files to be uploaded:
 ```
-mvn appengine:stage
+mvn package appengine:stage
 ```
