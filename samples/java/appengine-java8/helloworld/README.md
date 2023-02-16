@@ -1,51 +1,20 @@
-# Using the Java Agent on a Hello World Servlet on GAE Standard with Java 11
+# Using the Java Agent on HelloWorld for GAE Standard with Java 8
 
 > **Note**
 > This example was copied from
-[appengine-java11/helloworld-servlet](https://github.com/GoogleCloudPlatform/java-docs-samples/blob/main/appengine-java11/helloworld-servlet) and modified for Snapshot Debugger Java agent use.
-
-The Java 11 runtime requires that your application have a `Main` class that
-starts a web server. This sample is dependent on artifact
-[`appengine-simple-jetty-main`](../appengine-simple-jetty-main) to provide a
-`Main` class that starts an embedded Jetty server that loads a directory
-containing a webapp.
+[appengine-java8/helloworld](https://github.com/GoogleCloudPlatform/java-docs-samples/blob/main/appengine-java8/helloworld) and modified for Snapshot Debugger Java agent use.
 
 This example will use the App Engine Plugin to first build and stage the
 application. It will make some custom changes to the staging directory to add
 files before deploying it.
-
-It will also demonstrate the use of the `cdbg_extra_class_path` option for the
-Snapshot Debugger Java Agent.
 
 ## Setup
 
 See [Prerequisites](../README.md#Prerequisites).
 
 Ensure your current working directory is
-`samples/java/appengine-java11/helloworld-server`, as all following instructions
+`samples/java/appengine-java8/helloworld`, as all following instructions
 assumes this.
-
-- Note the `appengine-simple-jetty-main` dependency:
-```
-<dependency>
-  <groupId>com.example.appengine.demo</groupId>
-  <artifactId>simple-jetty-main</artifactId>
-  <version>1</version>
-  <scope>provided</scope>
-</dependency>
-```
-> **Note**
-> This dependency needs to be installed locally.
-
-### Install dependency locally
-
-Move into the directory to install, and then move back.
-
-```
-pushd ../appengine-simple-jetty-main
-mvn install
-popd
-```
 
 ## Package your app:
 
@@ -59,32 +28,24 @@ mvn clean package appengine:stage
 
 Per [App Engine Staging
 Directory](../README.md#app-engine-staging-directory-and-the-snapshot-debugger-java-agent)
-we add in the Snapshot Debugger Java Agent.
+we add in the Snapshot Debugger Java Agent. Of special note, it is downloading
+the `cdbg_java_agent_gae_java8.tar.gz` package. This version contains the
+`cdbg_java_agent_internals.jar` split into multiple jar files to fit under the
+[32M App Engine Java8 limit](../README.md#32m-file-limit).
 
 ```
 mkdir target/appengine-staging/cdbg
-wget -qO- https://github.com/GoogleCloudPlatform/cloud-debug-java/releases/latest/download/cdbg_java_agent_gce.tar.gz | tar xvz -C target/appengine-staging/cdbg
-```
-
-## Extract the WAR file
-
-As noted in [Servlet Runtime](../README.md#servlet-runtime), for the Snapshot
-Debugger Java agent to be able to find the class files, we must use directories
-containing the webapp, and not WAR files.
-
-```
-unzip target/appengine-staging/helloworld.war -d target/appengine-staging/helloworld
-rm target/appengine-staging/helloworld.war
+wget -qO- https://github.com/GoogleCloudPlatform/cloud-debug-java/releases/latest/download/cdbg_java_agent_gae_java8.tar.gz | tar xvz -C target/appengine-staging/cdbg
 ```
 
 ## Deploy the application
 
-Examine the `app.yaml` contents, which provides a custom entry point that
-specifies the `-agentpath` java option to load the agent. Of special note is the
-setting of the `cdbg_extra_class_path` option to tell the agent where the
-application class file can be found:
+Examine the `appengine-web.xml` contents, which provides the
+`GAE_AGENTPATH_OPTS` environment variable. This is a space separated list of
+`agentpath` config entries of agents to load. Each entry begins with the
+relative path in the user's deployment to the agent .so file.
 
-https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/53825cb779cb5a1cddc6ae257de5ecdf7b0e83cd/samples/java/appengine-java11/helloworld-servlet/src/main/appengine/app.yaml#L14-L15
+https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/d7d8133e411a7de6fb7976278a4c63076cca8bdc/samples/java/appengine-java8/helloworld/src/main/webapp/WEB-INF/appengine-web.xml#L21-L23
 
 This will deploy the contents of `target/appengine-staging`, with the contents
 of the added cdbg directory unchanged:
@@ -136,7 +97,7 @@ through an [Example workflow](../../../../README.md#example-workflow).
 
 E.g.
 *    Use the `set_snapshot` CLI command to set a snapshot at
-     `HelloAppEngine.java:32`. Note the returned breakpoint ID.
+     `HelloAppEngine.java:37`. Note the returned breakpoint ID.
 *    Navigate to your application at `<target url>/hello` using the `target url`
      shown in the `gcloud app deploy` output. This will trigger the breakpoint
      and collect the snapshot.

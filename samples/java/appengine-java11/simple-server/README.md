@@ -90,3 +90,11 @@ E.g.
      app deploy` output. This will trigger the breakpoint and collect the snapshot.
 *    Use the `get_snapshot` CLI command to retrieve the snapshot using the
      breakpoint ID created with the `set_snapshot` command.
+
+## Troubleshooting
+
+### Can't see Debuggee (via list_debuggees)
+
+Be sure you navidate to `target url` to wake the application up.  In App
+Engine Standard the newly deployed application will not actually run until it
+receives a request.
