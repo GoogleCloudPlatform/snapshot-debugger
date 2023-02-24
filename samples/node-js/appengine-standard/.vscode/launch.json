@@ -1,0 +1,16 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "snapshotdbg",
+            "name": "Snapshot Debugger",
+            "request": "attach",
+            //"serviceAccountPath": "${command:AskForServiceAccountPath}"
+            "serviceAccountPath": "c:\\Users\\jwmct\\Downloads\\mctavish-test-project-firebase-adminsdk-dwaw7-2f7da9748f.json",
+            "debuggeeId": "12345"
+        }
+    ]
+}

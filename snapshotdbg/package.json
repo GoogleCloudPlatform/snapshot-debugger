@@ -1,0 +1,126 @@
+{
+  "name": "snapshotdbg",
+  "displayName": "Snapshot Debugger",
+  "publisher": "GoogleCloudPlatform",
+  "description": "Integrates the Snapshot Debugger into your IDE.  Grab snapshots from your running applications.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Debuggers"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onDebugResolve:snapshotdbg",
+    "onDebugDynamicConfigurations:snapshotdbg",
+    "onCommand:extension.snapshotdbg.getServiceAccountPath"
+  ],
+  "contributes": {
+    "menus": {
+      "editor/title/run": [
+        {
+          "command": "extension.snapshotdbg.debugEditorContents",
+          "when": "resourceLangId == javascript",
+          "group": "navigation@2"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "extension.snapshotdbg.debugEditorContents",
+          "when": "resourceLangId == javascript"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "extension.snapshotdbg.debugEditorContents",
+        "title": "Debug File",
+        "category": "Snapshot Debugger",
+        "enablement": "!inDebugMode",
+        "icon": "$(debug-alt)"
+      }
+    ],
+    "breakpoints": [
+      {
+        "language": "javascript"
+      }
+    ],
+    "debuggers": [
+      {
+        "type": "snapshotdbg",
+        "languages": ["javascript"],
+        "label": "Snapshot Debugger",
+        "configurationAttributes": {
+          "attach": {
+            "required": [
+              "serviceAccountPath"
+            ],
+            "properties": {
+              "serviceAccountPath": {
+                "type": "string",
+                "description": "Path to the service account credentials file.",
+                "default": "${command:AskForServiceAccountPath}"
+              },
+              "databaseUrl": {
+                "type": "string",
+                "description": "URL to the Firebase Realtime Database to use."
+              },
+              "debuggeeId": {
+                "type": "string",
+                "description": "ID of the debuggee to debug."
+              }
+            }
+          }
+        },
+        "initialConfigurations": [{
+          "type": "snapshotdbg",
+          "name": "Snapshot Debugger",
+          "request": "attach",
+          "serviceAccountPath": "\"${command:AskForServiceAccountPath}\""
+          }],
+        "configurationSnippets": [{
+          "label": "Snapshot Debugger",
+          "description": "A new configuration for debugging a live application using Snapshot Debugger.",
+          "body": {
+            "type": "snapshotdbg",
+            "request": "attach",
+            "name": "Snapshot Debugger",
+            "serviceAccountPath": "\"${command:AskForServiceAccountPath}\"",
+            "databaseUrl": "",
+            "debuggeeId": ""
+          }
+        }],
+        "variables": {
+          "AskForServiceAccountPath": "extension.snapshotdbg.getServiceAccountPath"
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "dependencies": {
+    "@vscode/debugadapter": "^1.59.0",
+    "@vscode/debugprotocol": "^1.59.0",
+    "firebase-admin": "^11.5.0"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.75.0",
+    "@types/glob": "^8.0.1",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "16.x",
+    "@typescript-eslint/eslint-plugin": "^5.49.0",
+    "@typescript-eslint/parser": "^5.49.0",
+    "eslint": "^8.33.0",
+    "glob": "^8.1.0",
+    "mocha": "^10.1.0",
+    "typescript": "^4.9.4",
+    "@vscode/test-electron": "^2.2.2"
+  }
+}
