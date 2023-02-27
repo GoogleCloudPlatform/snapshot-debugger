@@ -3,7 +3,7 @@ import {
 	DebugSession,
 	InitializedEvent, TerminatedEvent, StoppedEvent, BreakpointEvent, OutputEvent,
 	ProgressStartEvent, ProgressUpdateEvent, ProgressEndEvent, InvalidatedEvent,
-	Thread, StackFrame, Scope, Source, Handles, Breakpoint, MemoryEvent
+	Thread, StackFrame, Scope, Source, Handles, Breakpoint, MemoryEvent, ThreadEvent
 } from '@vscode/debugadapter';
 import { initializeApp, cert, App, deleteApp } from 'firebase-admin/app';
 import { DataSnapshot, getDatabase } from 'firebase-admin/database';
@@ -30,10 +30,82 @@ interface IAttachRequestArguments extends DebugProtocol.AttachRequestArguments {
     debuggeeId: string;
 }
 
+interface ServerBreakpoint {
+    id: string;
+    action: string;
+    location: {
+        file: string;
+        line: number;
+    }
+}
+
+class CdbgBreakpoint {
+    localBreakpoint: DebugProtocol.Breakpoint | undefined;
+    serverBreakpoint: ServerBreakpoint | undefined;
+
+    public get id() {
+        if (this.serverBreakpoint) {
+            return this.serverBreakpoint.id;
+        }
+        return undefined;
+    }
+
+    public toLocalBreakpoint(): Breakpoint {
+        if (this.localBreakpoint) {
+            return new Breakpoint(true, this.localBreakpoint.line, undefined, new Source(this.localBreakpoint.source?.name || 'unknown', this.localBreakpoint.source?.path));
+        }
+        if (this.serverBreakpoint) {
+            return new Breakpoint(true, this.serverBreakpoint.location.line, undefined, new Source(this.serverBreakpoint.location.file, this.serverBreakpoint.location.file));
+        }
+        throw (new Error('Invalid breakpoint state.  Breakpoint must have local or server breakpoint data.'));
+    }
+
+    public toServerBreakpoint(): ServerBreakpoint {
+        if (this.serverBreakpoint) {
+            return this.serverBreakpoint;
+        }
+        throw (new Error('Invalid breakpoint state.  Should not be converting a local breakpoint to a server breakpoint.'));
+    }
+
+    public matches(other: CdbgBreakpoint): Boolean {
+        if (other.id === this.id) {
+            return true;
+        }
+        // TODO: Collapse all of this into accessors for the file and line.
+        if (other.localBreakpoint && this.localBreakpoint) {
+            return other.localBreakpoint.source?.path === this.localBreakpoint?.source?.path && other.localBreakpoint.line === this.localBreakpoint?.line;
+        }
+        if (other.localBreakpoint) {
+            return other.localBreakpoint.source?.path === this.serverBreakpoint?.location.file && other.localBreakpoint.line === this.serverBreakpoint?.location.line;
+        }
+        return other.serverBreakpoint?.location.file === this.localBreakpoint?.source?.path && other.serverBreakpoint?.location.line === this.localBreakpoint?.line;
+    }
+
+    public static fromSnapshot(snapshot: DataSnapshot): CdbgBreakpoint {
+        const breakpoint = new CdbgBreakpoint();
+        breakpoint.serverBreakpoint = snapshot.val();
+        return breakpoint;
+    }
+
+    public static fromSourceBreakpoint(source: DebugProtocol.Source, sourceBreakpoint: DebugProtocol.SourceBreakpoint): CdbgBreakpoint {
+        const breakpoint = new CdbgBreakpoint();
+        breakpoint.localBreakpoint = new Breakpoint(
+            true,
+            sourceBreakpoint.line,
+            undefined,
+            new Source(source.name ? source.name : 'unknown', source.path)
+        );
+        return breakpoint;
+    }
+}
+
+
 export class SnapshotDebuggerSession extends DebugSession {
     private app: App | undefined = undefined;
     private db: Database | undefined = undefined;
     private debuggeeId: string = '';
+
+    private breakpoints: Map<string, CdbgBreakpoint> = new Map();
 
     public constructor() {
         super();
@@ -52,7 +124,7 @@ export class SnapshotDebuggerSession extends DebugSession {
 
         response.body = response.body || {};
 
-        response.body.supportsHitConditionalBreakpoints = true;
+        response.body.supportsConditionalBreakpoints = true;
         response.body.supportsLogPoints = true;
 
         this.sendResponse(response);
@@ -85,26 +157,27 @@ export class SnapshotDebuggerSession extends DebugSession {
         activeBreakpointRef.on(
             'child_added',
             (snapshot: DataSnapshot) => {
-                // TODO: Merge with breakpoints that are held by the IDE.
                 console.log(`new breakpoint received from server: ${snapshot.key}`);
-                // TODO: Figure out how to report back the added breakpoint.
-                const serverBreakpoint = snapshot.val();
-                serverBreakpoint.id = snapshot.key;
-                let source = new Source(serverBreakpoint.location.file, serverBreakpoint.location.file);
-                let breakpoint = new Breakpoint(
-                    false, // verified
-                    serverBreakpoint.location.line,
-                    undefined,
-                    source
-                );
-                this.sendEvent(new BreakpointEvent('new', breakpoint));
+                // Added is either new (remote) or persisted (local).
+                const bpId = snapshot.key!;
+                if (bpId in this.breakpoints) {
+                    // TODO: ???
+                } else {
+                    const breakpoint = CdbgBreakpoint.fromSnapshot(snapshot);
+                    this.breakpoints.set(bpId, breakpoint);
+                    this.sendEvent(new BreakpointEvent('new', breakpoint.toLocalBreakpoint()));
+                }
             });
         activeBreakpointRef.on(
             'child_removed',
             (snapshot: DataSnapshot) => {
                 const bpId = snapshot.key;
-                // TODO: Remove the breakpoint.
-                // TODO: This might be where we notice that breakpoints have triggered.  Figure this out too.
+                // Case 1: Breakpoint removed from UI.  We should have already handled this in setBreakPointsRequest.
+                // Case 2: Breakpoint finalized server-side.  Find out what to do next by loading /final on the breakpoint.
+
+                // Let the UI know that there was a snapshot.
+                const stoppedEvent = new StoppedEvent('Snapshot taken', parseInt(bpId!.substring(2)));
+                this.sendEvent(stoppedEvent);
             });
 
         this.sendResponse(response);
@@ -113,40 +186,74 @@ export class SnapshotDebuggerSession extends DebugSession {
     protected async setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): Promise<void> {
         console.log('setBreakPointsRequest');
         console.log(args);
-        // TODO: Be smarter about this; dedupe, etc.
-        // TODO: Handle removal of breakpoints here too!
+        // TODO: Remove missing breakpoints.
         if (args.breakpoints) {
             for (const breakpoint of args.breakpoints) {
-                const breakpointId = `b-${Math.floor(Date.now() / 1000)}`;
-                // TODO: Handle logpoints.
-                const serverBreakpoint = {
-                    action: 'CAPTURE',
-                    id: breakpointId,
-                    location: {
-                        file: args.source.path, // TODO: Handle case where sourceReference is specified (and figure out what that means)
-                        line: breakpoint.line,
-                    },
-                    // eslint-disable-next-line @typescript-eslint/naming-convention
-                    createTimeUnixMsec: {'.sv': 'timestamp'}
-                };
-                this.db?.ref(`cdbg/breakpoints/${this.debuggeeId}/active/${breakpointId}`).set(serverBreakpoint);
+                const cdbgBreakpoint = CdbgBreakpoint.fromSourceBreakpoint(args.source, breakpoint);
+
+                let found = false;
+                for (const bp of this.breakpoints.values()) {
+                    if (bp.matches(cdbgBreakpoint)) {
+                        found = true;
+                        bp.localBreakpoint = cdbgBreakpoint.localBreakpoint;
+                    }
+                }
+
+                // If not, persist it.
+                if (!found) {
+                    const bpId = `b-${Math.floor(Date.now() / 1000)}`;
+                    const serverBreakpoint = {
+                        action: 'CAPTURE',
+                        id: bpId,
+                        location: {
+                            file: args.source.path!, // TODO: Handle case where sourceReference is specified (and figure out what that means)
+                            line: breakpoint.line,
+                        },
+                        // eslint-disable-next-line @typescript-eslint/naming-convention
+                        createTimeUnixMsec: {'.sv': 'timestamp'}
+                    };                
+                    this.db?.ref(`cdbg/breakpoints/${this.debuggeeId}/active/${bpId}`).set(serverBreakpoint);
+
+                    cdbgBreakpoint.serverBreakpoint = serverBreakpoint;
+                    this.breakpoints.set(bpId, cdbgBreakpoint);
+                }
             }
         }
     }
 
-    protected breakpointLocationsRequest(response: DebugProtocol.BreakpointLocationsResponse, args: DebugProtocol.BreakpointLocationsArguments, request?: DebugProtocol.Request): void {
-        console.log('breakpointLocationsRequest');
-    }
-
-    protected stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments): void {
+    protected async stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
         console.log('stackTraceRequest');
+        console.log(request);
+
+        response.body = response.body || {};
+
+        response.body.stackFrames = [
+            new StackFrame(0, 'something'),
+            new StackFrame(1, 'something else')
+        ];
+        this.sendResponse(response);
     }
 
-    protected async variablesRequest(response: DebugProtocol.VariablesResponse, args: DebugProtocol.VariablesArguments, request?: DebugProtocol.Request): Promise<void> {
+    protected async scopesRequest(response: DebugProtocol.ScopesResponse, args: DebugProtocol.ScopesArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
+        console.log('scopesRequest');
+    }
+
+    protected async variablesRequest(response: DebugProtocol.VariablesResponse, args: DebugProtocol.VariablesArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
         console.log('variablesRequest');
     }
 
-    protected completionsRequest(response: DebugProtocol.CompletionsResponse, args: DebugProtocol.CompletionsArguments): void {
-        console.log('completionsRequest');
+    protected async threadsRequest(response: DebugProtocol.ThreadsResponse, request?: DebugProtocol.Request | undefined): Promise<void> {
+        console.log('threadsRequest');
+        console.log(request);
+
+        response.body = response.body || {};
+
+        const threads: Thread[] = [];
+        for (const bpId of this.breakpoints.keys()) {
+            threads.push(new Thread(parseInt(bpId.substring(2)), bpId));
+        }
+
+        response.body.threads = threads;
+        this.sendResponse(response);
     }
 }

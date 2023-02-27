@@ -10,7 +10,7 @@
             "request": "attach",
             //"serviceAccountPath": "${command:AskForServiceAccountPath}"
             "serviceAccountPath": "c:\\Users\\jwmct\\Downloads\\mctavish-test-project-firebase-adminsdk-dwaw7-2f7da9748f.json",
-            "debuggeeId": "12345"
+            "debuggeeId": "d-37e837c6"
         }
     ]
 }
