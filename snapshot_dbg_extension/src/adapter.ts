@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import {
 	Logger, logger,
 	DebugSession,
@@ -30,6 +31,12 @@ interface IAttachRequestArguments extends DebugProtocol.AttachRequestArguments {
     debuggeeId: string;
 }
 
+interface Variable {
+    name: string;
+    value?: string;
+    varTableIndex?: number;
+}
+
 interface ServerLocation {
     path: string;
     line: number;
@@ -47,7 +54,12 @@ interface ServerBreakpoint {
     };
     stackFrames?: {
         function: string;
+        locals: Variable[];
         location: ServerLocation;
+    }[];
+    variableTable?: {
+        value: string;
+        members?: Variable[];
     }[];
 }
 
@@ -62,12 +74,30 @@ class CdbgBreakpoint {
         return undefined;
     }
 
+    /** Returns the full path to the file. */
+    public get path() {
+        if (this.localBreakpoint) {
+            return this.localBreakpoint.source!.path;
+        } else {
+            return addPwd(this.serverBreakpoint!.location.path);
+        }
+    }
+
+    public get line() {
+        if (this.localBreakpoint) {
+            return this.localBreakpoint.line!;
+        } else {
+            return this.serverBreakpoint!.location.line;
+        }
+    }
+
     public toLocalBreakpoint(): Breakpoint {
         if (this.localBreakpoint) {
             return new Breakpoint(true, this.localBreakpoint.line, undefined, new Source(this.localBreakpoint.source?.name || 'unknown', this.localBreakpoint.source?.path));
         }
         if (this.serverBreakpoint) {
-            return new Breakpoint(true, this.serverBreakpoint.location.line, undefined, new Source(this.serverBreakpoint.location.path, this.serverBreakpoint.location.path));
+            const path = this.serverBreakpoint.location.path;
+            return new Breakpoint(true, this.serverBreakpoint.location.line, undefined, new Source(path, addPwd(path)));
         }
         throw (new Error('Invalid breakpoint state.  Breakpoint must have local or server breakpoint data.'));
     }
@@ -83,14 +113,8 @@ class CdbgBreakpoint {
         if (other.id === this.id) {
             return true;
         }
-        // TODO: Collapse all of this into accessors for the file and line.
-        if (other.localBreakpoint && this.localBreakpoint) {
-            return other.localBreakpoint.source?.path === this.localBreakpoint?.source?.path && other.localBreakpoint.line === this.localBreakpoint?.line;
-        }
-        if (other.localBreakpoint) {
-            return other.localBreakpoint.source?.path === this.serverBreakpoint?.location.path && other.localBreakpoint.line === this.serverBreakpoint?.location.line;
-        }
-        return other.serverBreakpoint?.location.path === this.localBreakpoint?.source?.path && other.serverBreakpoint?.location.line === this.localBreakpoint?.line;
+
+        return other.path === this.path && other.line === this.line;
     }
 
     public static fromSnapshot(snapshot: DataSnapshot): CdbgBreakpoint {
@@ -111,18 +135,45 @@ class CdbgBreakpoint {
     }
 }
 
+function sleep(ms: number) {
+    return new Promise((resolve) => {setTimeout(resolve, ms)});
+}
+
+// TODO: Plumb this through from outside this file if possible.
+// FIXME: Use a path library instead of this nonsense.
+function pwd() {
+    if(vscode.workspace.workspaceFolders !== undefined) {
+        return vscode.workspace.workspaceFolders[0].uri.fsPath + '/'; 
+    } else {
+        return '';
+    }
+}
+
+function stripPwd(path: string): string {
+    const prefix = pwd();
+    if (path.startsWith(prefix)) {
+        return path.substring(prefix.length);
+    }
+    return path;
+}
+
+function addPwd(path: string): string {
+    const prefix = pwd();
+    return `${prefix}${path}`;
+}
+
 
 export class SnapshotDebuggerSession extends DebugSession {
     private app: App | undefined = undefined;
     private db: Database | undefined = undefined;
     private debuggeeId: string = '';
 
+    private currentBreakpoint: CdbgBreakpoint | undefined = undefined;
+
     private breakpoints: Map<string, CdbgBreakpoint> = new Map();
 
     public constructor() {
         super();
-
-        console.log('SnapshotDebuggerSession constructor');
     }
 
 	/**
@@ -130,10 +181,6 @@ export class SnapshotDebuggerSession extends DebugSession {
 	 * to interrogate the features the debug adapter provides.
 	 */
     protected initializeRequest(response: DebugProtocol.InitializeResponse, args: DebugProtocol.InitializeRequestArguments): void {
-        console.log('initializeRequest');
-
-        console.log(args);
-
         response.body = response.body || {};
 
         response.body.supportsConditionalBreakpoints = true;
@@ -145,8 +192,6 @@ export class SnapshotDebuggerSession extends DebugSession {
     }
 
     protected async attachRequest(response: DebugProtocol.AttachResponse, args: IAttachRequestArguments) {
-        console.log('attachRequest');
-
         this.debuggeeId = args.debuggeeId;
 
 		const serviceAccount = require(args.serviceAccountPath);
@@ -197,6 +242,8 @@ export class SnapshotDebuggerSession extends DebugSession {
 	}
 
     private async loadSnapshotDetails(bpId: string): Promise<void> {
+        // TODO: Be more clever about this.  There's a race condition.
+        await(sleep(100));
         // Just try loading it from the /snapshot table.
         const snapshotRef = this.db!.ref(`cdbg/breakpoints/${this.debuggeeId}/snapshot/${bpId}`);
         const dataSnapshot: DataSnapshot = await snapshotRef.get();
@@ -264,7 +311,7 @@ export class SnapshotDebuggerSession extends DebugSession {
             action: 'CAPTURE',
             id: bpId,
             location: {
-                path: breakpoint.localBreakpoint!.source!.path!, // TODO: Handle case where sourceReference is specified (and figure out what that means)
+                path: stripPwd(breakpoint.localBreakpoint!.source!.path!), // TODO: Handle case where sourceReference is specified (and figure out what that means)
                 line: breakpoint.localBreakpoint!.line!,
             },
             // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -295,6 +342,10 @@ export class SnapshotDebuggerSession extends DebugSession {
             return;
         }
 
+        // We'll get more requests for details on the breakpoint but won't get the breakpoint ID.
+        // Stash the breakpoint so that we don't lose this context.
+        this.currentBreakpoint = breakpoint;
+
         if (breakpoint.serverBreakpoint?.status?.isError) {
             response.body.stackFrames = [
                 // TODO: Something tidier.
@@ -308,7 +359,8 @@ export class SnapshotDebuggerSession extends DebugSession {
             const stackFrames = [];
             const serverFrames = breakpoint.serverBreakpoint!.stackFrames!;
             for (let i = 0; i < serverFrames.length; i++) {
-                stackFrames.push(new StackFrame(i, serverFrames[i].function, new Source(serverFrames[i].location.path), serverFrames[i].location.line));
+                const path = serverFrames[i].location.path;
+                stackFrames.push(new StackFrame(i, serverFrames[i].function, new Source(path, addPwd(path)), serverFrames[i].location.line));
             }
             response.body.stackFrames = stackFrames;
             this.sendResponse(response);
@@ -321,10 +373,63 @@ export class SnapshotDebuggerSession extends DebugSession {
 
     protected async scopesRequest(response: DebugProtocol.ScopesResponse, args: DebugProtocol.ScopesArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
         console.log('scopesRequest');
+        console.log(args);
+
+        response.body = response.body || {};
+
+        const scopes: DebugProtocol.Scope[] = [];
+
+        //scopes.push(new Scope('expressions', 0));  // TODO: Only put this here if it's available.
+        scopes.push(new Scope('locals', 1));  // TODO: Provide this with a unique id that doesn't conflict with the variable table.
+
+        response.body.scopes = scopes;
+        this.sendResponse(response);
     }
 
     protected async variablesRequest(response: DebugProtocol.VariablesResponse, args: DebugProtocol.VariablesArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
         console.log('variablesRequest');
+        console.log(args);
+
+        response.body = response.body || {};
+
+        const variables: DebugProtocol.Variable[] = [];
+
+        if (args.variablesReference === 1) {
+            if (this.currentBreakpoint!.serverBreakpoint!.stackFrames) {
+                const locals = this.currentBreakpoint!.serverBreakpoint!.stackFrames[0].locals;
+
+                for (let i = 0; i < locals.length; i++) {
+                    variables.push({
+                        name: locals[i].name,
+                        value: locals[i].value || '...',
+                        variablesReference: locals[i].varTableIndex ? locals[i].varTableIndex! + 100 : 0
+                        // TODO: type, and indicate supportsVariableType
+                        // TODO: presentationHint with type
+                        // TODO: namedVariables for maps
+                        // TODO: indexedVariables for lists
+                    });
+                }
+            } else {
+                console.log('cannot do a thing');
+            }
+        } else {
+            const vartable = this.currentBreakpoint!.serverBreakpoint!.variableTable!;
+            const variable = vartable[args.variablesReference - 100];
+            for (let i = 0; i < variable.members!.length; i++) {
+                const member = variable.members![i];
+                variables.push({
+                    name: member.name,
+                    value: member.value || '...',
+                    variablesReference: member.varTableIndex ? member.varTableIndex + 100 : 0
+                    // TODO: type, and indicate supportsVariableType
+                    // TODO: presentationHint with type
+                    // TODO: namedVariables for maps
+                    // TODO: indexedVariables for lists
+                });
+            }
+        }
+        response.body.variables = variables;
+        this.sendResponse(response);
     }
 
     protected async threadsRequest(response: DebugProtocol.ThreadsResponse, request?: DebugProtocol.Request | undefined): Promise<void> {
