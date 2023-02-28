@@ -5,7 +5,7 @@
   "description": "Integrates the Snapshot Debugger into your IDE.  Grab snapshots from your running applications.",
   "version": "0.0.1",
   "engines": {
-    "vscode": "^1.75.0"
+    "vscode": "^1.74.0"
   },
   "categories": [
     "Debuggers"
@@ -49,7 +49,9 @@
     "debuggers": [
       {
         "type": "snapshotdbg",
-        "languages": ["javascript"],
+        "languages": [
+          "javascript"
+        ],
         "label": "Snapshot Debugger",
         "configurationAttributes": {
           "attach": {
@@ -73,24 +75,28 @@
             }
           }
         },
-        "initialConfigurations": [{
-          "type": "snapshotdbg",
-          "name": "Snapshot Debugger",
-          "request": "attach",
-          "serviceAccountPath": "\"${command:AskForServiceAccountPath}\""
-          }],
-        "configurationSnippets": [{
-          "label": "Snapshot Debugger",
-          "description": "A new configuration for debugging a live application using Snapshot Debugger.",
-          "body": {
+        "initialConfigurations": [
+          {
             "type": "snapshotdbg",
-            "request": "attach",
             "name": "Snapshot Debugger",
-            "serviceAccountPath": "\"${command:AskForServiceAccountPath}\"",
-            "databaseUrl": "",
-            "debuggeeId": ""
+            "request": "attach",
+            "serviceAccountPath": "\"${command:AskForServiceAccountPath}\""
           }
-        }],
+        ],
+        "configurationSnippets": [
+          {
+            "label": "Snapshot Debugger",
+            "description": "A new configuration for debugging a live application using Snapshot Debugger.",
+            "body": {
+              "type": "snapshotdbg",
+              "request": "attach",
+              "name": "Snapshot Debugger",
+              "serviceAccountPath": "\"${command:AskForServiceAccountPath}\"",
+              "databaseUrl": "",
+              "debuggeeId": ""
+            }
+          }
+        ],
         "variables": {
           "AskForServiceAccountPath": "extension.snapshotdbg.getServiceAccountPath"
         }
@@ -111,7 +117,7 @@
     "firebase-admin": "^11.5.0"
   },
   "devDependencies": {
-    "@types/vscode": "^1.75.0",
+    "@types/vscode": "^1.74.0",
     "@types/glob": "^8.0.1",
     "@types/mocha": "^10.0.1",
     "@types/node": "16.x",

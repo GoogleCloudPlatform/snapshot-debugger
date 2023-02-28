@@ -42,9 +42,9 @@ export function activate(context: vscode.ExtensionContext) {
 		app = initializeApp(
 			{
 				credential: cert(serviceAccount),
-				//databaseURL: `https://${projectId}-cdbg.firebaseio.com`
+				databaseURL: `https://${projectId}-cdbg.firebaseio.com`
 				// TODO: Implement fallback logic.
-				databaseURL: `https://${projectId}-default-rtdb.firebaseio.com`
+				//databaseURL: `https://${projectId}-default-rtdb.firebaseio.com`
 			},
 			FIREBASE_APP_NAME
 		);
