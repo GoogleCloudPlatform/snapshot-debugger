@@ -10,7 +10,7 @@ import { DataSnapshot, getDatabase } from 'firebase-admin/database';
 
 import { DebugProtocol } from '@vscode/debugprotocol';
 import { Database } from 'firebase-admin/lib/database/database';
-import { sleep, stripPwd } from './util';
+import { addPwd, sleep, stripPwd } from './util';
 
 const FIREBASE_APP_NAME = 'snapshotdbg';
 
