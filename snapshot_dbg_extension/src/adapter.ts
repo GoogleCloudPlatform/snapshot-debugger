@@ -114,7 +114,7 @@ export class SnapshotDebuggerSession extends DebugSession {
 
     private async loadSnapshotDetails(bpId: string): Promise<void> {
         // TODO: Be more clever about this.  There's a race condition.
-        await (sleep(100));
+        await (sleep(250));
         // Just try loading it from the /snapshot table.
         const snapshotRef = this.db!.ref(`cdbg/breakpoints/${this.debuggeeId}/snapshot/${bpId}`);
         const dataSnapshot: DataSnapshot = await snapshotRef.get();
