@@ -1,16 +1,16 @@
 import * as vscode from 'vscode';
 import {
-	Logger, logger,
-	DebugSession,
-	InitializedEvent, TerminatedEvent, StoppedEvent, BreakpointEvent, OutputEvent,
-	ProgressStartEvent, ProgressUpdateEvent, ProgressEndEvent, InvalidatedEvent,
-	Thread, StackFrame, Scope, Source, Handles, Breakpoint, MemoryEvent, ThreadEvent
+    DebugSession,
+    InitializedEvent, StoppedEvent, BreakpointEvent,
+    Thread, StackFrame, Scope, Source
 } from '@vscode/debugadapter';
+import { CdbgBreakpoint } from './breakpoint';
 import { initializeApp, cert, App, deleteApp } from 'firebase-admin/app';
 import { DataSnapshot, getDatabase } from 'firebase-admin/database';
 
 import { DebugProtocol } from '@vscode/debugprotocol';
 import { Database } from 'firebase-admin/lib/database/database';
+import { sleep, stripPwd } from './util';
 
 const FIREBASE_APP_NAME = 'snapshotdbg';
 
@@ -21,145 +21,14 @@ const FIREBASE_APP_NAME = 'snapshotdbg';
  * The interface should always match this schema.
  */
 interface IAttachRequestArguments extends DebugProtocol.AttachRequestArguments {
-	/** An absolute path to the service account credentials file. */
-	serviceAccountPath: string;
+    /** An absolute path to the service account credentials file. */
+    serviceAccountPath: string;
 
     /** URL to the Firebase RTDB database. */
     databaseUrl: string | undefined;
 
     /** Debuggee Id of an already registered debuggee. */
     debuggeeId: string;
-}
-
-interface Variable {
-    name: string;
-    value?: string;
-    varTableIndex?: number;
-}
-
-interface ServerLocation {
-    path: string;
-    line: number;
-}
-
-interface ServerBreakpoint {
-    id: string;
-    action: string;
-    location: ServerLocation;
-    status?: {
-        description: {
-            format: string;
-        };
-        isError: boolean;
-    };
-    stackFrames?: {
-        function: string;
-        locals: Variable[];
-        location: ServerLocation;
-    }[];
-    variableTable?: {
-        value: string;
-        members?: Variable[];
-    }[];
-}
-
-class CdbgBreakpoint {
-    localBreakpoint: DebugProtocol.Breakpoint | undefined;
-    serverBreakpoint: ServerBreakpoint | undefined;
-
-    public get id() {
-        if (this.serverBreakpoint) {
-            return this.serverBreakpoint.id;
-        }
-        return undefined;
-    }
-
-    /** Returns the full path to the file. */
-    public get path() {
-        if (this.localBreakpoint) {
-            return this.localBreakpoint.source!.path;
-        } else {
-            return addPwd(this.serverBreakpoint!.location.path);
-        }
-    }
-
-    public get line() {
-        if (this.localBreakpoint) {
-            return this.localBreakpoint.line!;
-        } else {
-            return this.serverBreakpoint!.location.line;
-        }
-    }
-
-    public toLocalBreakpoint(): Breakpoint {
-        if (this.localBreakpoint) {
-            return new Breakpoint(true, this.localBreakpoint.line, undefined, new Source(this.localBreakpoint.source?.name || 'unknown', this.localBreakpoint.source?.path));
-        }
-        if (this.serverBreakpoint) {
-            const path = this.serverBreakpoint.location.path;
-            return new Breakpoint(true, this.serverBreakpoint.location.line, undefined, new Source(path, addPwd(path)));
-        }
-        throw (new Error('Invalid breakpoint state.  Breakpoint must have local or server breakpoint data.'));
-    }
-
-    public toServerBreakpoint(): ServerBreakpoint {
-        if (this.serverBreakpoint) {
-            return this.serverBreakpoint;
-        }
-        throw (new Error('Invalid breakpoint state.  Should not be converting a local breakpoint to a server breakpoint.'));
-    }
-
-    public matches(other: CdbgBreakpoint): Boolean {
-        if (other.id === this.id) {
-            return true;
-        }
-
-        return other.path === this.path && other.line === this.line;
-    }
-
-    public static fromSnapshot(snapshot: DataSnapshot): CdbgBreakpoint {
-        const breakpoint = new CdbgBreakpoint();
-        breakpoint.serverBreakpoint = snapshot.val();
-        return breakpoint;
-    }
-
-    public static fromSourceBreakpoint(source: DebugProtocol.Source, sourceBreakpoint: DebugProtocol.SourceBreakpoint): CdbgBreakpoint {
-        const breakpoint = new CdbgBreakpoint();
-        breakpoint.localBreakpoint = new Breakpoint(
-            true,
-            sourceBreakpoint.line,
-            undefined,
-            new Source(source.name ? source.name : 'unknown', source.path)
-        );
-        return breakpoint;
-    }
-}
-
-function sleep(ms: number) {
-    return new Promise((resolve) => {setTimeout(resolve, ms)});
-}
-
-// TODO: Plumb this through from outside this file if possible.
-// FIXME: Use a path library instead of this nonsense.
-function pwd() {
-    if(vscode.workspace.workspaceFolders !== undefined) {
-        return vscode.workspace.workspaceFolders[0].uri.fsPath + '/'; 
-    } else {
-        return '';
-    }
-}
-
-function stripPwd(path: string): string {
-    const prefix = pwd();
-    if (path.startsWith(prefix)) {
-        return path.substring(prefix.length);
-    }
-    return path;
-}
-
-function addPwd(path: string): string {
-    const prefix = pwd();
-    return `${prefix}${path}`;
 }
 
 
@@ -169,6 +38,7 @@ export class SnapshotDebuggerSession extends DebugSession {
     private debuggeeId: string = '';
 
     private currentBreakpoint: CdbgBreakpoint | undefined = undefined;
+    private currentFrameId: number = 0;
 
     private breakpoints: Map<string, CdbgBreakpoint> = new Map();
 
@@ -176,13 +46,14 @@ export class SnapshotDebuggerSession extends DebugSession {
         super();
     }
 
-	/**
-	 * The 'initialize' request is the first request called by the frontend
-	 * to interrogate the features the debug adapter provides.
-	 */
+    /**
+     * The 'initialize' request is the first request called by the frontend
+     * to interrogate the features the debug adapter provides.
+     */
     protected initializeRequest(response: DebugProtocol.InitializeResponse, args: DebugProtocol.InitializeRequestArguments): void {
         response.body = response.body || {};
 
+        response.body.supportsSteppingGranularity = false;
         response.body.supportsConditionalBreakpoints = true;
         response.body.supportsLogPoints = true;
 
@@ -194,21 +65,21 @@ export class SnapshotDebuggerSession extends DebugSession {
     protected async attachRequest(response: DebugProtocol.AttachResponse, args: IAttachRequestArguments) {
         this.debuggeeId = args.debuggeeId;
 
-		const serviceAccount = require(args.serviceAccountPath);
-		const projectId = serviceAccount['project_id'];
+        const serviceAccount = require(args.serviceAccountPath);
+        const projectId = serviceAccount['project_id'];
         let databaseUrl = args.databaseUrl;
         if (!databaseUrl) {
             databaseUrl = `https://${projectId}-cdbg.firebaseio.com`;
         }
 
-		this.app = initializeApp({
-				credential: cert(serviceAccount),
-				databaseURL: databaseUrl
-			},
-			FIREBASE_APP_NAME
-		);
-	
-		this.db = getDatabase(this.app);
+        this.app = initializeApp({
+            credential: cert(serviceAccount),
+            databaseURL: databaseUrl
+        },
+            FIREBASE_APP_NAME
+        );
+
+        this.db = getDatabase(this.app);
 
         const activeBreakpointRef = this.db.ref(`cdbg/breakpoints/${this.debuggeeId}/active`);
 
@@ -239,11 +110,11 @@ export class SnapshotDebuggerSession extends DebugSession {
             });
 
         this.sendResponse(response);
-	}
+    }
 
     private async loadSnapshotDetails(bpId: string): Promise<void> {
         // TODO: Be more clever about this.  There's a race condition.
-        await(sleep(100));
+        await (sleep(100));
         // Just try loading it from the /snapshot table.
         const snapshotRef = this.db!.ref(`cdbg/breakpoints/${this.debuggeeId}/snapshot/${bpId}`);
         const dataSnapshot: DataSnapshot = await snapshotRef.get();
@@ -315,8 +186,8 @@ export class SnapshotDebuggerSession extends DebugSession {
                 line: breakpoint.localBreakpoint!.line!,
             },
             // eslint-disable-next-line @typescript-eslint/naming-convention
-            createTimeUnixMsec: {'.sv': 'timestamp'}
-        };                
+            createTimeUnixMsec: { '.sv': 'timestamp' }
+        };
         this.db?.ref(`cdbg/breakpoints/${this.debuggeeId}/active/${bpId}`).set(serverBreakpoint);
 
         breakpoint.serverBreakpoint = serverBreakpoint;
@@ -372,15 +243,24 @@ export class SnapshotDebuggerSession extends DebugSession {
 
 
     protected async scopesRequest(response: DebugProtocol.ScopesResponse, args: DebugProtocol.ScopesArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
-        console.log('scopesRequest');
-        console.log(args);
+        // console.log('scopesRequest');
+        // console.log(args);
+
+        this.currentFrameId = args.frameId;
 
         response.body = response.body || {};
 
         const scopes: DebugProtocol.Scope[] = [];
 
-        //scopes.push(new Scope('expressions', 0));  // TODO: Only put this here if it's available.
-        scopes.push(new Scope('locals', 1));  // TODO: Provide this with a unique id that doesn't conflict with the variable table.
+        const stackFrame = this.currentBreakpoint!.serverBreakpoint!.stackFrames![this.currentFrameId];
+        if (stackFrame.locals) {
+            scopes.push(new Scope('locals', 1));
+        } else {
+            scopes.push(new Scope('No local variables', 0));
+        }
+
+        //scopes.push(new Scope('expressions', 2));  // TODO: Put this here if it's available.
+        // TODO: Only put this here if it's available.
 
         response.body.scopes = scopes;
         this.sendResponse(response);
@@ -394,9 +274,12 @@ export class SnapshotDebuggerSession extends DebugSession {
 
         const variables: DebugProtocol.Variable[] = [];
 
+        if (args.variablesReference === 0) {
+            // No local variables.  No content.
+        }
         if (args.variablesReference === 1) {
             if (this.currentBreakpoint!.serverBreakpoint!.stackFrames) {
-                const locals = this.currentBreakpoint!.serverBreakpoint!.stackFrames[0].locals;
+                const locals = this.currentBreakpoint!.serverBreakpoint!.stackFrames[this.currentFrameId].locals!;
 
                 for (let i = 0; i < locals.length; i++) {
                     variables.push({

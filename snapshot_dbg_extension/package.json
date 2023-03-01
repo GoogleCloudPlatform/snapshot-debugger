@@ -41,16 +41,21 @@
         "icon": "$(debug-alt)"
       }
     ],
-    "breakpoints": [
-      {
+    "breakpoints": [{
         "language": "javascript"
+      }, {
+        "language": "python"
+      }, {
+        "language": "java"
       }
     ],
     "debuggers": [
       {
         "type": "snapshotdbg",
         "languages": [
-          "javascript"
+          "javascript",
+          "python",
+          "java"
         ],
         "label": "Snapshot Debugger",
         "configurationAttributes": {
