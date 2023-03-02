@@ -1,71 +1,82 @@
-# snapshotdbg README
+# Snapshot Debugger Extension
 
-This is the README for your extension "snapshotdbg". After writing up a brief description, we recommend including the following sections.
+The Snapshot Debugger extension allows you to use the Snapshot Debugger from within VSCode.
+
+See the [Snapshot Debugger README][snapshot-debugger-readme]
+for more information about the Snapshot Debugger product.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+The Snapshot Debugger allows you to set a special sort of breakpoint on your running applications
+that will capture snapshots of memory.  This extension allows you to do this from within VSCode.
 
-For example if there is an image subfolder under your extension project workspace:
+1.  Attach to a debuggee that has registered itself with the Snapshot Debugger.
 
-\!\[feature X\]\(images/feature-x.png\)
+    TODO: Screenshot
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+1.  Set a breakpoint within your code.  This will let the Snapshot Debugger know that you would like to capture a snapshot from your application when program execution next reaches that location.
+
+    TODO: Screenshot
+
+1.  When the breakpoint is triggered, you can view the stacktrace and captured variables.
+
+    TODO: Screenshot
+
+You can also:
+
+*  TODO: Delete breakpoints
+*  TODO: Create conditional breakpoints
+*  TODO: Create logpoints.  These will produce additional logs in your running applications; the logs will not show up in VSCode.
+*  TODO: View snapshots from previous debugging sessions.
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+The Snapshot Debugger will only work if your application is already configured to work with it, is running, and has successfully registered itself.  See [this documentation][setting-up-in-application] for more details.
+
+You will need a service account with the proper credentials to access the Snapshot Debugger.
+*  TODO: See if this can be avoided.
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+* None
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+* Attaching
+  * A service account file is required.  It would be better if we could use user credentials instead.
+  * No testing/fallback logic is present for database urls.
+  * A debuggee id is required.  Currently it must be provided in the launch.json file.
+
+* Breakpoint management. The system attempts to synchronize breakpoints on the IDE and the backend.
+  * Breakpoints remain "active" locally when a snapshot is taken.  This results in inconsistent state and the breakpoints may be set on the backend again.
+  * Finalized breakpoints on the backend are ignored.  Highly related to the previous point.
+  * Matching local and backend breakpoints is done through path and line number.  This needs to be improved.  There may be a way to link breakpoints by id.  Explore this possibility.
+  * There should be a way to view "final" breakpoints, either for management or for viewing snapshots.
+
+* Virtual threads.  The concept of snapshots is not present in vscode and the debug protocol, so threads
+  are reported for each active breakpoint.
+  * Threads should only be reported for "final" breakpoints
+  * Thread names should be understandable -- they are currently breakpoint ids
+  * Clicking on a breakpoint in the breakpoint list should result in the relevant "thread" being selected.
+  * Deleting a breakpoint should result in its thread being removed.
+  * Note: if only one thread is reported, the thread name is not shown in the UI
+
+* Files
+  * There is no current way to hint to users that the version of the file they are viewing is not the version of the file that they are debugging.
+  * Stacktraces that include files in dependencies are reported as existing in the local workspace.  They are not, so result in ugly error messages being displayed.
+
+* Expressions
+  * There is no known clean way to create expressions for breakpoints.  This is a bit of a problem because it's the standard way to manage truncated snapshots (eg. long strings, arrays, etc)
+
+* Updating breakpoint locations
+  * TODO: Check this -- The Java agent will move breakpoints to the nearest line of code that can have a breakpoint.  This is not handled in this extension and will result in undefined/undesireable behaviour.
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
-
 ### 1.0.0
 
-Initial release of ...
+Initial release (Soon?)
 
-### 1.0.1
 
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+[snapshot-debugger-readme]: https://github.com/GoogleCloudPlatform/snapshot-debugger#readme
+[setting-up-in-application]: https://github.com/GoogleCloudPlatform/snapshot-debugger#set-up-snapshot-debugger-in-your-google-cloud-project
