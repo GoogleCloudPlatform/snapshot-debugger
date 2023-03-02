@@ -3,7 +3,7 @@ import {
     InitializedEvent, StoppedEvent, BreakpointEvent,
     Thread, StackFrame, Scope, Source
 } from '@vscode/debugadapter';
-import { CdbgBreakpoint } from './breakpoint';
+import { CdbgBreakpoint, Variable as CdbgVariable} from './breakpoint';
 import { initializeApp, cert, App, deleteApp } from 'firebase-admin/app';
 import { DataSnapshot, getDatabase } from 'firebase-admin/database';
 
@@ -11,6 +11,7 @@ import { DebugProtocol } from '@vscode/debugprotocol';
 import { Database } from 'firebase-admin/lib/database/database';
 import { addPwd, sleep, stripPwd } from './util';
 import { pickDebuggeeId } from './debuggeePicker';
+import { DebugAdapterNamedPipeServer } from 'vscode';
 
 const FIREBASE_APP_NAME = 'snapshotdbg';
 
@@ -42,6 +43,8 @@ export class SnapshotDebuggerSession extends DebugSession {
 
     private breakpoints: Map<string, CdbgBreakpoint> = new Map();
 
+    private setVariableType: boolean = false;
+
     public constructor() {
         super();
     }
@@ -51,6 +54,7 @@ export class SnapshotDebuggerSession extends DebugSession {
      * to interrogate the features the debug adapter provides.
      */
     protected initializeRequest(response: DebugProtocol.InitializeResponse, args: DebugProtocol.InitializeRequestArguments): void {
+        this.setVariableType = args.supportsVariableType ?? false;
 
         response.body = response.body || {};
 
@@ -283,18 +287,10 @@ export class SnapshotDebuggerSession extends DebugSession {
         }
         if (args.variablesReference === 1) {
             if (this.currentBreakpoint!.serverBreakpoint!.stackFrames) {
-                const locals = this.currentBreakpoint!.serverBreakpoint!.stackFrames[this.currentFrameId].locals!;
+                const locals = this.currentBreakpoint!.serverBreakpoint!.stackFrames[this.currentFrameId].locals ?? [];
 
                 for (let i = 0; i < locals.length; i++) {
-                    variables.push({
-                        name: locals[i].name,
-                        value: locals[i].value || '...',
-                        variablesReference: locals[i].varTableIndex ? locals[i].varTableIndex! + 100 : 0
-                        // TODO: type, and indicate supportsVariableType
-                        // TODO: presentationHint with type
-                        // TODO: namedVariables for maps
-                        // TODO: indexedVariables for lists
-                    });
+                    variables.push(this.cdbgVarToDap(locals[i]));
                 }
             } else {
                 console.log('cannot do a thing');
@@ -302,21 +298,61 @@ export class SnapshotDebuggerSession extends DebugSession {
         } else {
             const vartable = this.currentBreakpoint!.serverBreakpoint!.variableTable!;
             const variable = vartable[args.variablesReference - 100];
-            for (let i = 0; i < variable.members!.length; i++) {
+            const members = variable.members ?? []
+            for (let i = 0; i < members.length; i++) {
                 const member = variable.members![i];
-                variables.push({
-                    name: member.name,
-                    value: member.value || '...',
-                    variablesReference: member.varTableIndex ? member.varTableIndex + 100 : 0
-                    // TODO: type, and indicate supportsVariableType
-                    // TODO: presentationHint with type
-                    // TODO: namedVariables for maps
-                    // TODO: indexedVariables for lists
-                });
+                variables.push(this.cdbgVarToDap(member));
             }
         }
         response.body.variables = variables;
         this.sendResponse(response);
+    }
+
+    private cdbgVarToDap(cdbgVar: CdbgVariable): DebugProtocol.Variable {
+        cdbgVar = this.resolveCdbgVariable(cdbgVar);
+        let dapVar: DebugProtocol.Variable = {
+            name: cdbgVar.name ?? 'UNKNOWN',
+            value: cdbgVar.value || '.**..',
+            variablesReference: cdbgVar.varTableIndex ? cdbgVar.varTableIndex! + 100 : 0
+            // TODO: presentationHint with type
+            // TODO: namedVariables for maps
+            // TODO: indexedVariables for lists
+        }
+
+        if (this.setVariableType && cdbgVar.type !== undefined) {
+            dapVar.type = cdbgVar.type;
+        }
+
+        return dapVar;
+    }
+
+    private resolveCdbgVariable(variable: CdbgVariable,  predecessors = new Set<number>()): CdbgVariable {
+        const vartable = this.currentBreakpoint!.serverBreakpoint!.variableTable ?? [];
+
+        // In this case there's nothing to resolve, already done.
+        if (variable.varTableIndex === undefined) {
+            return variable;
+        }
+
+        const index = variable.varTableIndex;
+
+        // This would be unexpected, something would be wrong with the snapshot itself.
+        if (index < 0 || index >= vartable.length) {
+            return variable;
+        }
+
+        // Guard against a loop as this function calls itself recursively. This is a safeguard,
+        // in practice it's not expected to happen.
+        if (predecessors.has(index)) {
+            return variable;
+        }
+
+        predecessors.add(index)
+        const resolvedVariable = this.resolveCdbgVariable(vartable[index], predecessors);
+
+        // It's not expected there would be conflicts in fields present, but just in case we
+        // prioritize the resolved variable by placing it first
+        return {...resolvedVariable, ...variable}
     }
 
     protected async threadsRequest(response: DebugProtocol.ThreadsResponse, request?: DebugProtocol.Request | undefined): Promise<void> {

@@ -6,9 +6,10 @@ import { DataSnapshot } from 'firebase-admin/database';
 import { addPwd } from './util';
 
 
-interface Variable {
-    name: string;
+export interface Variable {
+    name?: string;
     value?: string;
+    type?: string;
     varTableIndex?: number;
 }
 
