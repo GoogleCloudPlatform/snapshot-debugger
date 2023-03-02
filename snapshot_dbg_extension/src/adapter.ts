@@ -1,4 +1,3 @@
-import * as vscode from 'vscode';
 import {
     DebugSession,
     InitializedEvent, StoppedEvent, BreakpointEvent,
@@ -11,6 +10,7 @@ import { DataSnapshot, getDatabase } from 'firebase-admin/database';
 import { DebugProtocol } from '@vscode/debugprotocol';
 import { Database } from 'firebase-admin/lib/database/database';
 import { addPwd, sleep, stripPwd } from './util';
+import { pickDebuggeeId } from './debuggeePicker';
 
 const FIREBASE_APP_NAME = 'snapshotdbg';
 
@@ -51,6 +51,7 @@ export class SnapshotDebuggerSession extends DebugSession {
      * to interrogate the features the debug adapter provides.
      */
     protected initializeRequest(response: DebugProtocol.InitializeResponse, args: DebugProtocol.InitializeRequestArguments): void {
+
         response.body = response.body || {};
 
         response.body.supportsSteppingGranularity = false;
@@ -58,13 +59,10 @@ export class SnapshotDebuggerSession extends DebugSession {
         response.body.supportsLogPoints = true;
 
         this.sendResponse(response);
-        // We're all good to go!
-        this.sendEvent(new InitializedEvent());
+        console.log('Initialized');
     }
 
     protected async attachRequest(response: DebugProtocol.AttachResponse, args: IAttachRequestArguments) {
-        this.debuggeeId = args.debuggeeId;
-
         const serviceAccount = require(args.serviceAccountPath);
         const projectId = serviceAccount['project_id'];
         let databaseUrl = args.databaseUrl;
@@ -81,11 +79,20 @@ export class SnapshotDebuggerSession extends DebugSession {
 
         this.db = getDatabase(this.app);
 
+        const debuggeeId = args.debuggeeId || await pickDebuggeeId(this.db);
+        if (!debuggeeId) {
+            response.success = false;
+            this.sendErrorResponse(response, 1, 'No Debuggee selected');
+            return;
+        }
+        this.debuggeeId = debuggeeId;
+
         const activeBreakpointRef = this.db.ref(`cdbg/breakpoints/${this.debuggeeId}/active`);
 
         // Start with a direct read to avoid race conditions with local breakpoints.
         const snapshot: DataSnapshot = await activeBreakpointRef.get();
         snapshot.forEach((breakpoint) => this.addServerBreakpoint(CdbgBreakpoint.fromSnapshot(breakpoint)));
+        console.log('Breakpoints loaded from server');
 
         // Set up the subscription to get server-side updates.
         activeBreakpointRef.on(
@@ -109,8 +116,11 @@ export class SnapshotDebuggerSession extends DebugSession {
                 this.sendEvent(stoppedEvent);
             });
 
+        console.log('Attached');
         this.sendResponse(response);
-    }
+        // At this point we're considered sufficiently initialized to take requests from the IDE.
+        this.sendEvent(new InitializedEvent());
+}
 
     private async loadSnapshotDetails(bpId: string): Promise<void> {
         // TODO: Be more clever about this.  There's a race condition.
@@ -177,7 +187,7 @@ export class SnapshotDebuggerSession extends DebugSession {
 
     private saveBreakpointToServer(breakpoint: CdbgBreakpoint): void {
         const bpId = `b-${Math.floor(Date.now() / 1000)}`;
-        console.log('about to save to firebase');
+        console.log(`creating new breakpoint in firebase: ${bpId}`);
         const serverBreakpoint = {
             action: 'CAPTURE',
             id: bpId,
@@ -200,9 +210,6 @@ export class SnapshotDebuggerSession extends DebugSession {
     }
 
     protected async stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
-        // console.log('stackTraceRequest');
-        // console.log(request);
-
         response.body = response.body || {};
 
         const bpId = `b-${args.threadId}`;
@@ -243,9 +250,6 @@ export class SnapshotDebuggerSession extends DebugSession {
 
 
     protected async scopesRequest(response: DebugProtocol.ScopesResponse, args: DebugProtocol.ScopesArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
-        // console.log('scopesRequest');
-        // console.log(args);
-
         this.currentFrameId = args.frameId;
 
         response.body = response.body || {};
@@ -316,9 +320,6 @@ export class SnapshotDebuggerSession extends DebugSession {
     }
 
     protected async threadsRequest(response: DebugProtocol.ThreadsResponse, request?: DebugProtocol.Request | undefined): Promise<void> {
-        // console.log('threadsRequest');
-        // console.log(request);
-
         response.body = response.body || {};
 
         const threads: Thread[] = [];

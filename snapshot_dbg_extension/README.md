@@ -45,7 +45,7 @@ You will need a service account with the proper credentials to access the Snapsh
 * Attaching
   * A service account file is required.  It would be better if we could use user credentials instead.
   * No testing/fallback logic is present for database urls.
-  * A debuggee id is required.  Currently it must be provided in the launch.json file.
+  * A debuggee id is required.  It can be provided in launch.json or selected at launch time.
 
 * Breakpoint management. The system attempts to synchronize breakpoints on the IDE and the backend.
   * Breakpoints remain "active" locally when a snapshot is taken.  This results in inconsistent state and the breakpoints may be set on the backend again.
