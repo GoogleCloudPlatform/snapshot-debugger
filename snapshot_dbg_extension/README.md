@@ -77,6 +77,13 @@ You will need a service account with the proper credentials to access the Snapsh
 * Updating breakpoint locations
   * TODO: Check this -- The Java agent will move breakpoints to the nearest line of code that can have a breakpoint.  This is not handled in this extension and will result in undefined/undesireable behaviour.
 
+* Expected debugger functionality.  The Snapshot Debugger is not a typical debugger so does not support things like resuming, stepping through code, watch expressions, etc.
+  * Disable/remove/no-op the step-through functionality
+  * Disable/hide/repurpose the watch expressions
+
+* Detaching
+  * This is just currently not supported.  The button claims that you've detached, but the resources are still in place.  They need to be cleaned up.
+
 ## Release Notes
 
 ### 1.0.0
