@@ -52,6 +52,7 @@ You will need a service account with the proper credentials to access the Snapsh
   * Finalized breakpoints on the backend are ignored.  Highly related to the previous point.
   * Matching local and backend breakpoints is done through path and line number.  This needs to be improved.  There may be a way to link breakpoints by id.  Explore this possibility.
   * There should be a way to view "final" breakpoints, either for management or for viewing snapshots.
+  * The extension may grab the snapshot from the database before the agent finished persisting it.  The current fix is a sleep; there should be a retry loop instead.
 
 * Virtual threads.  The concept of snapshots is not present in vscode and the debug protocol, so threads
   are reported for each active breakpoint.
@@ -60,6 +61,11 @@ You will need a service account with the proper credentials to access the Snapsh
   * Clicking on a breakpoint in the breakpoint list should result in the relevant "thread" being selected.
   * Deleting a breakpoint should result in its thread being removed.
   * Note: if only one thread is reported, the thread name is not shown in the UI
+
+* Snapshots
+  * Only basic functionality of the debug protocol 'variable' type is being used
+  * Errors do not use substitution in the error messages, resulting in messages like "no code on line $0"
+  * Some agents specify `null` values by pointing to an empty entry in the variable table.  This needs to be handled still.
 
 * Files
   * There is no current way to hint to users that the version of the file they are viewing is not the version of the file that they are debugging.
