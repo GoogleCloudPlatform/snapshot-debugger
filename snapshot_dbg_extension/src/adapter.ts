@@ -52,6 +52,10 @@ export class SnapshotDebuggerSession extends DebugSession {
     /**
      * The 'initialize' request is the first request called by the frontend
      * to interrogate the features the debug adapter provides.
+     * https://microsoft.github.io/debug-adapter-protocol/specification#Requests_Initialize
+     *
+     * Capabilityes for the response.body:
+     * https://microsoft.github.io/debug-adapter-protocol/specification#Types_Capabilities
      */
     protected initializeRequest(response: DebugProtocol.InitializeResponse, args: DebugProtocol.InitializeRequestArguments): void {
         this.setVariableType = args.supportsVariableType ?? false;
@@ -61,6 +65,7 @@ export class SnapshotDebuggerSession extends DebugSession {
         response.body.supportsSteppingGranularity = false;
         response.body.supportsConditionalBreakpoints = true;
         response.body.supportsLogPoints = true;
+        response.body.supportsValueFormattingOptions = false;
 
         this.sendResponse(response);
         console.log('Initialized');
@@ -274,6 +279,9 @@ export class SnapshotDebuggerSession extends DebugSession {
         this.sendResponse(response);
     }
 
+    /**
+     * https://microsoft.github.io/debug-adapter-protocol/specification#Requests_Variables
+     */
     protected async variablesRequest(response: DebugProtocol.VariablesResponse, args: DebugProtocol.VariablesArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
         console.log('variablesRequest');
         console.log(args);
@@ -310,13 +318,27 @@ export class SnapshotDebuggerSession extends DebugSession {
 
     private cdbgVarToDap(cdbgVar: CdbgVariable): DebugProtocol.Variable {
         cdbgVar = this.resolveCdbgVariable(cdbgVar);
+
+        // Reference documentation for DAP Variable:
+        // https://microsoft.github.io/debug-adapter-protocol/specification#Types_Variable
+        //
+        // To note, we are expressly not populating the 'namedVariables' or
+        // 'indexedVariables' fields. These are meant to be set if there are a
+        // large number of children, the information could then be used in a
+        // paged UI which would fetch the data in chunks. Given the Snapshot
+        // Debugger agents all place limits on the amount of data that is
+        // captured, this is not a concern here, we just always return all data.
+        //
+        // In addition, the 'presentationHint' field is also not populated. The
+        // Snapshot Debugger agents do not capture any data that could be used
+        // provide any of the infiormation covered in:
+        // https://microsoft.github.io/debug-adapter-protocol/specification#Types_VariablePresentationHint
+
         let dapVar: DebugProtocol.Variable = {
             name: cdbgVar.name ?? 'UNKNOWN',
             value: cdbgVar.value || '.**..',
             variablesReference: cdbgVar.varTableIndex ? cdbgVar.varTableIndex! + 100 : 0
-            // TODO: presentationHint with type
-            // TODO: namedVariables for maps
-            // TODO: indexedVariables for lists
+
         }
 
         if (this.setVariableType && cdbgVar.type !== undefined) {
