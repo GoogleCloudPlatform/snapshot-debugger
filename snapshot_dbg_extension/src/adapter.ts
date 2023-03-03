@@ -1,7 +1,7 @@
 import {
     DebugSession,
     InitializedEvent, StoppedEvent, BreakpointEvent,
-    Thread, StackFrame, Scope, Source
+    Thread, StackFrame, Scope, Source, Variable
 } from '@vscode/debugadapter';
 import { CdbgBreakpoint, Variable as CdbgVariable} from './breakpoint';
 import { initializeApp, cert, App, deleteApp } from 'firebase-admin/app';
@@ -12,6 +12,7 @@ import { Database } from 'firebase-admin/lib/database/database';
 import { addPwd, sleep, stripPwd } from './util';
 import { pickDebuggeeId } from './debuggeePicker';
 import { DebugAdapterNamedPipeServer } from 'vscode';
+import { validateHeaderValue } from 'http';
 
 const FIREBASE_APP_NAME = 'snapshotdbg';
 
@@ -313,6 +314,7 @@ export class SnapshotDebuggerSession extends DebugSession {
             }
         }
         response.body.variables = variables;
+        console.log(response);
         this.sendResponse(response);
     }
 
@@ -336,7 +338,7 @@ export class SnapshotDebuggerSession extends DebugSession {
 
         let dapVar: DebugProtocol.Variable = {
             name: cdbgVar.name ?? 'UNKNOWN',
-            value: cdbgVar.value || '.**..',
+            value: this.getVariableValue(cdbgVar),
             variablesReference: cdbgVar.varTableIndex ? cdbgVar.varTableIndex! + 100 : 0
 
         }
@@ -346,6 +348,29 @@ export class SnapshotDebuggerSession extends DebugSession {
         }
 
         return dapVar;
+    }
+
+    /**
+     * Per https://microsoft.github.io/debug-adapter-protocol/specification#Types_Variable:
+     * "For structured variables (which do not have a simple value), it is
+     * recommended to provide a one-line representation of the structured object"
+     */
+    private getVariableValue(variable: CdbgVariable): string {
+        if (variable.value !== undefined) {
+            return variable.value;
+        }
+
+        let members = variable.members ?? []
+        const type = variable.type ?? "";
+        const membersSummary = members.map(m => {
+            m = this.resolveCdbgVariable(m);
+            const name =  m.name ?? "UNKNOWN";
+            // Unicode 2026 is the 'Horizontal Ellipsis' character, 3 tightly packed periods
+            const value = m.value ?? "{\u2026}";
+            return `${name}: ${value}`;
+        });
+
+        return `${type} {${membersSummary.join(", ")}}`
     }
 
     private resolveCdbgVariable(variable: CdbgVariable,  predecessors = new Set<number>()): CdbgVariable {

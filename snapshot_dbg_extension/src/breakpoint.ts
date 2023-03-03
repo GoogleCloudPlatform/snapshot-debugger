@@ -10,6 +10,7 @@ export interface Variable {
     name?: string;
     value?: string;
     type?: string;
+    members?: Array<Variable>;
     varTableIndex?: number;
 }
 
