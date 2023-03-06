@@ -5,6 +5,28 @@ import { DebugProtocol } from '@vscode/debugprotocol';
 import { DataSnapshot } from 'firebase-admin/database';
 import { addPwd } from './util';
 
+type StatusMessageRefersTo =
+  | 'UNSPECIFIED'
+  | 'BREAKPOINT_SOURCE_LOCATION'
+  | 'BREAKPOINT_CONDITION'
+  | 'BREAKPOINT_EXPRESSION'
+  | 'BREAKPOINT_AGE'
+  | 'BREAKPOINT_CANARY_FAILED'
+  | 'VARIABLE_NAME'
+  | 'VARIABLE_VALUE';
+
+interface FormatMessage {
+  format?: string;
+  // TODO: The code expects the `parameters` field to be optional.
+  //       Verify if this aligns with the API reference.
+  parameters?: string[];
+}
+
+export interface StatusMessage {
+  isError?: boolean;
+  refersTo?: StatusMessageRefersTo;
+  description?: FormatMessage;
+}
 
 export interface Variable {
     name?: string;
@@ -12,6 +34,7 @@ export interface Variable {
     type?: string;
     members?: Variable[];
     varTableIndex?: number;
+    status?: StatusMessage;
 }
 
 interface ServerLocation {
@@ -19,16 +42,11 @@ interface ServerLocation {
     line: number;
 }
 
-interface ServerBreakpoint {
+export interface ServerBreakpoint {
     id: string;
     action: string;
     location: ServerLocation;
-    status?: {
-        description: {
-            format: string;
-        };
-        isError: boolean;
-    };
+    status?: StatusMessage;
     stackFrames?: {
         function: string;
         locals?: Variable[];

@@ -4,6 +4,7 @@ import {
     Thread, StackFrame, Scope, Source, Variable
 } from '@vscode/debugadapter';
 import { CdbgBreakpoint, Variable as CdbgVariable} from './breakpoint';
+import { StatusMessage } from './statusMessage';
 import { initializeApp, cert, App, deleteApp } from 'firebase-admin/app';
 import { DataSnapshot, getDatabase } from 'firebase-admin/database';
 
@@ -249,7 +250,7 @@ export class SnapshotDebuggerSession extends DebugSession {
         if (breakpoint.serverBreakpoint?.status?.isError) {
             response.body.stackFrames = [
                 // TODO: Something tidier.
-                new StackFrame(0, breakpoint.serverBreakpoint.status.description.format),
+                new StackFrame(0, new StatusMessage(breakpoint.serverBreakpoint).message ?? ""),
             ];
             this.sendResponse(response);
             return;
@@ -365,7 +366,7 @@ export class SnapshotDebuggerSession extends DebugSession {
         }
 
         let dapVar: DebugProtocol.Variable = {
-            name: cdbgVar.name ?? 'UNKNOWN',
+            name: cdbgVar.name ?? '',
             value: this.getVariableValue(cdbgVar),
             variablesReference,
         };
@@ -377,23 +378,38 @@ export class SnapshotDebuggerSession extends DebugSession {
         return dapVar;
     }
 
-    /**
-     * Per https://microsoft.github.io/debug-adapter-protocol/specification#Types_Variable:
-     * "For structured variables (which do not have a simple value), it is
-     * recommended to provide a one-line representation of the structured object"
-     */
     private getVariableValue(variable: CdbgVariable): string {
+        const message: string|undefined = new StatusMessage(variable).message;
+        let members = variable.members ?? []
+
         if (variable.value !== undefined) {
-            return variable.value;
+            return message ? `${variable.value} (DBG_MSG  ${message})` : variable.value;
+        } else if (members.length == 0 && message) {
+            return message;
         }
 
-        let members = variable.members ?? []
         const type = variable.type ?? "";
         const membersSummary = members.map(m => {
             m = this.resolveCdbgVariable(m);
-            const name =  m.name ?? "UNKNOWN";
-            // Unicode 2026 is the 'Horizontal Ellipsis' character, 3 tightly packed periods
-            const value = m.value ?? "{\u2026}";
+            const message: string|undefined = new StatusMessage(m).message;
+
+            // Special case where we can make the UI output look nicer by only including them message.
+            if (!m.name && !m.value && message) {
+                return message;
+            }
+
+            const name =  m.name ?? "";
+
+            let value = ""
+            if (m.value !== undefined) {
+                value = m.value;
+            } else if (message !== undefined) {
+                value = `DBG_MSG : ${message}`;
+            } else {
+                // Unicode 2026 is the 'Horizontal Ellipsis' character, 3 tightly packed periods
+                value = "{\u2026}";
+            }
+
             return `${name}: ${value}`;
         });
 
