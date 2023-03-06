@@ -130,7 +130,19 @@ export class SnapshotDebuggerSession extends DebugSession {
         this.sendResponse(response);
         // At this point we're considered sufficiently initialized to take requests from the IDE.
         this.sendEvent(new InitializedEvent());
-}
+    }
+
+    protected async disconnectRequest(response: DebugProtocol.DisconnectResponse, args: DebugProtocol.DisconnectArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
+        // A new instance of this class is created for each debugging session.
+        // Treat this function as a desctructor to clean up any resources that require cleanup.
+
+        if (this.app) {
+            deleteApp(this.app);
+            this.app = undefined;
+        }
+
+        this.sendResponse(response);
+    }
 
     private async loadSnapshotDetails(bpId: string): Promise<void> {
         // TODO: Be more clever about this.  There's a race condition.
