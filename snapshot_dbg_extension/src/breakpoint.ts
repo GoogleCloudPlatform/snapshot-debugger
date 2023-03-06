@@ -10,7 +10,7 @@ export interface Variable {
     name?: string;
     value?: string;
     type?: string;
-    members?: Array<Variable>;
+    members?: Variable[];
     varTableIndex?: number;
 }
 
@@ -34,15 +34,21 @@ interface ServerBreakpoint {
         locals?: Variable[];
         location: ServerLocation;
     }[];
-    variableTable?: {
-        value: string;
-        members?: Variable[];
-    }[];
+    variableTable?: Variable[];
 }
 
 export class CdbgBreakpoint {
     localBreakpoint: DebugProtocol.Breakpoint | undefined;
     serverBreakpoint: ServerBreakpoint | undefined;
+
+    // Not all Variables have their own entry in the breakpoints variable table.
+    // For the purposes of handing a `variablesReference` back to the UI, an
+    // entry for these variables gets added to this array. Any variable table
+    // indexes that equal or exceed the size of the main variable table, can be
+    // found found in this table. The index to use for this table can be
+    // obtained by subtracting the size of the main variable table from the
+    // index.
+    extendedVariableTable: Variable[] = new Array();
 
     public get id() {
         if (this.serverBreakpoint) {

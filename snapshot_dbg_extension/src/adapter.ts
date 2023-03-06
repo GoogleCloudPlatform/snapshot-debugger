@@ -305,8 +305,15 @@ export class SnapshotDebuggerSession extends DebugSession {
                 console.log('cannot do a thing');
             }
         } else {
-            const vartable = this.currentBreakpoint!.serverBreakpoint!.variableTable!;
-            const variable = vartable[args.variablesReference - 100];
+            let vartable: CdbgVariable[] = this.currentBreakpoint!.serverBreakpoint!.variableTable ?? [];
+            let varTableIndex = args.variablesReference - 100;
+
+            if (varTableIndex >= vartable.length) {
+                varTableIndex -= vartable.length;
+                vartable = this.currentBreakpoint!.extendedVariableTable;
+            }
+
+            const variable = vartable[varTableIndex];
             const members = variable.members ?? []
             for (let i = 0; i < members.length; i++) {
                 const member = variable.members![i];
@@ -318,8 +325,8 @@ export class SnapshotDebuggerSession extends DebugSession {
         this.sendResponse(response);
     }
 
-    private cdbgVarToDap(cdbgVar: CdbgVariable): DebugProtocol.Variable {
-        cdbgVar = this.resolveCdbgVariable(cdbgVar);
+    private cdbgVarToDap(unresolvedCdbgVar: CdbgVariable): DebugProtocol.Variable {
+        const cdbgVar: CdbgVariable = this.resolveCdbgVariable(unresolvedCdbgVar);
 
         // Reference documentation for DAP Variable:
         // https://microsoft.github.io/debug-adapter-protocol/specification#Types_Variable
@@ -336,12 +343,20 @@ export class SnapshotDebuggerSession extends DebugSession {
         // provide any of the infiormation covered in:
         // https://microsoft.github.io/debug-adapter-protocol/specification#Types_VariablePresentationHint
 
+        let variablesReference = cdbgVar.varTableIndex ? cdbgVar.varTableIndex! + 100 : 0;
+        const isNewExtendedVarTableEntryRequired = (variablesReference == 0) && ((cdbgVar.members ?? []).length > 0);
+        if (isNewExtendedVarTableEntryRequired) {
+            const vartable: CdbgVariable[] = this.currentBreakpoint!.serverBreakpoint!.variableTable ?? [];
+            const extendedVartable = this.currentBreakpoint!.extendedVariableTable;
+            variablesReference = 100 + vartable.length + extendedVartable.length;
+            extendedVartable.push(unresolvedCdbgVar);
+        }
+
         let dapVar: DebugProtocol.Variable = {
             name: cdbgVar.name ?? 'UNKNOWN',
             value: this.getVariableValue(cdbgVar),
-            variablesReference: cdbgVar.varTableIndex ? cdbgVar.varTableIndex! + 100 : 0
-
-        }
+            variablesReference,
+        };
 
         if (this.setVariableType && cdbgVar.type !== undefined) {
             dapVar.type = cdbgVar.type;
@@ -374,14 +389,18 @@ export class SnapshotDebuggerSession extends DebugSession {
     }
 
     private resolveCdbgVariable(variable: CdbgVariable,  predecessors = new Set<number>()): CdbgVariable {
-        const vartable = this.currentBreakpoint!.serverBreakpoint!.variableTable ?? [];
+        let vartable = this.currentBreakpoint!.serverBreakpoint!.variableTable ?? [];
 
         // In this case there's nothing to resolve, already done.
         if (variable.varTableIndex === undefined) {
             return variable;
         }
 
-        const index = variable.varTableIndex;
+        let index = variable.varTableIndex;
+        if (index >= vartable.length) {
+            index -= vartable.length;
+            vartable = this.currentBreakpoint!.extendedVariableTable;
+        }
 
         // This would be unexpected, something would be wrong with the snapshot itself.
         if (index < 0 || index >= vartable.length) {
