@@ -260,8 +260,8 @@ export class SnapshotDebuggerSession extends DebugSession {
             const stackFrames = [];
             const serverFrames = breakpoint.serverBreakpoint!.stackFrames!;
             for (let i = 0; i < serverFrames.length; i++) {
-                const path = serverFrames[i].location.path;
-                stackFrames.push(new StackFrame(i, serverFrames[i].function, new Source(path, addPwd(path)), serverFrames[i].location.line));
+                const path = serverFrames[i].location?.path ?? "Unknown path";
+                stackFrames.push(new StackFrame(i, serverFrames[i].function ?? "Unknown function", new Source(path, addPwd(path)), serverFrames[i].location?.line ?? 0));
             }
             response.body.stackFrames = stackFrames;
             this.sendResponse(response);
@@ -280,13 +280,18 @@ export class SnapshotDebuggerSession extends DebugSession {
         const scopes: DebugProtocol.Scope[] = [];
 
         const stackFrame = this.currentBreakpoint!.serverBreakpoint!.stackFrames![this.currentFrameId];
-        if (stackFrame.locals) {
-            scopes.push(new Scope('locals', 1));
+        if (stackFrame.arguments) {
+            scopes.push(new Scope('arguments', 1));
+        } else {
+            scopes.push(new Scope('No function arguments', 0));
+        }
+        if (stackFrame.arguments) {
+            scopes.push(new Scope('locals', 2));
         } else {
             scopes.push(new Scope('No local variables', 0));
         }
 
-        //scopes.push(new Scope('expressions', 2));  // TODO: Put this here if it's available.
+        //scopes.push(new Scope('expressions', 3));  // TODO: Put this here if it's available.
         // TODO: Only put this here if it's available.
 
         response.body.scopes = scopes;
@@ -306,8 +311,17 @@ export class SnapshotDebuggerSession extends DebugSession {
 
         if (args.variablesReference === 0) {
             // No local variables.  No content.
-        }
-        if (args.variablesReference === 1) {
+        } else if (args.variablesReference === 1) {
+            if (this.currentBreakpoint!.serverBreakpoint!.stackFrames) {
+                const args = this.currentBreakpoint!.serverBreakpoint!.stackFrames[this.currentFrameId].arguments ?? [];
+
+                for (let i = 0; i < args.length; i++) {
+                    variables.push(this.cdbgVarToDap(args[i]));
+                }
+            } else {
+                console.log('cannot do a thing');
+            }
+        } else if (args.variablesReference === 2) {
             if (this.currentBreakpoint!.serverBreakpoint!.stackFrames) {
                 const locals = this.currentBreakpoint!.serverBreakpoint!.stackFrames[this.currentFrameId].locals ?? [];
 

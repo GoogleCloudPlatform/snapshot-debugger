@@ -42,16 +42,19 @@ interface ServerLocation {
     line: number;
 }
 
+interface ServerStackFrame {
+    function?: string;
+    location?: ServerLocation;
+    arguments?: Variable[];
+    locals?: Variable[];
+  }
+
 export interface ServerBreakpoint {
     id: string;
     action: string;
     location: ServerLocation;
     status?: StatusMessage;
-    stackFrames?: {
-        function: string;
-        locals?: Variable[];
-        location: ServerLocation;
-    }[];
+    stackFrames?: ServerStackFrame[];
     variableTable?: Variable[];
 }
 
