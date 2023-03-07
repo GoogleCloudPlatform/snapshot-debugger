@@ -285,14 +285,16 @@ export class SnapshotDebuggerSession extends DebugSession {
         } else {
             scopes.push(new Scope('No function arguments', 0));
         }
-        if (stackFrame.arguments) {
+
+        if (stackFrame.locals) {
             scopes.push(new Scope('locals', 2));
         } else {
             scopes.push(new Scope('No local variables', 0));
         }
 
-        //scopes.push(new Scope('expressions', 3));  // TODO: Put this here if it's available.
-        // TODO: Only put this here if it's available.
+        if (this.currentFrameId === 0 && this.currentBreakpoint?.serverBreakpoint?.evaluatedExpressions) {
+            scopes.push(new Scope('expressions', 3));
+        }
 
         response.body.scopes = scopes;
         this.sendResponse(response);
@@ -311,7 +313,7 @@ export class SnapshotDebuggerSession extends DebugSession {
 
         if (args.variablesReference === 0) {
             // No local variables.  No content.
-        } else if (args.variablesReference >= 1 &&  args.variablesReference <= 2) {
+        } else if (args.variablesReference === 1 || args.variablesReference === 2) {
             const stackFrames = this.currentBreakpoint?.serverBreakpoint?.stackFrames ?? [];
             if (this.currentFrameId < stackFrames.length) {
                 const stackFrame = stackFrames[this.currentFrameId];
@@ -320,6 +322,9 @@ export class SnapshotDebuggerSession extends DebugSession {
             } else {
                 console.log('cannot do a thing');
             }
+        } else if (args.variablesReference === 3) {
+            const expressions = this.currentBreakpoint?.serverBreakpoint?.evaluatedExpressions ?? [];
+            variables = expressions.map(v => this.cdbgVarToDap(v));
         } else {
             let vartable: CdbgVariable[] = this.currentBreakpoint!.serverBreakpoint!.variableTable ?? [];
             let varTableIndex = args.variablesReference - 100;

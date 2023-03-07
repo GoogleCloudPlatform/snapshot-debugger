@@ -53,8 +53,11 @@ export interface ServerBreakpoint {
     id: string;
     action: string;
     location: ServerLocation;
+    condition?: string;
+    expressions?: string[];
     status?: StatusMessage;
     stackFrames?: ServerStackFrame[];
+    evaluatedExpressions?: Variable[];
     variableTable?: Variable[];
 }
 
