@@ -307,27 +307,16 @@ export class SnapshotDebuggerSession extends DebugSession {
 
         response.body = response.body || {};
 
-        const variables: DebugProtocol.Variable[] = [];
+        let variables: DebugProtocol.Variable[] = [];
 
         if (args.variablesReference === 0) {
             // No local variables.  No content.
-        } else if (args.variablesReference === 1) {
-            if (this.currentBreakpoint!.serverBreakpoint!.stackFrames) {
-                const args = this.currentBreakpoint!.serverBreakpoint!.stackFrames[this.currentFrameId].arguments ?? [];
-
-                for (let i = 0; i < args.length; i++) {
-                    variables.push(this.cdbgVarToDap(args[i]));
-                }
-            } else {
-                console.log('cannot do a thing');
-            }
-        } else if (args.variablesReference === 2) {
-            if (this.currentBreakpoint!.serverBreakpoint!.stackFrames) {
-                const locals = this.currentBreakpoint!.serverBreakpoint!.stackFrames[this.currentFrameId].locals ?? [];
-
-                for (let i = 0; i < locals.length; i++) {
-                    variables.push(this.cdbgVarToDap(locals[i]));
-                }
+        } else if (args.variablesReference >= 1 &&  args.variablesReference <= 2) {
+            const stackFrames = this.currentBreakpoint?.serverBreakpoint?.stackFrames ?? [];
+            if (this.currentFrameId < stackFrames.length) {
+                const stackFrame = stackFrames[this.currentFrameId];
+                const cdbgVars: CdbgVariable[] | undefined = args.variablesReference === 1 ?  stackFrame.arguments : stackFrame.locals;
+                variables = (cdbgVars ?? []).map(v => this.cdbgVarToDap(v));
             } else {
                 console.log('cannot do a thing');
             }
@@ -340,13 +329,9 @@ export class SnapshotDebuggerSession extends DebugSession {
                 vartable = this.currentBreakpoint!.extendedVariableTable;
             }
 
-            const variable = vartable[varTableIndex];
-            const members = variable.members ?? []
-            for (let i = 0; i < members.length; i++) {
-                const member = variable.members![i];
-                variables.push(this.cdbgVarToDap(member));
-            }
+            variables = (vartable[varTableIndex].members ?? []).map(v => this.cdbgVarToDap(v));
         }
+
         response.body.variables = variables;
         console.log(response);
         this.sendResponse(response);
