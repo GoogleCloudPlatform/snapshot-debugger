@@ -19,9 +19,9 @@ const FIREBASE_APP_NAME = 'snapshotdbg';
 
 /**
  * This interface describes the snapshot-debugger specific attach attributes
- * (which are not part of the Debug Adapter Protocol).
- * The schema for these attributes lives in the package.json of the snapshot-debugger extension.
- * The interface should always match this schema.
+ * (which are not part of the Debug Adapter Protocol).  The schema for these
+ * attributes lives in the package.json of the snapshot-debugger extension.  The
+ * interface should always match this schema.
  */
 interface IAttachRequestArguments extends DebugProtocol.AttachRequestArguments {
     /** An absolute path to the service account credentials file. */
@@ -52,8 +52,8 @@ export class SnapshotDebuggerSession extends DebugSession {
     }
 
     /**
-     * The 'initialize' request is the first request called by the frontend
-     * to interrogate the features the debug adapter provides.
+     * The 'initialize' request is the first request called by the frontend to
+     * interrogate the features the debug adapter provides.
      * https://microsoft.github.io/debug-adapter-protocol/specification#Requests_Initialize
      *
      * Capabilityes for the response.body:
@@ -362,6 +362,17 @@ export class SnapshotDebuggerSession extends DebugSession {
             const extendedVartable = this.currentBreakpoint!.extendedVariableTable;
             variablesReference = 100 + vartable.length + extendedVartable.length;
             extendedVartable.push(unresolvedCdbgVar);
+        }
+
+        // Special case check for the situation where the agent communicates a
+        // status message such as 'Empty container'.  If the Variable has one
+        // member, and that member only has the status message populated, we set
+        // variablesReference to 0 so the UI won't allow expansion of the
+        // Variable. The status message will already be shown in the variable
+        // summary.
+        const members = cdbgVar.members ?? []
+        if (members.length == 1 && members[0].value === undefined && members[0].status !== undefined) {
+            variablesReference = 0;
         }
 
         let dapVar: DebugProtocol.Variable = {
