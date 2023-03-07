@@ -1,9 +1,9 @@
 import {
     DebugSession,
     InitializedEvent, StoppedEvent, BreakpointEvent,
-    Thread, StackFrame, Scope, Source, Variable
+    Thread, StackFrame, Scope, Source, Variable, ContinuedEvent
 } from '@vscode/debugadapter';
-import { CdbgBreakpoint, Variable as CdbgVariable} from './breakpoint';
+import { CdbgBreakpoint, ServerBreakpoint, Variable as CdbgVariable} from './breakpoint';
 import { StatusMessage } from './statusMessage';
 import { initializeApp, cert, App, deleteApp } from 'firebase-admin/app';
 import { DataSnapshot, getDatabase } from 'firebase-admin/database';
@@ -68,6 +68,7 @@ export class SnapshotDebuggerSession extends DebugSession {
         response.body.supportsConditionalBreakpoints = true;
         response.body.supportsLogPoints = true;
         response.body.supportsValueFormattingOptions = false;
+        response.body.supportsConditionalBreakpoints = true;
 
         this.sendResponse(response);
         console.log('Initialized');
@@ -193,7 +194,7 @@ export class SnapshotDebuggerSession extends DebugSession {
 
                 // If not, persist it.  Server breakpoints should have already been loaded.
                 if (!found) {
-                    this.saveBreakpointToServer(cdbgBreakpoint);
+                    this.saveBreakpointToServer(cdbgBreakpoint, breakpoint.condition);
                 }
 
                 bpIds.add(cdbgBreakpoint.id!);
@@ -208,7 +209,7 @@ export class SnapshotDebuggerSession extends DebugSession {
         })
     }
 
-    private saveBreakpointToServer(breakpoint: CdbgBreakpoint): void {
+    private saveBreakpointToServer(breakpoint: CdbgBreakpoint, condition: string|undefined): void {
         const bpId = `b-${Math.floor(Date.now() / 1000)}`;
         console.log(`creating new breakpoint in firebase: ${bpId}`);
         const serverBreakpoint = {
@@ -219,8 +220,14 @@ export class SnapshotDebuggerSession extends DebugSession {
                 line: breakpoint.localBreakpoint!.line!,
             },
             // eslint-disable-next-line @typescript-eslint/naming-convention
-            createTimeUnixMsec: { '.sv': 'timestamp' }
+            createTimeUnixMsec: { '.sv': 'timestamp' },
+            ...(condition && {condition})
         };
+
+        if (condition) {
+            serverBreakpoint.condition = condition;
+        }
+
         this.db?.ref(`cdbg/breakpoints/${this.debuggeeId}/active/${bpId}`).set(serverBreakpoint);
 
         breakpoint.serverBreakpoint = serverBreakpoint;
