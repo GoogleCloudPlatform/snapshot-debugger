@@ -246,20 +246,7 @@ export class SnapshotDebuggerSession extends DebugSession {
             const newBPs = [...currBPSet].filter(bp => !prevBPSet.has(bp));
             for (const bp of newBPs) {
                 const cdbgBp = CdbgBreakpoint.fromSourceBreakpoint(args.source, this.stringToSourceBreakpoint(bp));
-                let expressionsString: string|undefined = undefined;
-                if (this.userPreferences.isExpressionsPromptEnabled) {
-                    expressionsString = await vscode.window.showInputBox({
-                        "title": "Expressions",
-                        "prompt": "Separator ***"
-                    });
-                }
-
-                const expressions = expressionsString?.split("**").map(e => e.trim()).filter(e => e.length > 0);
-
-                if (expressions) {
-                    cdbgBp.serverBreakpoint.expressions = expressions;
-                }
-
+                await this.setExpressions(cdbgBp);
                 this.saveBreakpointToServer(cdbgBp);
             }
             const delBPs = [...prevBPSet].filter(bp => !currBPSet.has(bp));
@@ -619,6 +606,28 @@ export class SnapshotDebuggerSession extends DebugSession {
         // It's not expected there would be conflicts in fields present, but just in case we
         // prioritize the resolved variable by placing it first
         return {...resolvedVariable, ...variable}
+    }
+
+
+    private async setExpressions(cdbgBp: CdbgBreakpoint): Promise<void> {
+        if (!this.userPreferences.isExpressionsPromptEnabled) {
+            return;
+        }
+
+        const expressions = await this.promptUserForExpressions();
+
+        if (expressions) {
+            cdbgBp.serverBreakpoint.expressions = expressions;
+        }
+    }
+
+    private async promptUserForExpressions(): Promise<string[]|undefined> {
+        const expressionsString = await vscode.window.showInputBox({
+            "title": "Expressions",
+            "prompt": "Separator ***"
+        });
+
+        return expressionsString?.split("**").map(e => e.trim()).filter(e => e.length > 0);
     }
 
     /**
