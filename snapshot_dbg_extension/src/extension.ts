@@ -25,12 +25,13 @@ export function activate(context: vscode.ExtensionContext) {
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('extension.snapshotdbg.toggleExpressions', async args => {
-		const action = userPreferences.isExpressionsPromptEnabled ? "Disabling" : "Enabling";
+		const action = userPreferences.isExpressionsPromptEnabled ? "Disabled" : "Enabled";
 		const message = `${action} expresssions prompt when creating a breakpoint.`;
 		const reverseAction = userPreferences.isExpressionsPromptEnabled ? "re-enable" : "disable";
 		const reverseMessage = `Click again to ${reverseAction} it.`;
-		await vscode.window.showInformationMessage(message, {"detail": reverseMessage, "modal": true});
+
 		userPreferences.isExpressionsPromptEnabled = !userPreferences.isExpressionsPromptEnabled;
+		await vscode.window.showInformationMessage(message, {"detail": reverseMessage, "modal": true});
 	}));
 
 	const provider = new SnapshotDebuggerConfigurationProvider();
