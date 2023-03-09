@@ -622,9 +622,11 @@ export class SnapshotDebuggerSession extends DebugSession {
     }
 
     private async promptUserForExpressions(): Promise<string[]|undefined> {
+        let expressions = string[];
+
         const expressionsString = await vscode.window.showInputBox({
             "title": "Expressions",
-            "prompt": "Separator ***"
+            "prompt": "Separator **"
         });
 
         return expressionsString?.split("**").map(e => e.trim()).filter(e => e.length > 0);
