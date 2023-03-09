@@ -3,7 +3,7 @@ import {
 } from '@vscode/debugadapter';
 import { DebugProtocol } from '@vscode/debugprotocol';
 import { DataSnapshot } from 'firebase-admin/database';
-import { addPwd } from './util';
+import { addPwd, stripPwd } from './util';
 
 type StatusMessageRefersTo =
   | 'UNSPECIFIED'
@@ -58,13 +58,14 @@ export interface ServerBreakpoint {
     status?: StatusMessage;
     stackFrames?: ServerStackFrame[];
     evaluatedExpressions?: Variable[];
+    isFinalState: boolean;
+    createTimeUnixMsec?: {} | number;
     variableTable?: Variable[];
 }
 
-export class CdbgBreakpoint {
-    localBreakpoint: DebugProtocol.Breakpoint | undefined;
-    serverBreakpoint: ServerBreakpoint | undefined;
+const kUnknown = 'unknown';
 
+export class CdbgBreakpoint {
     // Not all Variables have their own entry in the breakpoints variable table.
     // For the purposes of handing a `variablesReference` back to the UI, an
     // entry for these variables gets added to this array. Any variable table
@@ -74,70 +75,105 @@ export class CdbgBreakpoint {
     // index.
     extendedVariableTable: Variable[] = new Array();
 
+    // Preserve some state about the breakpoint's data.
+    public hasServerData = false;
+    public hasLocalData = false;
+    public hasUnsavedData = false;
+
+    private constructor(
+        public localBreakpoint: DebugProtocol.Breakpoint,
+        public serverBreakpoint: ServerBreakpoint) {}
+
     public get id() {
-        if (this.serverBreakpoint) {
-            return this.serverBreakpoint.id;
-        }
-        return undefined;
+        return this.serverBreakpoint.id;
+    }
+
+    public set id(bpId: string) {
+        this.serverBreakpoint.id = bpId;
     }
 
     /** Returns the full path to the file. */
     public get path() {
-        if (this.localBreakpoint) {
-            return this.localBreakpoint.source!.path;
-        } else {
-            return addPwd(this.serverBreakpoint!.location.path);
-        }
+        return this.localBreakpoint.source!.path;
+    }
+    
+    public get shortPath() {
+        return this.serverBreakpoint.location.path;
     }
 
     public get line() {
-        if (this.localBreakpoint) {
-            return this.localBreakpoint.line!;
-        } else {
-            return this.serverBreakpoint!.location.line;
-        }
+        return this.localBreakpoint.line;
     }
 
-    public toLocalBreakpoint(): Breakpoint {
-        if (this.localBreakpoint) {
-            return new Breakpoint(true, this.localBreakpoint.line, undefined, new Source(this.localBreakpoint.source?.name || 'unknown', this.localBreakpoint.source?.path));
-        }
-        if (this.serverBreakpoint) {
-            const path = this.serverBreakpoint.location.path;
-            return new Breakpoint(true, this.serverBreakpoint.location.line, undefined, new Source(path, addPwd(path)));
-        }
-        throw (new Error('Invalid breakpoint state.  Breakpoint must have local or server breakpoint data.'));
+    public hasSnapshot(): boolean {
+        return this.serverBreakpoint.stackFrames !== undefined;
     }
 
-    public toServerBreakpoint(): ServerBreakpoint {
-        if (this.serverBreakpoint) {
-            return this.serverBreakpoint;
-        }
-        throw (new Error('Invalid breakpoint state.  Should not be converting a local breakpoint to a server breakpoint.'));
+    public hasError(): boolean {
+        return this.serverBreakpoint.status?.isError ?? false;
+    }
+
+    public isActive(): boolean {
+        return !this.serverBreakpoint.isFinalState;
     }
 
     public matches(other: CdbgBreakpoint): Boolean {
-        if (other.id === this.id) {
+        if (this.id != kUnknown && other.id === this.id) {
             return true;
         }
 
         return other.path === this.path && other.line === this.line;
     }
 
+    public updateServerData(snapshot: DataSnapshot): void {
+        this.serverBreakpoint = snapshot.val();
+        this.hasServerData = true;
+    }
+
     public static fromSnapshot(snapshot: DataSnapshot): CdbgBreakpoint {
-        const breakpoint = new CdbgBreakpoint();
-        breakpoint.serverBreakpoint = snapshot.val();
-        return breakpoint;
+        const serverBreakpoint = snapshot.val();
+        const path = serverBreakpoint.location.path;
+        const localBreakpoint: DebugProtocol.Breakpoint = {
+            verified: serverBreakpoint.isFinal,
+            line: serverBreakpoint.location.line,
+            source: {
+                name: path,
+                path: addPwd(path)
+            }
+        };
+        const bp = new CdbgBreakpoint(localBreakpoint, serverBreakpoint);
+        bp.hasServerData = true;
+
+        // TODO: Set message on localBreakpoint.
+
+        return bp;
     }
 
     public static fromSourceBreakpoint(source: DebugProtocol.Source, sourceBreakpoint: DebugProtocol.SourceBreakpoint): CdbgBreakpoint {
-        const breakpoint = new CdbgBreakpoint();
-        breakpoint.localBreakpoint = new Breakpoint(
-            true,
-            sourceBreakpoint.line,
-            undefined,
-            new Source(source.name ? source.name : 'unknown', source.path)
-        );
-        return breakpoint;
+        const bpId = kUnknown;
+
+        const localBreakpoint: DebugProtocol.Breakpoint = {
+            verified: true,
+            line: sourceBreakpoint.line,
+            source: {
+                name: source.name ?? kUnknown,
+                path: source.path
+            }
+        };
+
+        const serverBreakpoint = {
+            id: bpId,
+            action: 'CAPTURE',
+            isFinalState: false,
+            location: {
+                path: stripPwd(source.path!),
+                line: sourceBreakpoint.line,
+            },
+            ...(sourceBreakpoint.condition && {condition: sourceBreakpoint.condition})
+        };
+
+        const bp = new CdbgBreakpoint(localBreakpoint, serverBreakpoint);
+        bp.hasLocalData = true;
+        return bp;
     }
 }
