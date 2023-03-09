@@ -3,8 +3,10 @@ import {
     InitializedEvent, StoppedEvent, BreakpointEvent,
     Thread, StackFrame, Scope, Source, Variable, ContinuedEvent
 } from '@vscode/debugadapter';
+import * as vscode from 'vscode';
 import { CdbgBreakpoint, ServerBreakpoint, Variable as CdbgVariable} from './breakpoint';
 import { StatusMessage } from './statusMessage';
+import { UserPreferences } from './userPreferences';
 import { initializeApp, cert, App, deleteApp } from 'firebase-admin/app';
 import { DataSnapshot, getDatabase } from 'firebase-admin/database';
 
@@ -47,8 +49,11 @@ export class SnapshotDebuggerSession extends DebugSession {
 
     private setVariableType: boolean = false;
 
-    public constructor() {
+    private userPreferences: UserPreferences;
+
+    public constructor(userPreferences: UserPreferences) {
         super();
+        this.userPreferences = userPreferences;
     }
 
     /**
@@ -194,7 +199,17 @@ export class SnapshotDebuggerSession extends DebugSession {
 
                 // If not, persist it.  Server breakpoints should have already been loaded.
                 if (!found) {
-                    this.saveBreakpointToServer(cdbgBreakpoint, breakpoint.condition);
+                    let expressionsString: string|undefined = undefined;
+                    if (this.userPreferences.isExpressionsPromptEnabled) {
+                        expressionsString = await vscode.window.showInputBox({
+                            "title": "Expressions",
+                            "prompt": "Separator ***"
+                        });
+                    }
+
+                    const expressions = expressionsString?.split("**").map(s => s.trim());
+
+                    this.saveBreakpointToServer(cdbgBreakpoint, breakpoint.condition, expressions);
                 }
 
                 bpIds.add(cdbgBreakpoint.id!);
@@ -209,7 +224,7 @@ export class SnapshotDebuggerSession extends DebugSession {
         })
     }
 
-    private saveBreakpointToServer(breakpoint: CdbgBreakpoint, condition: string|undefined): void {
+    private saveBreakpointToServer(breakpoint: CdbgBreakpoint, condition: string|undefined, expressions: string[]|undefined): void {
         const bpId = `b-${Math.floor(Date.now() / 1000)}`;
         console.log(`creating new breakpoint in firebase: ${bpId}`);
         const serverBreakpoint = {
@@ -221,7 +236,8 @@ export class SnapshotDebuggerSession extends DebugSession {
             },
             // eslint-disable-next-line @typescript-eslint/naming-convention
             createTimeUnixMsec: { '.sv': 'timestamp' },
-            ...(condition && {condition})
+            ...(condition && {condition}),
+            ...(expressions && {expressions})
         };
 
         if (condition) {

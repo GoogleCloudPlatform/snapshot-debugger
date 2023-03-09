@@ -1,11 +1,14 @@
+import { UserRecord } from 'firebase-admin/lib/auth/user-record';
 import * as vscode from 'vscode';
 import { WorkspaceFolder, DebugConfiguration, ProviderResult, CancellationToken } from 'vscode';
 
 import { SnapshotDebuggerSession } from './adapter';
+import { UserPreferences } from './userPreferences';
 
 // This method is called when the extension is activated.
 // The extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+	const userPreferences: UserPreferences = {"isExpressionsPromptEnabled": true};
 	context.subscriptions.push(vscode.commands.registerCommand('extension.snapshotdbg.getServiceAccountPath', async config => {
 		const result = await vscode.window.showOpenDialog({
 			"openLabel": "Select",
@@ -21,10 +24,19 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	}));
 
+	context.subscriptions.push(vscode.commands.registerCommand('extension.snapshotdbg.toggleExpressions', async args => {
+		const action = userPreferences.isExpressionsPromptEnabled ? "Disabling" : "Enabling";
+		const message = `${action} expresssions prompt when creating a breakpoint.`;
+		const reverseAction = userPreferences.isExpressionsPromptEnabled ? "re-enable" : "disable";
+		const reverseMessage = `Click again to ${reverseAction} it.`;
+		await vscode.window.showInformationMessage(message, {"detail": reverseMessage, "modal": true});
+		userPreferences.isExpressionsPromptEnabled = !userPreferences.isExpressionsPromptEnabled;
+	}));
+
 	const provider = new SnapshotDebuggerConfigurationProvider();
 	context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('snapshotdbg', provider));
 
-	const factory = new DebugAdapterFactory();
+	const factory = new DebugAdapterFactory(userPreferences);
 	context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('snapshotdbg', factory));
 }
 
@@ -46,8 +58,14 @@ class SnapshotDebuggerConfigurationProvider implements vscode.DebugConfiguration
 }
 
 class DebugAdapterFactory implements vscode.DebugAdapterDescriptorFactory {
+	private userPreferences: UserPreferences;
+
+	constructor(userPreferences: UserPreferences) {
+		this.userPreferences = userPreferences;
+	}
+
 	createDebugAdapterDescriptor(session: vscode.DebugSession, executable: vscode.DebugAdapterExecutable | undefined): vscode.ProviderResult<vscode.DebugAdapterDescriptor> {
-		return new vscode.DebugAdapterInlineImplementation(new SnapshotDebuggerSession());
+		return new vscode.DebugAdapterInlineImplementation(new SnapshotDebuggerSession(this.userPreferences));
 	}
 
 }
