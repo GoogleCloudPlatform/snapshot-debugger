@@ -12,7 +12,7 @@ import { DataSnapshot, getDatabase } from 'firebase-admin/database';
 
 import { DebugProtocol } from '@vscode/debugprotocol';
 import { Database } from 'firebase-admin/lib/database/database';
-import { addPwd, sleep, stripPwd } from './util';
+import { addPwd, sleep, sourceBreakpointToString, stringToSourceBreakpoint, stripPwd } from './util';
 import { pickDebuggeeId } from './debuggeePicker';
 
 const FIREBASE_APP_NAME = 'snapshotdbg';
@@ -199,19 +199,6 @@ export class SnapshotDebuggerSession extends DebugSession {
         }
     }
 
-    private sourceBreakpointToString(bp: DebugProtocol.SourceBreakpoint): string {
-        return `${bp.line}\0${bp.condition}\0${bp.logMessage}`;
-    }
-
-    private stringToSourceBreakpoint(bp: string): DebugProtocol.SourceBreakpoint {
-        const parts = bp.split('\0');
-        return {
-            line: parseInt(parts[0]),
-            ...(parts[1] !== 'undefined' && {condition: parts[1]}),
-            ...(parts[2] !== 'undefined' && {logMessage: parts[2]})
-        };
-    }
-
     /** Generate a safe numeric breakpoint ID for a new breakpoint.
      * Breakpoints generated in quick succession resulting in collisions.  This function avoids that. */
     private lastBreakpointId: number = 0;   
@@ -240,18 +227,18 @@ export class SnapshotDebuggerSession extends DebugSession {
             const prevBPs: DebugProtocol.SourceBreakpoint[] = this.previousSetBreakpointRequests.get(path) ?? [];
             const currBPs: DebugProtocol.SourceBreakpoint[] = args.breakpoints ?? [];
 
-            const prevBPSet = new Set(prevBPs.map(bp => this.sourceBreakpointToString(bp)));
-            const currBPSet = new Set(currBPs.map(bp => this.sourceBreakpointToString(bp)));
+            const prevBPSet = new Set(prevBPs.map(bp => sourceBreakpointToString(bp)));
+            const currBPSet = new Set(currBPs.map(bp => sourceBreakpointToString(bp)));
 
             const newBPs = [...currBPSet].filter(bp => !prevBPSet.has(bp));
             for (const bp of newBPs) {
-                const cdbgBp = CdbgBreakpoint.fromSourceBreakpoint(args.source, this.stringToSourceBreakpoint(bp));
+                const cdbgBp = CdbgBreakpoint.fromSourceBreakpoint(args.source, stringToSourceBreakpoint(bp));
                 await this.setExpressions(cdbgBp);
                 this.saveBreakpointToServer(cdbgBp);
             }
             const delBPs = [...prevBPSet].filter(bp => !currBPSet.has(bp));
             for (const bp of delBPs) {
-                const sourceBp = CdbgBreakpoint.fromSourceBreakpoint(args.source, this.stringToSourceBreakpoint(bp));
+                const sourceBp = CdbgBreakpoint.fromSourceBreakpoint(args.source, stringToSourceBreakpoint(bp));
                 for (const cdbgBp of this.breakpoints.values()) {
                     if (cdbgBp.matches(sourceBp)) {
                         this.deleteBreakpointFromServer(cdbgBp.id);

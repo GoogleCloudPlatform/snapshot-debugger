@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { DebugProtocol } from '@vscode/debugprotocol';
 
 export function sleep(ms: number) {
     return new Promise((resolve) => { setTimeout(resolve, ms) });
@@ -26,3 +27,17 @@ export function addPwd(path: string): string {
     const prefix = pwd();
     return `${prefix}${path}`;
 }
+
+export function sourceBreakpointToString(bp: DebugProtocol.SourceBreakpoint): string {
+    return `${bp.line}\0${bp.condition}\0${bp.logMessage}`;
+}
+
+export function stringToSourceBreakpoint(bp: string): DebugProtocol.SourceBreakpoint {
+    const parts = bp.split('\0');
+    return {
+        line: parseInt(parts[0]),
+        ...(parts[1] !== 'undefined' && {condition: parts[1]}),
+        ...(parts[2] !== 'undefined' && {logMessage: parts[2]})
+    };
+}
+
