@@ -40,49 +40,55 @@ You will need a service account with the proper credentials to access the Snapsh
 
 * None
 
-## Known Issues
+## Quirks / Potential Improvements
 
 * Attaching
   * A service account file is required.  It would be better if we could use user credentials instead.
-  * No testing/fallback logic is present for database urls.
   * A debuggee id is required.  It can be provided in launch.json or selected at launch time.
 
 * Breakpoint management. The system attempts to synchronize breakpoints on the IDE and the backend.
-  * Breakpoints remain "active" locally when a snapshot is taken.  This results in inconsistent state and the breakpoints may be set on the backend again.
-  * Finalized breakpoints on the backend are ignored.  Highly related to the previous point.
-  * Matching local and backend breakpoints is done through path and line number.  This needs to be improved.  There may be a way to link breakpoints by id.  Explore this possibility.
+  * Breakpoints set in the UI prior to attaching will attempt to match against active breakpoints on the server.  If there isn't a match, a new breakpoint will be created.
   * There should be a way to view "final" breakpoints, either for management or for viewing snapshots.
-  * The extension may grab the snapshot from the database before the agent finished persisting it.  The current fix is a sleep; there should be a retry loop instead.
+  * All active breakpoints are read twice; once before completing attachment and once immediately after (concurrently).
 
 * Virtual threads.  The concept of snapshots is not present in vscode and the debug protocol, so threads
   are reported for each active breakpoint.
-  * Threads should only be reported for "final" breakpoints
-  * Thread names should be understandable -- they are currently breakpoint ids
+  * Threads for breakpoints with errors - it would be nice if the breakpoint was highlighted (eg. stack trace that includes path & line for problematic breakpoint)
   * Clicking on a breakpoint in the breakpoint list should result in the relevant "thread" being selected.
-  * Deleting a breakpoint should result in its thread being removed.
   * Note: if only one thread is reported, the thread name is not shown in the UI
 
-* Snapshots
-  * Only basic functionality of the debug protocol 'variable' type is being used
-  * Errors do not use substitution in the error messages, resulting in messages like "no code on line $0"
-  * Some agents specify `null` values by pointing to an empty entry in the variable table.  This needs to be handled still.
+* Logpoints
+  * Not yet supported
 
 * Files
   * There is no current way to hint to users that the version of the file they are viewing is not the version of the file that they are debugging.
   * Stacktraces that include files in dependencies are reported as existing in the local workspace.  They are not, so result in ugly error messages being displayed.
 
 * Expressions
-  * There is no known clean way to create expressions for breakpoints.  This is a bit of a problem because it's the standard way to manage truncated snapshots (eg. long strings, arrays, etc)
-
-* Updating breakpoint locations
-  * TODO: Check this -- The Java agent will move breakpoints to the nearest line of code that can have a breakpoint.  This is not handled in this extension and will result in undefined/undesireable behaviour.
+  * Requests for expressions by default when attaching and having breakpoints already set is a bit jarring.
+  * Expressions can't be used for breakpoint matching because the SourceBreakpoint does not include expressions.
 
 * Expected debugger functionality.  The Snapshot Debugger is not a typical debugger so does not support things like resuming, stepping through code, watch expressions, etc.
   * Disable/remove/no-op the step-through functionality
   * Disable/hide/repurpose the watch expressions
 
-* Detaching
-  * This is just currently not supported.  The button claims that you've detached, but the resources are still in place.  They need to be cleaned up.
+## Known Issues
+
+* Attaching
+  * No testing/fallback logic is present for database urls.
+
+* Breakpoint management
+  * SetBreakpoints response breakpoints need to be in the same order as they are in the request.  This is currently not the case and results in the UI merging breakpoints incorrectly.
+  * Matching local and backend breakpoints is done through path and line number.  This should be improved:
+    * Include conditions
+    * Handle multiple matches in a reasonable way (TBD)
+
+* Virtual threads
+  * The resume button completely messes up the state; it sets the threads to be "running" and there's no way to bring back the stack traces.
+  * Deleting a breakpoint should result in its thread being removed.  At the very least, there should be a way to delete them.
+
+* Updating breakpoint locations
+  * TODO: Check this -- The Java agent will move breakpoints to the nearest line of code that can have a breakpoint.  This is not handled in this extension and will result in undefined/undesireable behaviour.
 
 ## Release Notes
 
