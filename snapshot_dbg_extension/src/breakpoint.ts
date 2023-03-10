@@ -84,8 +84,12 @@ export class CdbgBreakpoint {
         public localBreakpoint: DebugProtocol.Breakpoint,
         public serverBreakpoint: ServerBreakpoint) {}
 
-    public get id() {
+    public get id(): string {
         return this.serverBreakpoint.id;
+    }
+
+    public get numericId(): number {
+        return parseInt(this.id.substring(2));
     }
 
     public set id(bpId: string) {
@@ -134,7 +138,7 @@ export class CdbgBreakpoint {
         const serverBreakpoint = snapshot.val();
         const path = serverBreakpoint.location.path;
         const localBreakpoint: DebugProtocol.Breakpoint = {
-            verified: serverBreakpoint.isFinal,
+            verified: !serverBreakpoint.isFinalState, // final -> unverified; active -> verified
             line: serverBreakpoint.location.line,
             source: {
                 name: path,

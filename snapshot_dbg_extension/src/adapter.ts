@@ -14,6 +14,7 @@ import { DebugProtocol } from '@vscode/debugprotocol';
 import { Database } from 'firebase-admin/lib/database/database';
 import { addPwd, sleep, sourceBreakpointToString, stringToSourceBreakpoint, stripPwd } from './util';
 import { pickDebuggeeId } from './debuggeePicker';
+import { BreakpointManager } from './breakpointManager';
 
 const FIREBASE_APP_NAME = 'snapshotdbg';
 const INITIALIZE_TIME_ALLOWANCE_MS = 2 * 1000; // 2 seconds
@@ -44,13 +45,14 @@ export class SnapshotDebuggerSession extends DebugSession {
     private currentBreakpoint: CdbgBreakpoint | undefined = undefined;
     private currentFrameId: number = 0;
 
-    private breakpoints: Map<string, CdbgBreakpoint> = new Map();
     private initializedPaths: Map<string, boolean> = new Map();
     private previousSetBreakpointRequests: Map<string, DebugProtocol.SourceBreakpoint[]> = new Map();
 
     private setVariableType: boolean = false;
     private userPreferences: UserPreferences;
     private attachTime: number = Date.now();
+
+    private breakpointManager?: BreakpointManager;
 
     public constructor(userPreferences: UserPreferences) {
         super();
@@ -105,38 +107,18 @@ export class SnapshotDebuggerSession extends DebugSession {
         }
         this.debuggeeId = debuggeeId;
 
-        const activeBreakpointRef = this.db.ref(`cdbg/breakpoints/${this.debuggeeId}/active`);
+        // Set up breakpoint manager.
+        this.breakpointManager = new BreakpointManager(debuggeeId, this.db);
+        this.breakpointManager.onNewBreakpoint = (bp) => this.sendEvent(new BreakpointEvent('new', bp.localBreakpoint));
+        this.breakpointManager.onCompletedBreakpoint = (bp) => this.reportCompletedBreakpointToIDE(bp);
 
-        // Start with a direct read to avoid race conditions with local breakpoints.
-        // Note that this will result in a double-read of these breakpoints.
-        const activeSnapshot: DataSnapshot = await activeBreakpointRef.get();
-        activeSnapshot.forEach((breakpoint) => this.addInitServerBreakpoint(CdbgBreakpoint.fromSnapshot(breakpoint)));
-        console.log('Breakpoints loaded from server');
-
-        // Set up the subscription to get server-side updates.
-        activeBreakpointRef.on(
-            'child_added',
-            (snapshot: DataSnapshot) => {
-                console.log(`new breakpoint received from server: ${snapshot.key}`);
-                this.addServerBreakpoint(CdbgBreakpoint.fromSnapshot(snapshot));
-            });
-        activeBreakpointRef.on(
-            'child_removed',
-            async (snapshot: DataSnapshot) => {
-                const bpId = snapshot.key!;
-                console.log(`breakpoint removed from server: ${snapshot.key}`);
-
-                if (this.breakpoints.has(bpId)) {
-                    // Breakpoint finalized server-side.  Find out what to do next by loading /snapshot on the breakpoint.
-                    await this.loadSnapshotDetails(bpId);
-                    this.reportCompletedBreakpointToIDE(bpId);
-                } else {
-                    // Breakpoint removed from UI.  We should have already handled this in setBreakPointsRequest.
-                    this.breakpoints.delete(bpId);
-                }
-            });
+        // Load all breakpoints before setting up listeners to avoid race conditions.
+        // Breakpoints will be loaded twice.
+        await this.breakpointManager.loadServerBreakpoints();
+        this.breakpointManager.setUpServerListeners();
 
         console.log('Attached');
+        this.attachTime = Date.now()
         this.sendResponse(response);
         // At this point we're considered sufficiently initialized to take requests from the IDE.
         this.sendEvent(new InitializedEvent());
@@ -154,63 +136,6 @@ export class SnapshotDebuggerSession extends DebugSession {
         this.sendResponse(response);
     }
 
-    private async loadSnapshotDetails(bpId: string): Promise<void> {
-        // Just try loading it from the /snapshot table.
-        console.log('loading snapshot details');
-        const snapshotRef = this.db!.ref(`cdbg/breakpoints/${this.debuggeeId}/snapshot/${bpId}`);
-        let dataSnapshot: DataSnapshot = await snapshotRef.get();
-        let retryCount = 0;
-        while (!dataSnapshot.val() && retryCount < 4) {
-            await (sleep(250));
-            dataSnapshot = await snapshotRef.get();
-            retryCount += 1;
-            console.log(`retrying: ${retryCount}`);
-        }
-        if (dataSnapshot.val()) {
-            this.breakpoints.get(bpId)!.updateServerData(dataSnapshot);
-            console.log(`Loaded snapshot details for ${bpId}`);
-            console.log(this.breakpoints.get(bpId));
-        } else {
-            console.log(`Failed to load snapshot details for ${bpId}`);
-            // TODO: Figure out how to fail gracefully.
-        }
-    }
-
-    private addInitServerBreakpoint(breakpoint: CdbgBreakpoint): void {
-        const bpId = breakpoint.id!;
-        console.log(`adding initial breakpoint ${bpId}, state: ${breakpoint.isActive() ? 'active' : 'final'}`);
-        this.breakpoints.set(bpId, breakpoint);
-        console.log(this.breakpoints);
-    }
-
-    private addServerBreakpoint(breakpoint: CdbgBreakpoint): void {
-        const bpId = breakpoint.id!;
-        console.log(this.breakpoints);
-        if (this.breakpoints.has(bpId)) {
-            const bp = this.breakpoints.get(bpId)!;
-            console.log(`Breakpoint was already set; replacing server breakpoint data for ${bpId}`);
-            // This is completing the flow of a user setting a breakpoint in the UI, saving to db, and getting a confirmed update.
-            bp.serverBreakpoint = breakpoint.serverBreakpoint;
-            bp.hasUnsavedData = false;
-        } else {
-            console.log(`New breakpoint from unknown source: ${bpId}`);
-            this.breakpoints.set(bpId, breakpoint);
-            this.sendEvent(new BreakpointEvent('new', breakpoint.localBreakpoint));
-        }
-    }
-
-    /** Generate a safe numeric breakpoint ID for a new breakpoint.
-     * Breakpoints generated in quick succession resulting in collisions.  This function avoids that. */
-    private lastBreakpointId: number = 0;   
-    private generateBreakpointId(): number {
-        let attempt = Math.floor(Date.now() / 1000);
-        if (attempt <= this.lastBreakpointId) {
-            attempt = this.lastBreakpointId + 1;
-        }
-        this.lastBreakpointId = attempt;
-        return attempt;
-    }
-
     protected async setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): Promise<void> {
         console.log('setBreakPointsRequest');
         console.log(args);
@@ -219,8 +144,8 @@ export class SnapshotDebuggerSession extends DebugSession {
 
         const path = args.source.path!;
 
-        const initialized: boolean = this.initializedPaths.get(path) ?? (Date.now() - this.attachTime > INITIALIZE_TIME_ALLOWANCE_MS);
         // Simple hack: set initialized to `true` if enough time has passed since the attach request.
+        const initialized: boolean = this.initializedPaths.get(path) ?? (Date.now() - this.attachTime > INITIALIZE_TIME_ALLOWANCE_MS);
 
         if (initialized) {
             console.log(`Already initialized for this path.  Looking for user input (create or delete breakpoints)`);
@@ -234,116 +159,56 @@ export class SnapshotDebuggerSession extends DebugSession {
             for (const bp of newBPs) {
                 const cdbgBp = CdbgBreakpoint.fromSourceBreakpoint(args.source, stringToSourceBreakpoint(bp));
                 await this.setExpressions(cdbgBp);
-                this.saveBreakpointToServer(cdbgBp);
+                this.breakpointManager!.saveBreakpointToServer(cdbgBp);
             }
             const delBPs = [...prevBPSet].filter(bp => !currBPSet.has(bp));
             for (const bp of delBPs) {
                 const sourceBp = CdbgBreakpoint.fromSourceBreakpoint(args.source, stringToSourceBreakpoint(bp));
-                for (const cdbgBp of this.breakpoints.values()) {
+                for (const cdbgBp of this.breakpointManager!.getBreakpoints()) {
                     if (cdbgBp.matches(sourceBp)) {
-                        this.deleteBreakpointFromServer(cdbgBp.id);
+                        this.breakpointManager!.deleteBreakpointFromServer(cdbgBp.id);
                     }
                 }
             }
 
             this.previousSetBreakpointRequests.set(path, args.breakpoints ?? []);
+        } else {
+            console.log('Not initialized for this path yet.  Will attempt to synchronize between IDE and server');
 
-            this.sendResponse(response);
-            return;
+            const localBreakpoints = args.breakpoints?.map((bp) => CdbgBreakpoint.fromSourceBreakpoint(args.source, bp));
+            this.breakpointManager!.initializeWithLocalBreakpoints(localBreakpoints);
+
+            this.previousSetBreakpointRequests.set(path, args.breakpoints ?? []);
+            this.initializedPaths.set(path, true);
         }
 
-        console.log('Not initialized for this path yet.  Will attempt to synchronize between IDE and server');
-        // TODO: Tidy this part of the code.
-        const bpIds = new Set<string>();  // Keep track of which breakpoints we've seen.
-        for (const breakpoint of args.breakpoints ?? []) {
-            const cdbgBreakpoint = CdbgBreakpoint.fromSourceBreakpoint(args.source, breakpoint);
-
-            let found = false;
-            for (const bp of this.breakpoints.values()) {
-                if (bp.matches(cdbgBreakpoint)) {
-                    found = true;
-                    // TODO: This should be a state update instead.
-                    // bp.localBreakpoint = cdbgBreakpoint.localBreakpoint;
-
-                    bpIds.add(bp.id);  // Say that we've seen this breakpoint even if there's more than one match.
-                }
-            }
-
-            if (!found) {
-                // Server breakpoints should have already been loaded.
-                console.log('did not find a matching breakpoint on server; creating a new one.');
-                this.saveBreakpointToServer(cdbgBreakpoint);
-            }
-
-            response.body.breakpoints.push(cdbgBreakpoint.localBreakpoint);
-        }
-
-        const extraServerBreakpoints = new Set(this.breakpoints.keys());
-        bpIds.forEach((id) => extraServerBreakpoints.delete(id));
-
-        // TODO: Probably only report active breakpoints.
-        extraServerBreakpoints.forEach((id) => { this.reportNewBreakpointToIDE(id); });
-
-        this.previousSetBreakpointRequests.set(path, args.breakpoints ?? []);
-        this.initializedPaths.set(path, true);
-
+        // FIXME: Bug -- response.body.breakpoints order should match args.breakpoints order.
+        // Otherwise, breakpoints are liable to move around on the UI.
+        response.body.breakpoints = this.breakpointManager!.getBreakpoints().map((bp) => bp.localBreakpoint);
+        console.log('setBreakpointsResponse:');
+        console.log(response.body);
         this.sendResponse(response);
-
-        // TODO: This doesn't seem to be working properly?
-        for (const breakpoint of response.body.breakpoints) {
-            if (!breakpoint.verified) {
-                this.reportCompletedBreakpointToIDE(`b-${breakpoint.id}`);
-            }
-        }
     }
 
-    private reportCompletedBreakpointToIDE(bpId: string) {
-        const breakpoint = this.breakpoints.get(bpId)!;
-        const threadId = parseInt(bpId!.substring(2));
+    private reportCompletedBreakpointToIDE(bp: CdbgBreakpoint) {
+        const threadId = bp.numericId;
 
         const threadEvent = new ThreadEvent('started', threadId);
         this.sendEvent(threadEvent);
 
-        const stoppedEvent = new StoppedEvent(breakpoint.hasError() ? 'Error' : 'Snapshot', threadId);
+        const stoppedEvent = new StoppedEvent(bp.hasError() ? 'Error' : 'Snapshot', threadId);
         this.sendEvent(stoppedEvent);
 
         // TODO: Tidy this up; this state change shouldn't be in this method.
-        const localBreakpoint = breakpoint.localBreakpoint;
-        localBreakpoint.verified = false;
-        localBreakpoint.message = breakpoint.hasError() ? new StatusMessage(breakpoint.serverBreakpoint).message : 'Snapshot captured';
-        console.log(`reporting breakpoint ${localBreakpoint.id} as unverified`);
-        console.log(localBreakpoint);
-        const breakpointEvent = new BreakpointEvent('changed', localBreakpoint);
-        this.sendEvent(breakpointEvent);
+        // It should probably be in CdbgBreakpoint.fromSnapshot
+        bp.localBreakpoint.verified = false;
+        bp.localBreakpoint.message = bp.hasError() ? new StatusMessage(bp.serverBreakpoint).message : 'Snapshot captured';
+        console.log(`reporting breakpoint ${bp.id} as unverified`);
+        this.sendEvent(new BreakpointEvent('changed', bp.localBreakpoint));
     }
 
-    private reportNewBreakpointToIDE(bpId: string) {
-        const breakpoint = this.breakpoints.get(bpId);
-        if (!breakpoint) {
-            console.log(`attempting to report breakpoint to IDE but it is missing: ${bpId}`);
-            return;
-        }
-        const breakpointEvent = new BreakpointEvent('new', breakpoint.localBreakpoint);
-        this.sendEvent(breakpointEvent);
-    }
-
-    private saveBreakpointToServer(breakpoint: CdbgBreakpoint): void {
-        const numericId = this.generateBreakpointId();
-        const bpId = `b-${numericId}`;
-        console.log(`creating new breakpoint in firebase: ${bpId}`);
-        breakpoint.id = bpId;
-        breakpoint.localBreakpoint.id = numericId;
-        breakpoint.serverBreakpoint.createTimeUnixMsec = { '.sv': 'timestamp' };
-        breakpoint.hasUnsavedData = true;
-        this.breakpoints.set(bpId, breakpoint);
-        this.db?.ref(`cdbg/breakpoints/${this.debuggeeId}/active/${bpId}`).set(breakpoint.serverBreakpoint);
-        console.log(this.breakpoints);
-    }
-
-    private deleteBreakpointFromServer(bpId: string): void {
-        console.log(`deleting breakpoint from server: ${bpId}`);
-        this.breakpoints.delete(bpId);
-        this.db?.ref(`cdbg/breakpoints/${this.debuggeeId}/active/${bpId}`).set(null);
+    private reportNewBreakpointToIDE(bp: CdbgBreakpoint): void {
+        this.sendEvent(new BreakpointEvent('new', bp.localBreakpoint));
     }
 
     /**
@@ -361,7 +226,7 @@ export class SnapshotDebuggerSession extends DebugSession {
         response.body = response.body || {};
 
         const bpId = `b-${args.threadId}`;
-        const breakpoint = this.breakpoints.get(bpId);
+        const breakpoint = this.breakpointManager!.getBreakpoint(bpId);
         if (!breakpoint) {
             console.log(`Unexpected request for unknown breakpoint ${bpId}`);
             this.sendResponse(response);
@@ -636,6 +501,8 @@ export class SnapshotDebuggerSession extends DebugSession {
     /**
      * Provides the IDE the list of threads to display.
      * 
+     * TODO: The pattern of calling this function, particularly with suspended threads, needs to be understood.
+     * 
      * The threads to display will be the set of snapshots that have been captured or breakpoints with errors.
      * @param response 
      * @param request 
@@ -644,8 +511,8 @@ export class SnapshotDebuggerSession extends DebugSession {
         response.body = response.body || {};
 
         const threads: DebugProtocol.Thread[] = [];
-        for (const bpId of this.breakpoints.keys()) {
-            const bp = this.breakpoints.get(bpId)!;
+        for (const bp of this.breakpointManager!.getBreakpoints()) {
+            const bpId = bp.id;
             if (bp.hasSnapshot() || bp.hasError()) {
                 const thread: DebugProtocol.Thread = {
                     id: parseInt(bpId.substring(2)),
