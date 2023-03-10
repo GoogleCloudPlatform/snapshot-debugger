@@ -53,11 +53,14 @@
         "icon": "$(debug-alt)"
       }
     ],
-    "breakpoints": [{
+    "breakpoints": [
+      {
         "language": "javascript"
-      }, {
+      },
+      {
         "language": "python"
-      }, {
+      },
+      {
         "language": "java"
       }
     ],
