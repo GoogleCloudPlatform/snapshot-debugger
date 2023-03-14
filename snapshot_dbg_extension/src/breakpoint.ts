@@ -100,7 +100,7 @@ export class CdbgBreakpoint {
     public get path() {
         return this.localBreakpoint.source!.path;
     }
-    
+
     public get shortPath() {
         return this.serverBreakpoint.location.path;
     }

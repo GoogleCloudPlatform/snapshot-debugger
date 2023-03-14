@@ -5,7 +5,7 @@ class DebuggeeItem implements vscode.QuickPickItem {
     label: string;
     kind?: vscode.QuickPickItemKind | undefined;
 
-	constructor(public debuggeeId: string, public detail: string) {
+    constructor(public debuggeeId: string, public detail: string) {
         this.label = debuggeeId;
     }
 }
