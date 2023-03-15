@@ -110,7 +110,7 @@ export class BreakpointManager {
 
     /** Generate a safe numeric breakpoint ID for a new breakpoint.
      * Breakpoints generated in quick succession resulting in collisions.  This function avoids that. */
-    private lastBreakpointId: number = 0;   
+    private lastBreakpointId: number = 0;
     private generateBreakpointId(): number {
         let attempt = Math.floor(Date.now() / 1000);
         if (attempt <= this.lastBreakpointId) {

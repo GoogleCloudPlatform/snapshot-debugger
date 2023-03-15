@@ -230,14 +230,14 @@ export class SnapshotDebuggerSession extends DebugSession {
 
     /**
      * Provides the stack frames for a given "thread".
-     * 
+     *
      * In this implementation, the thread represents a snapshot.  This should only be called
      * with a threadId that maps to a breakpointId where the breakpoint has a snapshot or error.
-     * 
-     * @param response 
-     * @param args 
-     * @param request 
-     * @returns 
+     *
+     * @param response
+     * @param args
+     * @param request
+     * @returns
      */
     protected async stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
         response.body = response.body || {};
@@ -526,13 +526,13 @@ export class SnapshotDebuggerSession extends DebugSession {
 
     /**
      * Provides the IDE the list of threads to display.
-     * 
+     *
      * TODO: The pattern of calling this function, particularly with suspended threads, needs to be understood.
-     * 
+     *
      * The threads to display will be the set of snapshots that have been captured or breakpoints with errors.
-     * @param response 
-     * @param request 
-     */
+     * @param response
+     * @param request
+     *
     protected async threadsRequest(response: DebugProtocol.ThreadsResponse, request?: DebugProtocol.Request | undefined): Promise<void> {
         response.body = response.body || {};
 
@@ -544,7 +544,7 @@ export class SnapshotDebuggerSession extends DebugSession {
                     id: parseInt(bpId.substring(2)),
                     name: `${bp.shortPath}:${bp.line} - ${bp.id}`
                 };
-                
+
                 threads.push(thread);
             }
         }
