@@ -5,6 +5,10 @@ import { DebugProtocol } from '@vscode/debugprotocol';
 import { DataSnapshot } from 'firebase-admin/database';
 import { addPwd, stripPwd } from './util';
 
+function unixTimeToString(timeUnixMsec: number | undefined): string {
+    return timeUnixMsec ?  new Date(timeUnixMsec).toISOString() : "";
+}
+
 type StatusMessageRefersTo =
   | 'UNSPECIFIED'
   | 'BREAKPOINT_SOURCE_LOCATION'
@@ -60,6 +64,7 @@ export interface ServerBreakpoint {
     evaluatedExpressions?: Variable[];
     isFinalState: boolean;
     createTimeUnixMsec?: {} | number;
+    finalTimeUnixMsec?: number;
     variableTable?: Variable[];
 }
 
@@ -107,6 +112,18 @@ export class CdbgBreakpoint {
 
     public get line() {
         return this.localBreakpoint.line;
+    }
+
+    public get finalTime(): string {
+        return unixTimeToString(this.serverBreakpoint.finalTimeUnixMsec);
+    }
+
+    public isSnapshot(): boolean {
+        return !this.isLogpoint();
+    }
+
+    public isLogpoint(): boolean {
+        return this.serverBreakpoint.action == 'LOG';
     }
 
     public hasSnapshot(): boolean {

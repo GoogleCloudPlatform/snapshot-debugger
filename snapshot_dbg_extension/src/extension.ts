@@ -1,8 +1,8 @@
 import { UserRecord } from 'firebase-admin/lib/auth/user-record';
 import * as vscode from 'vscode';
-import { WorkspaceFolder, DebugConfiguration, ProviderResult, CancellationToken } from 'vscode';
+import { WorkspaceFolder, DebugConfiguration, DebugSession, ProviderResult, CancellationToken } from 'vscode';
 
-import { SnapshotDebuggerSession } from './adapter';
+import { CustomRequest, SnapshotDebuggerSession } from './adapter';
 import { UserPreferences } from './userPreferences';
 
 // This method is called when the extension is activated.
@@ -21,6 +21,15 @@ export function activate(context: vscode.ExtensionContext) {
         } else {
             // TODO: Figure out how to fail gracefully.
             return undefined;
+        }
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('extension.snapshotdbg.viewHistoricalSnapshot', async args => {
+        const activeDebugSession: DebugSession | undefined = vscode.debug.activeDebugSession;
+        if (activeDebugSession) {
+            activeDebugSession.customRequest(CustomRequest.RUN_HISTORICAL_SNAPSHOT_PICKER);
+        } else {
+            console.log("Unexpected no active SnapshotDebugger session.")
         }
     }));
 

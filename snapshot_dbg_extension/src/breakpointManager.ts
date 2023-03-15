@@ -56,6 +56,13 @@ export class BreakpointManager {
 
     }
 
+    public async addHistoricalSnapshot(cdbgBreakpoint: CdbgBreakpoint): Promise<void> {
+        const bpId = cdbgBreakpoint.id;
+        this.addServerBreakpoint(cdbgBreakpoint);
+        await this.loadSnapshotDetails(bpId);
+        if (this.onCompletedBreakpoint) { this.onCompletedBreakpoint(this.getBreakpoint(bpId)!); }
+    }
+
     initializeWithLocalBreakpoints(localBreakpoints: CdbgBreakpoint[] | undefined) {
         const bpIds = new Set<string>();  // Keep track of which breakpoints we've seen.
         for (const cdbgBreakpoint of localBreakpoints ?? []) {

@@ -5,6 +5,7 @@ import {
 } from '@vscode/debugadapter';
 import * as vscode from 'vscode';
 import { CdbgBreakpoint, Variable as CdbgVariable} from './breakpoint';
+import { pickSnapshot } from './snapshotPicker';
 import { StatusMessage } from './statusMessage';
 import { UserPreferences } from './userPreferences';
 import { initializeApp, cert, App, deleteApp } from 'firebase-admin/app';
@@ -18,6 +19,10 @@ import { BreakpointManager } from './breakpointManager';
 
 const FIREBASE_APP_NAME = 'snapshotdbg';
 const INITIALIZE_TIME_ALLOWANCE_MS = 2 * 1000; // 2 seconds
+
+export enum CustomRequest {
+    RUN_HISTORICAL_SNAPSHOT_PICKER = 'runHistoricalSnapshotPicker',
+}
 
 /**
  * This interface describes the snapshot-debugger specific attach attributes
@@ -82,6 +87,18 @@ export class SnapshotDebuggerSession extends DebugSession {
         console.log('Initialized');
     }
 
+    protected customRequest(command: string, response: DebugProtocol.Response, args: any, request?: DebugProtocol.Request | undefined): void {
+        console.log(`Received custom request: ${command}`);
+        switch (command) {
+            case CustomRequest.RUN_HISTORICAL_SNAPSHOT_PICKER:
+                this.runPickSnapshot();
+                break;
+
+            default:
+                console.log(`Unknown custom request: ${command}`);
+        }
+    }
+
     protected async attachRequest(response: DebugProtocol.AttachResponse, args: IAttachRequestArguments) {
         const serviceAccount = require(args.serviceAccountPath);
         const projectId = serviceAccount['project_id'];
@@ -109,7 +126,7 @@ export class SnapshotDebuggerSession extends DebugSession {
 
         // Set up breakpoint manager.
         this.breakpointManager = new BreakpointManager(debuggeeId, this.db);
-        this.breakpointManager.onNewBreakpoint = (bp) => this.sendEvent(new BreakpointEvent('new', bp.localBreakpoint));
+        this.breakpointManager.onNewBreakpoint = (bp) => this.reportNewBreakpointToIDE(bp);
         this.breakpointManager.onCompletedBreakpoint = (bp) => this.reportCompletedBreakpointToIDE(bp);
 
         // Load all breakpoints before setting up listeners to avoid race conditions.
@@ -496,6 +513,15 @@ export class SnapshotDebuggerSession extends DebugSession {
         };
 
         return expressions;
+    }
+
+    public async runPickSnapshot() {
+        if (this.db && this.debuggeeId) {
+            const snapshot = await pickSnapshot(this.db, this.debuggeeId);
+            if (snapshot) {
+                await this.breakpointManager?.addHistoricalSnapshot(snapshot);
+            }
+        }
     }
 
     /**

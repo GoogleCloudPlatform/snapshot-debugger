@@ -33,9 +33,12 @@
       ],
       "debug/toolBar": [
         {
+          "command": "extension.snapshotdbg.viewHistoricalSnapshot",
+          "icon": "$(history)"
+        },
+        {
           "command": "extension.snapshotdbg.toggleExpressions",
-          "group": "navigation",
-          "icon": "$(debug-alt)"
+          "icon": "media/expr.svg"
         }
       ]
     },
@@ -48,9 +51,14 @@
         "icon": "$(debug-alt)"
       },
       {
+        "command": "extension.snapshotdbg.viewHistoricalSnapshot",
+        "title": "View the snapshot of a historical already completed breakpoint.",
+        "icon": "$(history)"
+      },
+      {
         "command": "extension.snapshotdbg.toggleExpressions",
         "title": "Enable/Disable Expressions Prompt On Breakpoint Creation",
-        "icon": "$(debug-alt)"
+        "icon": "./expr.svg"
       }
     ],
     "breakpoints": [
