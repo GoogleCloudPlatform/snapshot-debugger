@@ -532,7 +532,7 @@ export class SnapshotDebuggerSession extends DebugSession {
      * The threads to display will be the set of snapshots that have been captured or breakpoints with errors.
      * @param response
      * @param request
-     *
+     */
     protected async threadsRequest(response: DebugProtocol.ThreadsResponse, request?: DebugProtocol.Request | undefined): Promise<void> {
         response.body = response.body || {};
 
