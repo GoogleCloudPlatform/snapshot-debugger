@@ -175,7 +175,9 @@ export class SnapshotDebuggerSession extends DebugSession {
             const newBPs = [...currBPSet].filter(bp => !prevBPSet.has(bp));
             for (const bp of newBPs) {
                 const cdbgBp = CdbgBreakpoint.fromSourceBreakpoint(args.source, stringToSourceBreakpoint(bp));
-                await this.setExpressions(cdbgBp);
+                if (cdbgBp.isSnapshot()) {
+                    await this.setExpressions(cdbgBp);
+                }
                 this.breakpointManager!.saveBreakpointToServer(cdbgBp);
             }
             const delBPs = [...prevBPSet].filter(bp => !currBPSet.has(bp));

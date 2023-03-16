@@ -3,6 +3,8 @@ import {
 } from '@vscode/debugadapter';
 import { DebugProtocol } from '@vscode/debugprotocol';
 import { DataSnapshot } from 'firebase-admin/database';
+import { Server } from 'http';
+import { LogpointMessage } from './logpointMessage';
 import { addPwd, stripPwd } from './util';
 
 function unixTimeToString(timeUnixMsec: number | undefined): string {
@@ -55,10 +57,12 @@ interface ServerStackFrame {
 
 export interface ServerBreakpoint {
     id: string;
-    action: string;
+    action: string;  // 'CAPTURE' | 'LOG';
     location: ServerLocation;
     condition?: string;
     expressions?: string[];
+    logMessageFormat?: string;
+    logLevel?: string;  // 'INFO' | 'WARNING' | 'ERROR';
     status?: StatusMessage;
     stackFrames?: ServerStackFrame[];
     evaluatedExpressions?: Variable[];
@@ -152,18 +156,21 @@ export class CdbgBreakpoint {
     }
 
     public static fromSnapshot(snapshot: DataSnapshot): CdbgBreakpoint {
-        const serverBreakpoint = snapshot.val();
+        const serverBreakpoint: ServerBreakpoint = snapshot.val();
         const path = serverBreakpoint.location.path;
+        const logpointMessage = serverBreakpoint.logMessageFormat ? LogpointMessage.fromBreakpoint(serverBreakpoint) : undefined;
         const localBreakpoint: DebugProtocol.Breakpoint = {
             verified: !serverBreakpoint.isFinalState, // final -> unverified; active -> verified
             line: serverBreakpoint.location.line,
             source: {
                 name: path,
                 path: addPwd(path)
-            }
+            },
+            ...(logpointMessage && {logMessage: logpointMessage.userMessage})
         };
         const bp = new CdbgBreakpoint(localBreakpoint, serverBreakpoint);
         bp.hasServerData = true;
+        console.log("JCB: ", localBreakpoint)
 
         // TODO: Set message on localBreakpoint.
 
@@ -182,15 +189,21 @@ export class CdbgBreakpoint {
             }
         };
 
+        const logpointMessage = sourceBreakpoint.logMessage ? LogpointMessage.fromUserString(sourceBreakpoint.logMessage) : undefined;
+        const expressions = logpointMessage?.expressions.length ? logpointMessage.expressions : undefined;
+
         const serverBreakpoint = {
             id: bpId,
-            action: 'CAPTURE',
+            action: sourceBreakpoint.logMessage ? 'LOG' : 'CAPTURE',
             isFinalState: false,
+            logLevel: 'ERROR',
             location: {
                 path: stripPwd(source.path!),
                 line: sourceBreakpoint.line,
             },
-            ...(sourceBreakpoint.condition && {condition: sourceBreakpoint.condition})
+            ...(sourceBreakpoint.condition && {condition: sourceBreakpoint.condition}),
+            ...(logpointMessage && {logMessageFormat: logpointMessage.logMessageFormat}),
+            ...(expressions && {expressions}),
         };
 
         const bp = new CdbgBreakpoint(localBreakpoint, serverBreakpoint);
