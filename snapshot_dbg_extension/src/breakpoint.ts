@@ -170,7 +170,6 @@ export class CdbgBreakpoint {
         };
         const bp = new CdbgBreakpoint(localBreakpoint, serverBreakpoint);
         bp.hasServerData = true;
-        console.log("JCB: ", localBreakpoint)
 
         // TODO: Set message on localBreakpoint.
 
