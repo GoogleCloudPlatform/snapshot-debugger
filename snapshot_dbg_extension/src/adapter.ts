@@ -1,7 +1,7 @@
 import {
     DebugSession,
     InitializedEvent, StoppedEvent, BreakpointEvent,
-    Thread, StackFrame, Scope, Source, Variable, ThreadEvent
+    Thread, StackFrame, Scope, Source, Variable, ThreadEvent, ContinuedEvent
 } from '@vscode/debugadapter';
 import * as vscode from 'vscode';
 import { CdbgBreakpoint, SourceBreakpointExtraParams, Variable as CdbgVariable} from './breakpoint';
@@ -80,6 +80,7 @@ export class SnapshotDebuggerSession extends DebugSession {
         response.body = response.body || {};
 
         response.body.supportsSteppingGranularity = false;
+        response.body.supportsStepInTargetsRequest = false;
         response.body.supportsConditionalBreakpoints = true;
         response.body.supportsLogPoints = true;
         response.body.supportsValueFormattingOptions = false;
@@ -153,6 +154,30 @@ export class SnapshotDebuggerSession extends DebugSession {
         }
 
         this.sendResponse(response);
+    }
+
+    protected async nextRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
+        // This handler maps to the 'Step Over' debugger toolbar button.
+        console.log("Received Next request: ", args);
+        await vscode.window.showInformationMessage("This operation is not supported by the Snapshot Debugger", {"modal": true});
+        this.sendResponse(response);
+        this.sendEvent(new ContinuedEvent(args.threadId));
+    }
+
+    protected async stepInRequest(response: DebugProtocol.StepInResponse, args: DebugProtocol.StepInArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
+        // This handler maps to the 'Step Into' debugger toolbar button.
+        console.log("Received StepIn request: ", args);
+        await vscode.window.showInformationMessage("This operation is not supported by the Snapshot Debugger", {"modal": true});
+        this.sendResponse(response);
+        this.sendEvent(new ContinuedEvent(args.threadId));
+    }
+
+    protected async stepOutRequest(response: DebugProtocol.StepOutResponse, args: DebugProtocol.StepOutArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
+        // This handler maps to the 'Step Out' debugger toolbar button.
+        console.log("Received StepOut request: ", args);
+        await vscode.window.showInformationMessage("This operation is not supported by the Snapshot Debugger", {"modal": true});
+        this.sendResponse(response);
+        this.sendEvent(new ContinuedEvent(args.threadId));
     }
 
     protected async setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): Promise<void> {
