@@ -147,6 +147,7 @@ export class SnapshotDebuggerSession extends DebugSession {
     protected async disconnectRequest(response: DebugProtocol.DisconnectResponse, args: DebugProtocol.DisconnectArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
         // A new instance of this class is created for each debugging session.
         // Treat this function as a desctructor to clean up any resources that require cleanup.
+        console.log("Received Disconnect request: ", args);
 
         if (this.app) {
             deleteApp(this.app);
@@ -154,6 +155,17 @@ export class SnapshotDebuggerSession extends DebugSession {
         }
 
         this.sendResponse(response);
+    }
+
+    protected async pauseRequest(response: DebugProtocol.PauseResponse, args: DebugProtocol.PauseArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
+        // This handler maps to the 'Pause' debugger toolbar button. As a
+        // threadID is required, this handler will only ever run once we've
+        // notified the UI of a thread (IE provided it with a breakpoint ID
+        // which acts as a thread ID).
+        console.log("Received Pause request: ", args);
+        await vscode.window.showInformationMessage("This operation is not supported by the Snapshot Debugger", {"modal": true});
+        this.sendResponse(response);
+        this.sendEvent(new ContinuedEvent(args.threadId));
     }
 
     protected async nextRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
