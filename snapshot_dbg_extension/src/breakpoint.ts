@@ -72,6 +72,11 @@ export interface ServerBreakpoint {
     variableTable?: Variable[];
 }
 
+export interface SourceBreakpointExtraParams {
+  logLevel?: string;
+  expressions?: string[];
+}
+
 const kUnknown = 'unknown';
 
 export class CdbgBreakpoint {
@@ -176,7 +181,7 @@ export class CdbgBreakpoint {
         return bp;
     }
 
-    public static fromSourceBreakpoint(source: DebugProtocol.Source, sourceBreakpoint: DebugProtocol.SourceBreakpoint): CdbgBreakpoint {
+    public static fromSourceBreakpoint(source: DebugProtocol.Source, sourceBreakpoint: DebugProtocol.SourceBreakpoint, extraParams: SourceBreakpointExtraParams = {}): CdbgBreakpoint {
         const bpId = kUnknown;
 
         const localBreakpoint: DebugProtocol.Breakpoint = {
@@ -189,17 +194,26 @@ export class CdbgBreakpoint {
         };
 
         const logpointMessage = sourceBreakpoint.logMessage ? LogpointMessage.fromUserString(sourceBreakpoint.logMessage) : undefined;
-        const expressions = logpointMessage?.expressions.length ? logpointMessage.expressions : undefined;
+
+        let expressions: string[]|undefined = undefined;
+        let logLevel: string|undefined = undefined;
+
+        if (logpointMessage) {
+            expressions = logpointMessage.expressions.length ? logpointMessage.expressions : undefined;
+            logLevel = extraParams.logLevel;
+        } else {
+            expressions = extraParams.expressions;
+        }
 
         const serverBreakpoint = {
             id: bpId,
             action: sourceBreakpoint.logMessage ? 'LOG' : 'CAPTURE',
             isFinalState: false,
-            logLevel: 'ERROR',
             location: {
                 path: stripPwd(source.path!),
                 line: sourceBreakpoint.line,
             },
+            ...(logLevel && {logLevel}),
             ...(sourceBreakpoint.condition && {condition: sourceBreakpoint.condition}),
             ...(logpointMessage && {logMessageFormat: logpointMessage.logMessageFormat}),
             ...(expressions && {expressions}),

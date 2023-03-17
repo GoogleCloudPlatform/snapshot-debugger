@@ -4,7 +4,9 @@ import {
     Thread, StackFrame, Scope, Source, Variable, ThreadEvent
 } from '@vscode/debugadapter';
 import * as vscode from 'vscode';
-import { CdbgBreakpoint, Variable as CdbgVariable} from './breakpoint';
+import { CdbgBreakpoint, SourceBreakpointExtraParams, Variable as CdbgVariable} from './breakpoint';
+import { promptUserForExpressions } from './expressionsPrompter';
+import { pickLogLevel } from './logLevelPicker';
 import { pickSnapshot } from './snapshotPicker';
 import { StatusMessage } from './statusMessage';
 import { UserPreferences } from './userPreferences';
@@ -174,10 +176,15 @@ export class SnapshotDebuggerSession extends DebugSession {
 
             const newBPs = [...currBPSet].filter(bp => !prevBPSet.has(bp));
             for (const bp of newBPs) {
-                const cdbgBp = CdbgBreakpoint.fromSourceBreakpoint(args.source, stringToSourceBreakpoint(bp));
-                if (cdbgBp.isSnapshot()) {
-                    await this.setExpressions(cdbgBp);
+                const sourceBreakpoint = stringToSourceBreakpoint(bp);
+                const extraParams: SourceBreakpointExtraParams = {};
+                if (sourceBreakpoint.logMessage) {
+                    extraParams.logLevel = await pickLogLevel();
+                } else {
+                    extraParams.expressions = await this.runExpressionsPrompt();
                 }
+
+                const cdbgBp = CdbgBreakpoint.fromSourceBreakpoint(args.source, sourceBreakpoint, extraParams);
                 this.breakpointManager!.saveBreakpointToServer(cdbgBp);
             }
             const delBPs = [...prevBPSet].filter(bp => !currBPSet.has(bp));
@@ -480,41 +487,12 @@ export class SnapshotDebuggerSession extends DebugSession {
     }
 
 
-    private async setExpressions(cdbgBp: CdbgBreakpoint): Promise<void> {
+    private async runExpressionsPrompt(): Promise<string[]|undefined> {
         if (!this.userPreferences.isExpressionsPromptEnabled) {
-            return;
+            return undefined;
         }
 
-        const expressions = await this.promptUserForExpressions();
-
-        if (expressions) {
-            cdbgBp.serverBreakpoint.expressions = expressions;
-        }
-    }
-
-    private async promptUserForExpressions(): Promise<string[]|undefined> {
-        let expressions: string[] = [];
-
-        while (true) {
-            const title = (expressions.length == 0) ?
-                "Add an Expression to the Breakpoint" : "Add Another Expression to the Breakpoint";
-
-            const prompt = (expressions.length == 0) ?
-                "Press 'Escape' or enter an empty line if you do not wish to add an expression." :
-                "Press 'Escape' or enter an empty line if you do not wish to add any more expressions.";
-
-            let expression = await vscode.window.showInputBox({title, prompt});
-
-            expression = expression?.trim();
-
-            if (!expression) {
-                break;
-            }
-
-            expressions.push(expression);
-        };
-
-        return expressions;
+        return await promptUserForExpressions();
     }
 
     public async runPickSnapshot() {
