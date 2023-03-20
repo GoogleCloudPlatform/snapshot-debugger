@@ -58,7 +58,7 @@
       {
         "command": "extension.snapshotdbg.toggleExpressions",
         "title": "Enable/Disable Expressions Prompt On Breakpoint Creation",
-        "icon": "./expr.svg"
+        "icon": "media/expr.svg"
       }
     ],
     "breakpoints": [
