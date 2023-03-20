@@ -17,6 +17,6 @@ export async function pickLogLevel(): Promise<string | undefined> {
             {'label': `${level} $(${level.toLowerCase()})`}
         ));
 
-    const selection = await vscode.window.showQuickPick(items);
+    const selection = await vscode.window.showQuickPick(items, {'title': 'Select Log Level'});
     return selection?.label.split(' ')[0].trim();
 }

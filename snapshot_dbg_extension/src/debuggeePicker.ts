@@ -28,7 +28,7 @@ async function fetchDebuggees(db: Database): Promise<DebuggeeItem[]> {
 }
 
 export async function pickDebuggeeId(db: Database): Promise<string | undefined> {
-    const selection = await vscode.window.showQuickPick(fetchDebuggees(db));
+    const selection = await vscode.window.showQuickPick(fetchDebuggees(db), {'title': 'Select Debuggee'});
     if (selection) {
         console.log(`Selected Debuggee: ${selection.debuggeeId}`);
         return selection.debuggeeId;
