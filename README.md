@@ -678,4 +678,10 @@ Deleted 4 snapshots.
 
 See [Snapshot Debugger Troubleshooting][troubleshooting]
 
-[troubleshooting]: https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/main/docs/troubleshooting.md
+[troubleshooting]: docs/troubleshooting.md
+
+## Firebase DB Schema
+
+See [Snapshot Debugger Firebase DB Schema][schema]
+
+[schema]: docs/SCHEMA.md
