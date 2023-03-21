@@ -41,17 +41,43 @@ cdbg
 └── schema_version: "<version_number>"
 ```
 
+## cdbg/schema_version
+
+Specifies the schema version of the database. The presence of this field is also
+used as an indication that the database has been configured by the Snapshot
+Debugger's `init` CLI command.
+
+## cdbg/debuggees
+
+This node contains information about the debuggees themselves.
+
+### Debuggee Entity
+
+The debuggee entity is fully documented in protobuf form
+[here][debuggee_entity]. The data in the Firebase DB is in JSON format, which
+protobuf maps to as described [here][json_mapping].
+
+Of particular note it is up to the agent to keep the `lastUpdateTimeUnixMsec`
+field up to date by refreshing it at least once per hour. This CLI uses this
+value to determine which debuggee's are active.
+
 ## cdbg/breakpoints
 
 This node contains the breakpoints for debuggees stored on a per debuggee id
 basis. The breakpoints per debuggee are grouped into `active`, `final` and
 `snapshot`.
 
-To note, breakpoints can represent either a `Snapshot` or a `Logpoint`. The
-value of the `action` field of the breakpoint makes this determination, which
-will be either `CAPTURE` or `LOG`. If the `action` field is not populated the
-agents will default to `CAPTURE`.
+### Breakpoint Entity
 
+The breakpoint entity is fully documented in protobuf form
+[here][breakpoint_entity]. The data in the Firebase DB is in JSON format, which
+protobuf maps to as described [here][json_mapping]. One thing to note
+is how Firebase stores [arrays][firebase_arrays].
+
+Breakpoints can represent either a `Snapshot` or a `Logpoint`. The value of the
+`action` field of the breakpoint makes this determination, which will be either
+`CAPTURE` or `LOG`. If the `action` field is not populated the agents will
+default to `CAPTURE`.
 
 ### cdbg/breakpoints/debuggee_id/active
 
@@ -93,33 +119,6 @@ This node contains all finalized `Snapshot` breakpoints until deleted by the
 user. For finalized `Snapshot` breakpoints that have capture data, the full data
 is present here, meaning the `stackFrames`, `variableTable` and
 `evaluatedExpressions` are present, unlike under the `final` node.
-
-### Breakpoint Entity
-
-The breakpoint entity is fully documented in protobuf form
-[here][breakpoint_entity]. The data in the Firebase DB is in JSON format, which
-protobuf maps to as described [here][json_mapping]. One thing to note
-is how Firebase stores [arrays][firebase_arrays].
-
-## cdbg/debuggees
-
-This node contains information about the debuggees themselves. See the section
-below for the debuggee specification. Of particular note it is up to the agent
-to keep the `lastUpdateTimeUnixMsec` field up to date by refreshing it at least
-once per hour. This CLI uses this value to determine which debuggee's are
-active.
-
-### Debuggee Entity
-
-The debuggee entity is fully documented in protobuf form
-[here][debuggee_entity]. The data in the Firebase DB is in JSON format, which
-protobuf maps to as described [here][json_mapping].
-
-## cdbg/schema_version
-
-Specifies the schema version of the database. The presence of this field is also
-used as an indication that the database has been configured by the Snapshot
-Debugger's `init` CLI command.
 
 [breakpoint_entity]: https://github.com/GoogleCloudPlatform/cloud-debug-java/blob/01148711d4d3f9ee566d21b21b80079a7b7206b1/schema/data.proto#L306
 [debuggee_entity]: https://github.com/GoogleCloudPlatform/cloud-debug-java/blob/01148711d4d3f9ee566d21b21b80079a7b7206b1/schema/data.proto#L439
