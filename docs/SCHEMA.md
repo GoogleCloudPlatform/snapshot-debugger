@@ -49,17 +49,22 @@ Debugger's `init` CLI command.
 
 ## cdbg/debuggees
 
-This node contains information about the debuggees themselves.
+This node contains information about the debuggees themselves. Upon startup the
+agent computes a consistent debuggee ID, and `registers` itself in the DB.  It
+does this by first checking if an entry already exists for the given ID. If it
+does the agent simply updates the by writing the `registrationTimeUnixMsec` to
+the current time, otherwise it writes out the full debuggee details.
+
+It is also the responsibility of the agent to keep the `lastUpdateTimeUnixMsec`
+field up to date by refreshing it at least once per hour while the agent is
+running. The Snapshot Debugger CLI uses this value to determine which debuggees
+are active.
 
 ### Debuggee Entity
 
 The debuggee entity is fully documented in protobuf form
 [here][debuggee_entity]. The data in the Firebase DB is in JSON format, which
 protobuf maps to as described [here][json_mapping].
-
-Of particular note it is up to the agent to keep the `lastUpdateTimeUnixMsec`
-field up to date by refreshing it at least once per hour. The Snapshot Debugger
-CLI uses this value to determine which debuggees are active.
 
 ## cdbg/breakpoints
 
