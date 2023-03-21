@@ -102,6 +102,10 @@ export class BreakpointManager {
         console.log(this.breakpoints);
     }
 
+    public deleteBreakpointLocally(id: string): void {
+        this.breakpoints.delete(id);
+    }
+
     public deleteBreakpointFromServer(bpId: string): void {
         console.log(`deleting breakpoint from server: ${bpId}`);
         this.breakpoints.delete(bpId);

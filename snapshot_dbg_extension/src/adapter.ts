@@ -157,6 +157,15 @@ export class SnapshotDebuggerSession extends DebugSession {
         this.sendResponse(response);
     }
 
+    protected continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments, request?: DebugProtocol.Request | undefined): void {
+        console.log("Received continue request: ", args);
+        const bp = this.breakpointManager?.getBreakpoint(`b-${args.threadId}`);
+        if (bp) {
+            this.removeBreakpoint(bp);
+        }
+        this.sendResponse(response);
+    }
+
     protected async pauseRequest(response: DebugProtocol.PauseResponse, args: DebugProtocol.PauseArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
         // This handler maps to the 'Pause' debugger toolbar button. As a
         // threadID is required, this handler will only ever run once we've
@@ -272,6 +281,18 @@ export class SnapshotDebuggerSession extends DebugSession {
 
     private reportNewBreakpointToIDE(bp: CdbgBreakpoint): void {
         this.sendEvent(new BreakpointEvent('new', bp.localBreakpoint));
+    }
+
+    private removeBreakpoint(bp: CdbgBreakpoint) {
+        this.breakpointManager?.deleteBreakpointLocally(bp.id);
+        this.removeBreakpointFromIDE(bp);
+    }
+
+    private removeBreakpointFromIDE(bp: CdbgBreakpoint) {
+        const threadId = bp.numericId;
+
+        this.sendEvent(new ThreadEvent('exited', threadId));
+        this.sendEvent(new BreakpointEvent('removed', bp.localBreakpoint));
     }
 
     /**
