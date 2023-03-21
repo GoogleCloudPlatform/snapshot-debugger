@@ -58,14 +58,13 @@ The debuggee entity is fully documented in protobuf form
 protobuf maps to as described [here][json_mapping].
 
 Of particular note it is up to the agent to keep the `lastUpdateTimeUnixMsec`
-field up to date by refreshing it at least once per hour. This CLI uses this
-value to determine which debuggee's are active.
+field up to date by refreshing it at least once per hour. The Snapshot Debugger
+CLI uses this value to determine which debuggees are active.
 
 ## cdbg/breakpoints
 
 This node contains the breakpoints for debuggees stored on a per debuggee id
-basis. The breakpoints per debuggee are grouped into `active`, `final` and
-`snapshot`.
+basis. The breakpoints are grouped into `active`, `final` and `snapshot`.
 
 ### Breakpoint Entity
 
