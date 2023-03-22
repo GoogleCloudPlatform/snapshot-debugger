@@ -63,6 +63,15 @@ export class BreakpointManager {
         if (this.onCompletedBreakpoint) { this.onCompletedBreakpoint(this.getBreakpoint(bpId)!); }
     }
 
+    // Supports the case of the step operations we don't support. The breakpoint passed in here is already
+    // complete and full filled in. We just need to store it and get it reloaded in the UI.
+    public loadCompleteSnapshot(cdbgBreakpoint: CdbgBreakpoint): void {
+        const bpId = cdbgBreakpoint.id;
+        this.breakpoints.set(bpId, cdbgBreakpoint);
+        if (this.onNewBreakpoint) { this.onNewBreakpoint(cdbgBreakpoint); }
+        if (this.onCompletedBreakpoint) { this.onCompletedBreakpoint(cdbgBreakpoint); }
+    }
+
     initializeWithLocalBreakpoints(localBreakpoints: CdbgBreakpoint[] | undefined) {
         const bpIds = new Set<string>();  // Keep track of which breakpoints we've seen.
         for (const cdbgBreakpoint of localBreakpoints ?? []) {
