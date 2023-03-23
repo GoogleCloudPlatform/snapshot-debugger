@@ -173,7 +173,6 @@ export class CdbgBreakpoint {
                 name: path,
                 path: addPwd(path)
             },
-            ...(logpointMessage && {logMessage: logpointMessage.userMessage})
         };
 
         // Here we create a DebugProtocol.SourceBreakpoint represention that the IDE will obtain. Since we're
