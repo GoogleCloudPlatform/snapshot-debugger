@@ -6,7 +6,7 @@ import {
 import * as vscode from 'vscode';
 import { CdbgBreakpoint, SourceBreakpointExtraParams, Variable as CdbgVariable} from './breakpoint';
 import { promptUserForExpressions } from './expressionsPrompter';
-//import { IdeBreakpoints } from './ideBreakpoints';
+import { IdeBreakpoints } from './ideBreakpoints';
 import { pickLogLevel } from './logLevelPicker';
 import { pickSnapshot } from './snapshotPicker';
 import { StatusMessage } from './statusMessage';
@@ -54,7 +54,7 @@ export class SnapshotDebuggerSession extends DebugSession {
     private currentFrameId: number = 0;
 
     private initializedPaths: Map<string, boolean> = new Map();
-    private previousSetBreakpointRequests: Map<string, DebugProtocol.SourceBreakpoint[]> = new Map();
+    private ideBreakpoints: IdeBreakpoints = new IdeBreakpoints();
 
     private setVariableType: boolean = false;
     private userPreferences: UserPreferences;
@@ -212,44 +212,42 @@ export class SnapshotDebuggerSession extends DebugSession {
 
         if (initialized) {
             console.log(`Already initialized for this path.  Looking for user input (create or delete breakpoints)`);
-            const prevBPs: DebugProtocol.SourceBreakpoint[] = this.previousSetBreakpointRequests.get(path) ?? [];
-            const currBPs: DebugProtocol.SourceBreakpoint[] = args.breakpoints ?? [];
+            const bpDiff = this.ideBreakpoints.applyNewIdeSnapshot(path, args.breakpoints ?? []);
 
-            const prevBPSet = new Set(prevBPs.map(bp => sourceBreakpointToString(bp)));
-            const currBPSet = new Set(currBPs.map(bp => sourceBreakpointToString(bp)));
-
-            const newBPs = [...currBPSet].filter(bp => !prevBPSet.has(bp));
-            for (const bp of newBPs) {
-                const sourceBreakpoint = stringToSourceBreakpoint(bp);
+            for (const bp of bpDiff.added) {
                 const extraParams: SourceBreakpointExtraParams = {};
-                if (sourceBreakpoint.logMessage) {
+                if (bp.logMessage) {
                     extraParams.logLevel = await pickLogLevel();
                 } else {
                     extraParams.expressions = await this.runExpressionsPrompt();
                 }
 
-                const cdbgBp = CdbgBreakpoint.fromSourceBreakpoint(args.source, sourceBreakpoint, extraParams);
+                const cdbgBp = CdbgBreakpoint.fromSourceBreakpoint(args.source, bp, extraParams);
                 this.breakpointManager!.saveBreakpointToServer(cdbgBp);
             }
-            const delBPs = [...prevBPSet].filter(bp => !currBPSet.has(bp));
-            for (const bp of delBPs) {
-                const sourceBp = CdbgBreakpoint.fromSourceBreakpoint(args.source, stringToSourceBreakpoint(bp));
+
+            for (const bp of bpDiff.deleted) {
+                const sourceBp = CdbgBreakpoint.fromSourceBreakpoint(args.source, bp);
                 for (const cdbgBp of this.breakpointManager!.getBreakpoints()) {
                     if (cdbgBp.matches(sourceBp)) {
                         this.breakpointManager!.deleteBreakpointFromServer(cdbgBp.id);
                     }
                 }
             }
-
-            this.previousSetBreakpointRequests.set(path, args.breakpoints ?? []);
         } else {
             console.log('Not initialized for this path yet.  Will attempt to synchronize between IDE and server');
 
-            const localBreakpoints = args.breakpoints?.map((bp) => CdbgBreakpoint.fromSourceBreakpoint(args.source, bp));
+            const sourceBreakpoints = args.breakpoints ?? [];
+
+            // Ordering here matters. We need to do the applyNewIdeSnapshot
+            // before the call to initializeWithLocalBreakpoints as that second
+            // call will cause breakpoints to be added to this.ideBreakpoints,
+            // and applyNewIdeSnapshot clobbers all pre-existing data.
+            this.ideBreakpoints.applyNewIdeSnapshot(path, sourceBreakpoints);
+
+            const localBreakpoints = sourceBreakpoints.map((bp) => CdbgBreakpoint.fromSourceBreakpoint(args.source, bp));
             this.breakpointManager!.initializeWithLocalBreakpoints(localBreakpoints);
 
-            const ideBPs: DebugProtocol.SourceBreakpoint[] = this.previousSetBreakpointRequests.get(path) ?? [];
-            this.previousSetBreakpointRequests.set(path, [...ideBPs, ...(args.breakpoints ?? [])]);
             this.initializedPaths.set(path, true);
         }
 
@@ -279,9 +277,7 @@ export class SnapshotDebuggerSession extends DebugSession {
     }
 
     private reportNewBreakpointToIDE(bp: CdbgBreakpoint): void {
-        const ideBPs: DebugProtocol.SourceBreakpoint[] = this.previousSetBreakpointRequests.get(bp.path) ?? [];
-        ideBPs.push(bp.ideBreakpoint);
-        this.previousSetBreakpointRequests.set(bp.path, ideBPs);
+        this.ideBreakpoints.add(bp.path, bp.ideBreakpoint);
         this.sendEvent(new BreakpointEvent('new', bp.localBreakpoint));
     }
 
@@ -291,11 +287,7 @@ export class SnapshotDebuggerSession extends DebugSession {
     }
 
     private removeBreakpointFromIDE(bp: CdbgBreakpoint) {
-        let ideBPs = this.previousSetBreakpointRequests.get(bp.path) ?? [];
-        const bpString = sourceBreakpointToString(bp.ideBreakpoint);
-        ideBPs = ideBPs.filter(b => bpString !== sourceBreakpointToString(b));
-        this.previousSetBreakpointRequests.set(bp.path, ideBPs);
-
+        this.ideBreakpoints.remove(bp.path, bp.ideBreakpoint);
         const threadId = bp.numericId;
         this.sendEvent(new ThreadEvent('exited', threadId));
         this.sendEvent(new BreakpointEvent('removed', bp.localBreakpoint));

@@ -72,9 +72,9 @@ export class BreakpointManager {
         if (this.onCompletedBreakpoint) { this.onCompletedBreakpoint(cdbgBreakpoint); }
     }
 
-    initializeWithLocalBreakpoints(localBreakpoints: CdbgBreakpoint[] | undefined) {
+    initializeWithLocalBreakpoints(localBreakpoints: CdbgBreakpoint[]) {
         const bpIds = new Set<string>();  // Keep track of which breakpoints we've seen.
-        for (const cdbgBreakpoint of localBreakpoints ?? []) {
+        for (const cdbgBreakpoint of localBreakpoints) {
             let found = false;
             for (const bp of this.getBreakpoints()) {
                 // TODO: Handle multiple matches in a considered manner.  Not sure what's best to do right now.
