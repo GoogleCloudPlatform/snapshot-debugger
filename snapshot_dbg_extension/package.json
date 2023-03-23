@@ -2,6 +2,7 @@
   "name": "snapshotdbg",
   "displayName": "Snapshot Debugger",
   "publisher": "GoogleCloudPlatform",
+  "license": "Apache-2.0",
   "description": "Integrates the Snapshot Debugger into your IDE.  Grab snapshots from your running applications.",
   "version": "0.0.1",
   "engines": {
@@ -10,7 +11,8 @@
   "categories": [
     "Debuggers"
   ],
-  "main": "./out/extension.js",
+  "main": "./out/main.js",
+  "icon": "media/icon-512.png",
   "activationEvents": [
     "onDebugResolve:snapshotdbg",
     "onDebugDynamicConfigurations:snapshotdbg",
@@ -18,19 +20,6 @@
   ],
   "contributes": {
     "menus": {
-      "editor/title/run": [
-        {
-          "command": "extension.snapshotdbg.debugEditorContents",
-          "when": "resourceLangId == javascript",
-          "group": "navigation@2"
-        }
-      ],
-      "commandPalette": [
-        {
-          "command": "extension.snapshotdbg.debugEditorContents",
-          "when": "resourceLangId == javascript"
-        }
-      ],
       "debug/toolBar": [
         {
           "command": "extension.snapshotdbg.viewHistoricalSnapshot",
@@ -43,13 +32,6 @@
       ]
     },
     "commands": [
-      {
-        "command": "extension.snapshotdbg.debugEditorContents",
-        "title": "Debug File",
-        "category": "Snapshot Debugger",
-        "enablement": "!inDebugMode",
-        "icon": "$(debug-alt)"
-      },
       {
         "command": "extension.snapshotdbg.viewHistoricalSnapshot",
         "title": "View the snapshot of a historical already completed breakpoint.",
@@ -66,6 +48,9 @@
         "language": "javascript"
       },
       {
+        "language": "typescript"
+      },
+      {
         "language": "python"
       },
       {
@@ -77,6 +62,7 @@
         "type": "snapshotdbg",
         "languages": [
           "javascript",
+          "typescript",
           "python",
           "java"
         ],
@@ -131,13 +117,25 @@
       }
     ]
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GoogleCloudPlatform/snapshot-debugger.git"
+  },
+  "bugs": {
+    "url": "https://github.com/GoogleCloudPlatform/snapshot-debugger/issues"
+  },
+  "homepage": "https://github.com/GoogleCloudPlatform/snapshot-debugger/tree/main/snapshot_dbg_extension#readme",
   "scripts": {
-    "vscode:prepublish": "npm run compile",
+    "vscode:prepublish": "npm run esbuild-base -- --minify",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
+    "test": "node ./out/test/runTest.js",
+    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
+    "esbuild": "npm run esbuild-base -- --sourcemap",
+    "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
+    "test-compile": "tsc -p ./"
   },
   "dependencies": {
     "@vscode/debugadapter": "^1.59.0",
@@ -145,16 +143,17 @@
     "firebase-admin": "^11.5.0"
   },
   "devDependencies": {
-    "@types/vscode": "^1.74.0",
     "@types/glob": "^8.0.1",
     "@types/mocha": "^10.0.1",
     "@types/node": "16.x",
+    "@types/vscode": "^1.74.0",
     "@typescript-eslint/eslint-plugin": "^5.49.0",
     "@typescript-eslint/parser": "^5.49.0",
+    "@vscode/test-electron": "^2.2.2",
+    "esbuild": "^0.17.12",
     "eslint": "^8.33.0",
     "glob": "^8.1.0",
     "mocha": "^10.1.0",
-    "typescript": "^4.9.4",
-    "@vscode/test-electron": "^2.2.2"
+    "typescript": "^4.9.4"
   }
 }
