@@ -95,6 +95,7 @@ export class CdbgBreakpoint {
     public hasUnsavedData = false;
 
     private constructor(
+        public ideBreakpoint: DebugProtocol.SourceBreakpoint,
         public localBreakpoint: DebugProtocol.Breakpoint,
         public serverBreakpoint: ServerBreakpoint) {}
 
@@ -112,7 +113,7 @@ export class CdbgBreakpoint {
 
     /** Returns the full path to the file. */
     public get path() {
-        return this.localBreakpoint.source!.path;
+        return this.localBreakpoint.source!.path!;
     }
 
     public get shortPath() {
@@ -164,6 +165,7 @@ export class CdbgBreakpoint {
         const serverBreakpoint: ServerBreakpoint = snapshot.val();
         const path = serverBreakpoint.location.path;
         const logpointMessage = serverBreakpoint.logMessageFormat ? LogpointMessage.fromBreakpoint(serverBreakpoint) : undefined;
+
         const localBreakpoint: DebugProtocol.Breakpoint = {
             verified: !serverBreakpoint.isFinalState, // final -> unverified; active -> verified
             line: serverBreakpoint.location.line,
@@ -173,7 +175,16 @@ export class CdbgBreakpoint {
             },
             ...(logpointMessage && {logMessage: logpointMessage.userMessage})
         };
-        const bp = new CdbgBreakpoint(localBreakpoint, serverBreakpoint);
+
+        // Here we create a DebugProtocol.SourceBreakpoint represention that the IDE will obtain. Since we're
+        // starting with the DB version of the breakpoint here, it will be synced to the IDE via
+        // the DebugProtocol.Breakpoint representation, which does not have a logMessage or condition field. This means
+        // we cannot populate those fields here.
+        const ideBreakpoint: DebugProtocol.SourceBreakpoint = {
+            line: serverBreakpoint.location.line,
+        };
+
+        const bp = new CdbgBreakpoint(ideBreakpoint, localBreakpoint, serverBreakpoint);
         bp.hasServerData = true;
 
         // TODO: Set message on localBreakpoint.
@@ -219,8 +230,9 @@ export class CdbgBreakpoint {
             ...(expressions && {expressions}),
         };
 
-        const bp = new CdbgBreakpoint(localBreakpoint, serverBreakpoint);
+        const bp = new CdbgBreakpoint(sourceBreakpoint, localBreakpoint, serverBreakpoint);
         bp.hasLocalData = true;
         return bp;
     }
 }
+ 

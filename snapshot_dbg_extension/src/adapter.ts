@@ -6,6 +6,7 @@ import {
 import * as vscode from 'vscode';
 import { CdbgBreakpoint, SourceBreakpointExtraParams, Variable as CdbgVariable} from './breakpoint';
 import { promptUserForExpressions } from './expressionsPrompter';
+//import { IdeBreakpoints } from './ideBreakpoints';
 import { pickLogLevel } from './logLevelPicker';
 import { pickSnapshot } from './snapshotPicker';
 import { StatusMessage } from './statusMessage';
@@ -247,7 +248,8 @@ export class SnapshotDebuggerSession extends DebugSession {
             const localBreakpoints = args.breakpoints?.map((bp) => CdbgBreakpoint.fromSourceBreakpoint(args.source, bp));
             this.breakpointManager!.initializeWithLocalBreakpoints(localBreakpoints);
 
-            this.previousSetBreakpointRequests.set(path, args.breakpoints ?? []);
+            const ideBPs: DebugProtocol.SourceBreakpoint[] = this.previousSetBreakpointRequests.get(path) ?? [];
+            this.previousSetBreakpointRequests.set(path, [...ideBPs, ...(args.breakpoints ?? [])]);
             this.initializedPaths.set(path, true);
         }
 
@@ -277,6 +279,9 @@ export class SnapshotDebuggerSession extends DebugSession {
     }
 
     private reportNewBreakpointToIDE(bp: CdbgBreakpoint): void {
+        const ideBPs: DebugProtocol.SourceBreakpoint[] = this.previousSetBreakpointRequests.get(bp.path) ?? [];
+        ideBPs.push(bp.ideBreakpoint);
+        this.previousSetBreakpointRequests.set(bp.path, ideBPs);
         this.sendEvent(new BreakpointEvent('new', bp.localBreakpoint));
     }
 
@@ -286,8 +291,12 @@ export class SnapshotDebuggerSession extends DebugSession {
     }
 
     private removeBreakpointFromIDE(bp: CdbgBreakpoint) {
-        const threadId = bp.numericId;
+        let ideBPs = this.previousSetBreakpointRequests.get(bp.path) ?? [];
+        const bpString = sourceBreakpointToString(bp.ideBreakpoint);
+        ideBPs = ideBPs.filter(b => bpString !== sourceBreakpointToString(b));
+        this.previousSetBreakpointRequests.set(bp.path, ideBPs);
 
+        const threadId = bp.numericId;
         this.sendEvent(new ThreadEvent('exited', threadId));
         this.sendEvent(new BreakpointEvent('removed', bp.localBreakpoint));
     }
