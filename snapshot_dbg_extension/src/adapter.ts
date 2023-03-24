@@ -380,9 +380,6 @@ export class SnapshotDebuggerSession extends DebugSession {
 
         const scopes: DebugProtocol.Scope[] = [];
 
-        console.log(`scopes request for breakpoint - stack frame: ${this.currentFrameId}`);
-        console.log(this.currentBreakpoint);
-
         if (this.currentBreakpoint?.hasSnapshot()) {
 
             const stackFrame = this.currentBreakpoint!.serverBreakpoint!.stackFrames![this.currentFrameId];
@@ -411,9 +408,6 @@ export class SnapshotDebuggerSession extends DebugSession {
      * https://microsoft.github.io/debug-adapter-protocol/specification#Requests_Variables
      */
     protected async variablesRequest(response: DebugProtocol.VariablesResponse, args: DebugProtocol.VariablesArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
-        console.log('variablesRequest');
-        console.log(args);
-
         response.body = response.body || {};
 
         let variables: DebugProtocol.Variable[] = [];
