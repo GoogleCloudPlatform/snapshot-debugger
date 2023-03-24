@@ -87,6 +87,7 @@ export class SnapshotDebuggerSession extends DebugSession {
         response.body.supportsLogPoints = true;
         response.body.supportsValueFormattingOptions = false;
         response.body.supportsConditionalBreakpoints = true;
+        response.body.supportsSingleThreadExecutionRequests = true;
 
         this.sendResponse(response);
         console.log('Initialized');
@@ -173,6 +174,8 @@ export class SnapshotDebuggerSession extends DebugSession {
         if (bp) {
             this.removeBreakpoint(bp);
         }
+
+        response.body.allThreadsContinued = false;
         this.sendResponse(response);
     }
 
