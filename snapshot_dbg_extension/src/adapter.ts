@@ -11,6 +11,7 @@ import { pickLogLevel } from './logLevelPicker';
 import { pickSnapshot } from './snapshotPicker';
 import { StatusMessage } from './statusMessage';
 import { UserPreferences } from './userPreferences';
+import { IsActiveWhenClauseContext } from './whenClauseContextUtil';
 import { initializeApp, cert, App, deleteApp } from 'firebase-admin/app';
 import { DataSnapshot, getDatabase } from 'firebase-admin/database';
 
@@ -138,6 +139,8 @@ export class SnapshotDebuggerSession extends DebugSession {
         await this.breakpointManager.loadServerBreakpoints();
         this.breakpointManager.setUpServerListeners();
 
+        IsActiveWhenClauseContext.enable();
+
         console.log('Attached');
         this.attachTime = Date.now()
         this.sendResponse(response);
@@ -149,6 +152,8 @@ export class SnapshotDebuggerSession extends DebugSession {
         // A new instance of this class is created for each debugging session.
         // Treat this function as a desctructor to clean up any resources that require cleanup.
         console.log("Received Disconnect request: ", args);
+
+        IsActiveWhenClauseContext.disable();
 
         if (this.app) {
             deleteApp(this.app);

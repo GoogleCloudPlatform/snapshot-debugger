@@ -1,6 +1,7 @@
 import { UserRecord } from 'firebase-admin/lib/auth/user-record';
 import * as vscode from 'vscode';
 import { WorkspaceFolder, DebugConfiguration, DebugSession, ProviderResult, CancellationToken } from 'vscode';
+import { IsActiveWhenClauseContext } from './whenClauseContextUtil';
 
 import { CustomRequest, SnapshotDebuggerSession } from './adapter';
 import { UserPreferences } from './userPreferences';
@@ -8,6 +9,8 @@ import { UserPreferences } from './userPreferences';
 // This method is called when the extension is activated.
 // The extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+    IsActiveWhenClauseContext.create();
+
     const userPreferences: UserPreferences = {"isExpressionsPromptEnabled": true};
     context.subscriptions.push(vscode.commands.registerCommand('extension.snapshotdbg.getServiceAccountPath', async config => {
         const result = await vscode.window.showOpenDialog({
