@@ -14,6 +14,10 @@ export class BreakpointManager {
         return [...this.breakpoints.keys()];
     }
 
+    public getBreakpointsAtPath(path: string): CdbgBreakpoint[] {
+        return [...this.breakpoints.values()].filter(bp => bp.path === path);
+    }
+
     public getBreakpoints(): CdbgBreakpoint[] {
         return [...this.breakpoints.values()];
     }

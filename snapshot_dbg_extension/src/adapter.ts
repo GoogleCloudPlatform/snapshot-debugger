@@ -258,7 +258,7 @@ export class SnapshotDebuggerSession extends DebugSession {
 
         // FIXME: Bug -- response.body.breakpoints order should match args.breakpoints order.
         // Otherwise, breakpoints are liable to move around on the UI.
-        response.body.breakpoints = this.breakpointManager!.getBreakpoints().map((bp) => bp.localBreakpoint);
+        response.body.breakpoints = this.breakpointManager!.getBreakpointsAtPath(path).map((bp) => bp.localBreakpoint);
         console.log('setBreakpointsResponse:');
         console.log(response.body);
         this.sendResponse(response);
@@ -365,9 +365,6 @@ export class SnapshotDebuggerSession extends DebugSession {
 
         const scopes: DebugProtocol.Scope[] = [];
 
-        console.log(`scopes request for breakpoint - stack frame: ${this.currentFrameId}`);
-        console.log(this.currentBreakpoint);
-
         if (this.currentBreakpoint?.hasSnapshot()) {
 
             const stackFrame = this.currentBreakpoint!.serverBreakpoint!.stackFrames![this.currentFrameId];
@@ -396,9 +393,6 @@ export class SnapshotDebuggerSession extends DebugSession {
      * https://microsoft.github.io/debug-adapter-protocol/specification#Requests_Variables
      */
     protected async variablesRequest(response: DebugProtocol.VariablesResponse, args: DebugProtocol.VariablesArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
-        console.log('variablesRequest');
-        console.log(args);
-
         response.body = response.body || {};
 
         let variables: DebugProtocol.Variable[] = [];
