@@ -1,6 +1,7 @@
 import { Database, DataSnapshot } from "firebase-admin/database";
+import { DebugProtocol } from '@vscode/debugprotocol';
 import { CdbgBreakpoint } from "./breakpoint";
-import { sleep } from "./util";
+import { sleep, sourceBreakpointToString } from "./util";
 
 export class BreakpointManager {
     private breakpoints: Map<string, CdbgBreakpoint> = new Map();
@@ -20,6 +21,21 @@ export class BreakpointManager {
 
     public getBreakpoint(id: string): CdbgBreakpoint | undefined {
         return this.breakpoints.get(id);
+    }
+
+    public getBreakpointBySourceBreakpoint(sourceBreakpoint: DebugProtocol.SourceBreakpoint): CdbgBreakpoint | undefined {
+        return this.getBreakpointBySourceBreakpointString(sourceBreakpointToString(sourceBreakpoint));
+    }
+
+    public getBreakpointBySourceBreakpointString(sourceBreakpointString: string): CdbgBreakpoint | undefined {
+        for (let [bipId, cdbgBreakpoint] of this.breakpoints) {
+            if (sourceBreakpointToString(cdbgBreakpoint.ideBreakpoint) === sourceBreakpointString) {
+                // TODO: Figure out what to do for duplicates, here we return first hit
+                return cdbgBreakpoint;
+            }
+        }
+
+        return undefined;
     }
 
     public async loadServerBreakpoints() {

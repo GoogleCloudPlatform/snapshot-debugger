@@ -105,6 +105,9 @@ export class SnapshotDebuggerSession extends DebugSession {
     }
 
     protected async attachRequest(response: DebugProtocol.AttachResponse, args: IAttachRequestArguments) {
+        console.log("Attach Request");
+        console.log(args);
+
         const serviceAccount = require(args.serviceAccountPath);
         const projectId = serviceAccount['project_id'];
         let databaseUrl = args.databaseUrl;
@@ -128,6 +131,7 @@ export class SnapshotDebuggerSession extends DebugSession {
             return;
         }
         this.debuggeeId = debuggeeId;
+        console.log("Using debuggee id: ", debuggeeId);
 
         // Set up breakpoint manager.
         this.breakpointManager = new BreakpointManager(debuggeeId, this.db);
@@ -256,9 +260,17 @@ export class SnapshotDebuggerSession extends DebugSession {
             this.initializedPaths.set(path, true);
         }
 
-        // FIXME: Bug -- response.body.breakpoints order should match args.breakpoints order.
-        // Otherwise, breakpoints are liable to move around on the UI.
-        response.body.breakpoints = this.breakpointManager!.getBreakpoints().map((bp) => bp.localBreakpoint);
+        // The breakpoints in the response must have a 1:1 mapping in the same order as found in the request.
+        response.body.breakpoints = [];
+        for (const bp of (args.breakpoints ?? [])) {
+            const cdbg = this.breakpointManager?.getBreakpointBySourceBreakpoint(bp);
+            // TODO: Figure out if it's possible it's not found, and if possible then need to fill somehthing in
+            // TODO: Figure out what do do for duplicates
+            if (cdbg) {
+                response.body.breakpoints.push(cdbg.localBreakpoint);
+            }
+        }
+
         console.log('setBreakpointsResponse:');
         console.log(response.body);
         this.sendResponse(response);
