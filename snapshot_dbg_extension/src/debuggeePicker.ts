@@ -17,7 +17,11 @@ async function fetchDebuggees(db: Database): Promise<DebuggeeItem[]> {
     const savedDebuggees = snapshot.val();
     if (savedDebuggees) {
         for (const debuggeeId in savedDebuggees) {
-            debuggees.push(new DebuggeeItem(debuggeeId, savedDebuggees[debuggeeId].description));
+            const timestamp = new Date(savedDebuggees[debuggeeId].lastUpdateTimeUnixMsec);
+            debuggees.push(
+                new DebuggeeItem(
+                    debuggeeId,
+                     `${savedDebuggees[debuggeeId].description} - ${timestamp.toISOString()}`));
         }
     } else {
         const noDebuggees = new DebuggeeItem("No debuggees found", "Please check your configuration");
