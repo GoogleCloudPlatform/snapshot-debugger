@@ -32,6 +32,7 @@ export class BreakpointManager {
     }
 
     public getBreakpointBySourceBreakpointString(sourceBreakpointString: string): CdbgBreakpoint | undefined {
+        // TODO: May want to also add an extra breakpoint map indexed on source breakpoint string
         for (let [bipId, cdbgBreakpoint] of this.breakpoints) {
             if (sourceBreakpointToString(cdbgBreakpoint.ideBreakpoint) === sourceBreakpointString) {
                 // TODO: Figure out what to do for duplicates, here we return first hit
