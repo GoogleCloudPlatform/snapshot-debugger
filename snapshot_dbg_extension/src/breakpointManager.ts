@@ -2,6 +2,7 @@ import { Database, DataSnapshot } from "firebase-admin/database";
 import { DebugProtocol } from '@vscode/debugprotocol';
 import { CdbgBreakpoint } from "./breakpoint";
 import { sleep, sourceBreakpointToString } from "./util";
+import { debugPort } from "process";
 
 export class BreakpointManager {
     private breakpoints: Map<string, CdbgBreakpoint> = new Map();
@@ -46,19 +47,37 @@ export class BreakpointManager {
     public async loadServerBreakpoints() {
         const activeBreakpointRef = this.db.ref(`cdbg/breakpoints/${this.debuggeeId}/active`);
         const activeSnapshot: DataSnapshot = await activeBreakpointRef.get();
-        activeSnapshot.forEach((breakpoint) => this.addInitServerBreakpoint(CdbgBreakpoint.fromSnapshot(breakpoint)));
+
+        // Keep track of which locations (file and line) we've seen. The backend
+        // supports muliple breakpoints per location however the IDE really only
+        // supports one breakpoint per location, so we only allow one active
+        // breakpoint per location in.
+        const locations = new Set<string>();
+        activeSnapshot.forEach((breakpoint) => {
+            const cdbgBreakpoint = CdbgBreakpoint.fromSnapshot(breakpoint);
+
+            // We only sync in active snapshots, and not logpoints. We do this
+            // because the DebugProtocol.Breakpoint type the adapter sends to
+            // the IDE does not support a log message field, so it's not
+            // possible to communicate to the IDE that a breakpoint is a
+            // logpoint.
+            //
+            // TODO: Logpoints still need extra condideration. IF the IDE has a
+            // logpoint before the attach call, we want to ensure we can match
+            // up to that to ensure we don't end up creating a duplicate
+            // logpoint in the backend.
+            if (cdbgBreakpoint.isSnapshot() && !locations.has(cdbgBreakpoint.locationString)) {
+                locations.add(cdbgBreakpoint.locationString);
+                this.addInitServerBreakpoint(cdbgBreakpoint);
+            }
+        });
+
         console.log('Breakpoints loaded from server');
     }
 
     public setUpServerListeners() {
         const activeBreakpointRef = this.db.ref(`cdbg/breakpoints/${this.debuggeeId}/active`);
 
-        activeBreakpointRef.on(
-            'child_added',
-            (snapshot: DataSnapshot) => {
-                console.log(`new breakpoint received from server: ${snapshot.key}`);
-                this.addServerBreakpoint(CdbgBreakpoint.fromSnapshot(snapshot));
-            });
         activeBreakpointRef.on(
             'child_removed',
             async (snapshot: DataSnapshot) => {

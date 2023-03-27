@@ -4,7 +4,7 @@ import {
     Thread, StackFrame, Scope, Source, Variable, ThreadEvent, ContinuedEvent
 } from '@vscode/debugadapter';
 import * as vscode from 'vscode';
-import { CdbgBreakpoint, SourceBreakpointExtraParams, Variable as CdbgVariable} from './breakpoint';
+import { CdbgBreakpoint, SourceBreakpointExtraParams, Variable as CdbgVariable } from './breakpoint';
 import { promptUserForExpressions } from './expressionsPrompter';
 import { IdeBreakpoints } from './ideBreakpoints';
 import { pickLogLevel } from './logLevelPicker';
@@ -22,7 +22,7 @@ import { pickDebuggeeId } from './debuggeePicker';
 import { BreakpointManager } from './breakpointManager';
 
 const FIREBASE_APP_NAME = 'snapshotdbg';
-const INITIALIZE_TIME_ALLOWANCE_MS = 2 * 1000; // 2 seconds
+const INITIALIZE_TIME_ALLOWANCE_MS = 20 * 1000; // 2 seconds
 
 export enum CustomRequest {
     RUN_HISTORICAL_SNAPSHOT_PICKER = 'runHistoricalSnapshotPicker',
@@ -59,7 +59,7 @@ export class SnapshotDebuggerSession extends DebugSession {
 
     private setVariableType: boolean = false;
     private userPreferences: UserPreferences;
-    private attachTime: number = Date.now();
+    private isDeferredInitializationDone = false;
 
     private breakpointManager?: BreakpointManager;
 
@@ -145,10 +145,12 @@ export class SnapshotDebuggerSession extends DebugSession {
         this.breakpointManager.setUpServerListeners();
 
         IsActiveWhenClauseContext.enable();
-
         console.log('Attached');
-        this.attachTime = Date.now()
         this.sendResponse(response);
+
+        this.isDeferredInitializationDone = false;
+        setTimeout(() => { this.runDeferredInitialization() }, INITIALIZE_TIME_ALLOWANCE_MS);
+
         // At this point we're considered sufficiently initialized to take requests from the IDE.
         this.sendEvent(new InitializedEvent());
     }
@@ -185,7 +187,7 @@ export class SnapshotDebuggerSession extends DebugSession {
         // notified the UI of a thread (IE provided it with a breakpoint ID
         // which acts as a thread ID).
         console.log("Received Pause request: ", args);
-        await vscode.window.showInformationMessage("This operation is not supported by the Snapshot Debugger", {"modal": true});
+        await vscode.window.showInformationMessage("This operation is not supported by the Snapshot Debugger", { "modal": true });
         this.sendResponse(response);
         this.sendEvent(new ContinuedEvent(args.threadId));
     }
@@ -215,12 +217,11 @@ export class SnapshotDebuggerSession extends DebugSession {
         console.log('setBreakPointsRequest');
         console.log(args);
 
-        response.body = response.body || {breakpoints: []};
+        response.body = response.body || { breakpoints: [] };
 
         const path = args.source.path!;
 
-        // Simple hack: set initialized to `true` if enough time has passed since the attach request.
-        const initialized: boolean = this.initializedPaths.get(path) ?? (Date.now() - this.attachTime > INITIALIZE_TIME_ALLOWANCE_MS);
+        const initialized: boolean = this.initializedPaths.get(path) ?? this.isDeferredInitializationDone;
 
         if (initialized) {
             console.log(`Already initialized for this path.  Looking for user input (create or delete breakpoints)`);
@@ -268,7 +269,8 @@ export class SnapshotDebuggerSession extends DebugSession {
         for (const bp of (args.breakpoints ?? [])) {
             const cdbg = this.breakpointManager?.getBreakpointBySourceBreakpoint(bp);
             // TODO: Figure out if it's possible it's not found, and if possible then need to fill somehthing in
-            // TODO: Figure out what do do for duplicates
+            // TODO: Figure out what do do for duplicates:vs
+
             if (cdbg) {
                 response.body.breakpoints.push(cdbg.localBreakpoint);
             }
@@ -277,6 +279,23 @@ export class SnapshotDebuggerSession extends DebugSession {
         console.log('setBreakpointsResponse:');
         console.log(response.body);
         this.sendResponse(response);
+    }
+
+    private runDeferredInitialization(): void {
+        console.log("Syncing active breakpoints from backend.");
+
+        // We sync over all breakpoints that have not yet had their paths
+        // synced.  After the attach request call, the IDE will immediately call
+        // setBreakpointRequest for all paths (files) it already has breakpoints
+        // for Any path that had this happen will be marked in
+        // this.initializedPaths.
+        for (const bp of this.breakpointManager!.getBreakpoints()) {
+            if (!this.initializedPaths.get(bp.path) && bp.isActive()) {
+                this.reportNewBreakpointToIDE(bp);
+            }
+        }
+
+        this.isDeferredInitializationDone = true;
     }
 
     private reportCompletedBreakpointToIDE(bp: CdbgBreakpoint) {
@@ -297,6 +316,7 @@ export class SnapshotDebuggerSession extends DebugSession {
     }
 
     private reportNewBreakpointToIDE(bp: CdbgBreakpoint): void {
+        console.log("Notifying IDE of BP: ", bp.id);
         this.ideBreakpoints.add(bp.path, bp.ideBreakpoint);
         this.sendEvent(new BreakpointEvent('new', bp.localBreakpoint));
     }
@@ -314,7 +334,7 @@ export class SnapshotDebuggerSession extends DebugSession {
     }
 
     private async handleUnsupportedStepRequest(threadId: number): Promise<void> {
-        await vscode.window.showInformationMessage("This operation is not supported by the Snapshot Debugger", {"modal": true});
+        await vscode.window.showInformationMessage("This operation is not supported by the Snapshot Debugger", { "modal": true });
         const bp = this.breakpointManager?.getBreakpoint(`b-${threadId}`);
         if (bp) {
             this.removeBreakpoint(bp);
@@ -418,7 +438,7 @@ export class SnapshotDebuggerSession extends DebugSession {
             const stackFrames = this.currentBreakpoint?.serverBreakpoint?.stackFrames ?? [];
             if (this.currentFrameId < stackFrames.length) {
                 const stackFrame = stackFrames[this.currentFrameId];
-                const cdbgVars: CdbgVariable[] | undefined = args.variablesReference === 1 ?  stackFrame.arguments : stackFrame.locals;
+                const cdbgVars: CdbgVariable[] | undefined = args.variablesReference === 1 ? stackFrame.arguments : stackFrame.locals;
                 variables = (cdbgVars ?? []).map(v => this.cdbgVarToDap(v));
             } else {
                 console.log('cannot do a thing');
@@ -495,7 +515,7 @@ export class SnapshotDebuggerSession extends DebugSession {
     }
 
     private getVariableValue(variable: CdbgVariable): string {
-        const message: string|undefined = new StatusMessage(variable).message;
+        const message: string | undefined = new StatusMessage(variable).message;
         let members = variable.members ?? []
 
         if (variable.value !== undefined) {
@@ -507,14 +527,14 @@ export class SnapshotDebuggerSession extends DebugSession {
         const type = variable.type ?? "";
         const membersSummary = members.map(m => {
             m = this.resolveCdbgVariable(m);
-            const message: string|undefined = new StatusMessage(m).message;
+            const message: string | undefined = new StatusMessage(m).message;
 
             // Special case where we can make the UI output look nicer by only including them message.
             if (!m.name && !m.value && message) {
                 return message;
             }
 
-            const name =  m.name ?? "";
+            const name = m.name ?? "";
 
             let value = ""
             if (m.value !== undefined) {
@@ -532,7 +552,7 @@ export class SnapshotDebuggerSession extends DebugSession {
         return `${type} {${membersSummary.join(", ")}}`
     }
 
-    private resolveCdbgVariable(variable: CdbgVariable,  predecessors = new Set<number>()): CdbgVariable {
+    private resolveCdbgVariable(variable: CdbgVariable, predecessors = new Set<number>()): CdbgVariable {
         let vartable = this.currentBreakpoint!.serverBreakpoint!.variableTable ?? [];
 
         // In this case there's nothing to resolve, already done.
@@ -562,11 +582,11 @@ export class SnapshotDebuggerSession extends DebugSession {
 
         // It's not expected there would be conflicts in fields present, but just in case we
         // prioritize the resolved variable by placing it first
-        return {...resolvedVariable, ...variable}
+        return { ...resolvedVariable, ...variable }
     }
 
 
-    private async runExpressionsPrompt(): Promise<string[]|undefined> {
+    private async runExpressionsPrompt(): Promise<string[] | undefined> {
         if (!this.userPreferences.isExpressionsPromptEnabled) {
             return undefined;
         }
@@ -613,10 +633,10 @@ export class SnapshotDebuggerSession extends DebugSession {
         this.sendResponse(response);
 
         // and suspend all the threads.  This doesn't work right now because sending a thread-related event causes threads to be fetched again.
-/*        for (const thread of threads) {
-            const bp = this.breakpoints.get(`b-${thread.id}`)!;
-            const event = new StoppedEvent(bp.hasError() ? 'error' : 'snapshot', thread.id);
-            this.sendEvent(event);
-        }*/
+        /*        for (const thread of threads) {
+                    const bp = this.breakpoints.get(`b-${thread.id}`)!;
+                    const event = new StoppedEvent(bp.hasError() ? 'error' : 'snapshot', thread.id);
+                    this.sendEvent(event);
+                }*/
     }
 }

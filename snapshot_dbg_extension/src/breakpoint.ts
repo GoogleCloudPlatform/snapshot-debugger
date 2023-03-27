@@ -124,6 +124,11 @@ export class CdbgBreakpoint {
         return this.localBreakpoint.line;
     }
 
+    /** Returns string of format "{full path}:{line number}}" */
+    public get locationString() {
+        return `${this.path}:${this.line}`;
+    }
+
     public get finalTime(): string {
         return unixTimeToString(this.serverBreakpoint.finalTimeUnixMsec);
     }
@@ -153,7 +158,7 @@ export class CdbgBreakpoint {
             return true;
         }
 
-        return other.path === this.path && other.line === this.line;
+        return other.locationString === this.locationString;
     }
 
     public updateServerData(snapshot: DataSnapshot): void {
