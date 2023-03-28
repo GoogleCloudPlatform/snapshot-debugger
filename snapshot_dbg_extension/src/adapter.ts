@@ -316,7 +316,7 @@ export class SnapshotDebuggerSession extends DebugSession {
     }
 
     private reportNewBreakpointToIDE(bp: CdbgBreakpoint): void {
-        console.log("Notifying IDE of BP: ", bp.id);
+        console.log(`Notifying IDE of BP: ${bp.id} - ${bp.shortPath}:${bp.line}`);
         this.ideBreakpoints.add(bp.path, bp.ideBreakpoint);
         this.sendEvent(new BreakpointEvent('new', bp.localBreakpoint));
     }
