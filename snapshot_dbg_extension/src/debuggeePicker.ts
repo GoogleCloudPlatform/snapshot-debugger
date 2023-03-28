@@ -3,10 +3,16 @@ import * as vscode from 'vscode';
 
 class DebuggeeItem implements vscode.QuickPickItem {
     label: string;
+    detail: string;
     kind?: vscode.QuickPickItemKind | undefined;
 
-    constructor(public debuggeeId: string, public detail: string) {
-        this.label = debuggeeId;
+    constructor(public debuggeeId: string, description: string, timestamp?: Date) {
+        this.label = description;
+        if (timestamp) {
+            this.detail = `${debuggeeId} | ${timestamp.toISOString()}`;
+        } else {
+            this.detail = debuggeeId;
+        }
     }
 }
 
@@ -18,10 +24,12 @@ async function fetchDebuggees(db: Database): Promise<DebuggeeItem[]> {
     if (savedDebuggees) {
         for (const debuggeeId in savedDebuggees) {
             const timestamp = new Date(savedDebuggees[debuggeeId].lastUpdateTimeUnixMsec);
+            const labels = savedDebuggees[debuggeeId].labels;
             debuggees.push(
                 new DebuggeeItem(
                     debuggeeId,
-                     `${savedDebuggees[debuggeeId].description} - ${timestamp.toISOString()}`));
+                    `${labels.module || 'default'} - ${labels.version}`,
+                    timestamp));
         }
     } else {
         const noDebuggees = new DebuggeeItem("No debuggees found", "Please check your configuration");
