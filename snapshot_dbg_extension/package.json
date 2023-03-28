@@ -11,7 +11,7 @@
   "categories": [
     "Debuggers"
   ],
-  "main": "./out/extension.js",
+  "main": "./out/main.js",
   "icon": "media/icon-512.png",
   "activationEvents": [
     "onDebugResolve:snapshotdbg",
