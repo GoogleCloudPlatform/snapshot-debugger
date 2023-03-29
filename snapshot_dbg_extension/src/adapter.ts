@@ -177,7 +177,7 @@ export class SnapshotDebuggerSession extends DebugSession {
             this.removeBreakpoint(bp);
         }
 
-        response.body.allThreadsContinued = false;
+        response.body = { allThreadsContinued: false };
         this.sendResponse(response);
     }
 
