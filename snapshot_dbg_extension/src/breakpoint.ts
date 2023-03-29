@@ -104,7 +104,15 @@ export class CdbgBreakpoint {
     }
 
     public get numericId(): number {
-        return parseInt(this.id.substring(2));
+        if (this.localBreakpoint.id !== undefined) {
+            return this.localBreakpoint.id;
+        }
+
+        // It's considered a programming error  if numericId is accessed before
+        // one has been assigned, so this should ideally only be seen during
+        // development, and when seen fixed.
+        console.log("ERROR, breakpoint ID is unknown");
+        return 0;
     }
 
     public set id(bpId: string) {
@@ -180,6 +188,7 @@ export class CdbgBreakpoint {
         const logpointMessage = serverBreakpoint.logMessageFormat ? LogpointMessage.fromBreakpoint(serverBreakpoint) : undefined;
 
         const localBreakpoint: DebugProtocol.Breakpoint = {
+            id: parseInt(serverBreakpoint.id.substring(2)),
             verified: !serverBreakpoint.isFinalState, // final -> unverified; active -> verified
             line: serverBreakpoint.location.line,
             source: {
