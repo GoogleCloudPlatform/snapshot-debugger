@@ -1,11 +1,12 @@
 import { Database, DataSnapshot } from "firebase-admin/database";
 import { DebugProtocol } from '@vscode/debugprotocol';
 import { CdbgBreakpoint } from "./breakpoint";
+import { InitialActiveBreakpoints } from "./initialActiveBreakpoints";
 import { sleep, sourceBreakpointToString } from "./util";
-import { debugPort } from "process";
 
 export class BreakpointManager {
     private breakpoints: Map<string, CdbgBreakpoint> = new Map();
+    private initialActiveBreakpoints?: InitialActiveBreakpoints;
 
     public constructor(readonly debuggeeId: string, readonly db: Database) {}
 
@@ -34,7 +35,7 @@ export class BreakpointManager {
 
     public getBreakpointBySourceBreakpointString(sourceBreakpointString: string): CdbgBreakpoint | undefined {
         // TODO: May want to also add an extra breakpoint map indexed on source breakpoint string
-        for (let [bipId, cdbgBreakpoint] of this.breakpoints) {
+        for (let [bpId, cdbgBreakpoint] of this.breakpoints) {
             if (sourceBreakpointToString(cdbgBreakpoint.ideBreakpoint) === sourceBreakpointString) {
                 // TODO: Figure out what to do for duplicates, here we return first hit
                 return cdbgBreakpoint;
@@ -47,32 +48,8 @@ export class BreakpointManager {
     public async loadServerBreakpoints() {
         const activeBreakpointRef = this.db.ref(`cdbg/breakpoints/${this.debuggeeId}/active`);
         const activeSnapshot: DataSnapshot = await activeBreakpointRef.get();
-
-        // Keep track of which locations (file and line) we've seen. The backend
-        // supports muliple breakpoints per location however the IDE really only
-        // supports one breakpoint per location, so we only allow one active
-        // breakpoint per location in.
-        const locations = new Set<string>();
-        activeSnapshot.forEach((breakpoint) => {
-            const cdbgBreakpoint = CdbgBreakpoint.fromSnapshot(breakpoint);
-
-            // We only sync in active snapshots, and not logpoints. We do this
-            // because the DebugProtocol.Breakpoint type the adapter sends to
-            // the IDE does not support a log message field, so it's not
-            // possible to communicate to the IDE that a breakpoint is a
-            // logpoint.
-            //
-            // TODO: Logpoints still need extra condideration. IF the IDE has a
-            // logpoint before the attach call, we want to ensure we can match
-            // up to that to ensure we don't end up creating a duplicate
-            // logpoint in the backend.
-            if (cdbgBreakpoint.isSnapshot() && !locations.has(cdbgBreakpoint.locationString)) {
-                locations.add(cdbgBreakpoint.locationString);
-                this.addInitServerBreakpoint(cdbgBreakpoint);
-            }
-        });
-
-        console.log('Breakpoints loaded from server');
+        this.initialActiveBreakpoints = new InitialActiveBreakpoints(activeSnapshot);
+        console.log('Active breakpoints loaded from server');
     }
 
     public setUpServerListeners() {
@@ -112,30 +89,33 @@ export class BreakpointManager {
         if (this.onCompletedBreakpoint) { this.onCompletedBreakpoint(cdbgBreakpoint); }
     }
 
-    initializeWithLocalBreakpoints(localBreakpoints: CdbgBreakpoint[]) {
-        const bpIds = new Set<string>();  // Keep track of which breakpoints we've seen.
-        for (const cdbgBreakpoint of localBreakpoints) {
-            let found = false;
-            for (const bp of this.getBreakpoints()) {
-                // TODO: Handle multiple matches in a considered manner.  Not sure what's best to do right now.
-                if (bp.matches(cdbgBreakpoint)) {
-                    found = true;
-                    bpIds.add(bp.id);  // Say that we've seen this breakpoint even if there's more than one match.
-                }
-            }
-
-            if (!found) {
-                // Server breakpoints should have already been loaded.
-                console.log('did not find a matching breakpoint on server; creating a new one.');
-                this.saveBreakpointToServer(cdbgBreakpoint);
+    public initializeWithLocalBreakpoints(path: string, localBreakpoints: CdbgBreakpoint[]): void {
+        const matches = this.initialActiveBreakpoints!.match(path, localBreakpoints);
+        const linesSeen: Set<number> = new Set();
+        for (let i = 0; i < localBreakpoints.length; i++) {
+            const localBP = localBreakpoints[i];
+            const matchedBP = matches[i];
+            linesSeen.add(localBP.line!);
+            if (matchedBP === undefined) {
+                this.saveBreakpointToServer(localBP);
+            } else {
+                this.addInitServerBreakpoint(matchedBP);
             }
         }
 
-        this.getBreakpoints().forEach((bp) => {
-            if (!bpIds.has(bp.id)) {
-                if (this.onNewBreakpoint) { this.onNewBreakpoint(bp) };
-            }
-        })
+        const newBPsForIDE = this.initialActiveBreakpoints!.getBreakpointsToSyncToIDEForPath(path, linesSeen);
+        for (const bp of newBPsForIDE) {
+            this.addInitServerBreakpoint(bp);
+            if (this.onNewBreakpoint) { this.onNewBreakpoint(bp); }
+        }
+    }
+
+    public syncInitialActiveBreakpointsToIDE(excludePaths: Set<string>) {
+        const newBPsForIDE = this.initialActiveBreakpoints!.getBreakpointsToSyncToIDE(excludePaths);
+        for (const bp of newBPsForIDE) {
+            this.addInitServerBreakpoint(bp);
+            if (this.onNewBreakpoint) { this.onNewBreakpoint(bp); }
+        }
     }
 
     public saveBreakpointToServer(breakpoint: CdbgBreakpoint): void {

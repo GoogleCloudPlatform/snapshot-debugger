@@ -22,7 +22,7 @@ import { pickDebuggeeId } from './debuggeePicker';
 import { BreakpointManager } from './breakpointManager';
 
 const FIREBASE_APP_NAME = 'snapshotdbg';
-const INITIALIZE_TIME_ALLOWANCE_MS = 20 * 1000; // 2 seconds
+const INITIALIZE_TIME_ALLOWANCE_MS = 2 * 1000; // 2 seconds
 
 export enum CustomRequest {
     RUN_HISTORICAL_SNAPSHOT_PICKER = 'runHistoricalSnapshotPicker',
@@ -54,7 +54,7 @@ export class SnapshotDebuggerSession extends DebugSession {
     private currentBreakpoint: CdbgBreakpoint | undefined = undefined;
     private currentFrameId: number = 0;
 
-    private initializedPaths: Map<string, boolean> = new Map();
+    private initializedPaths: Set<string> = new Set();
     private ideBreakpoints: IdeBreakpoints = new IdeBreakpoints();
 
     private setVariableType: boolean = false;
@@ -221,7 +221,7 @@ export class SnapshotDebuggerSession extends DebugSession {
 
         const path = args.source.path!;
 
-        const initialized: boolean = this.initializedPaths.get(path) ?? this.isDeferredInitializationDone;
+        const initialized: boolean = this.initializedPaths.has(path) || this.isDeferredInitializationDone;
 
         if (initialized) {
             console.log(`Already initialized for this path.  Looking for user input (create or delete breakpoints)`);
@@ -259,20 +259,19 @@ export class SnapshotDebuggerSession extends DebugSession {
             this.ideBreakpoints.applyNewIdeSnapshot(path, sourceBreakpoints);
 
             const localBreakpoints = sourceBreakpoints.map((bp) => CdbgBreakpoint.fromSourceBreakpoint(args.source, bp));
-            this.breakpointManager!.initializeWithLocalBreakpoints(localBreakpoints);
+            this.breakpointManager!.initializeWithLocalBreakpoints(path, localBreakpoints);
 
-            this.initializedPaths.set(path, true);
+            this.initializedPaths.add(path);
         }
 
         // The breakpoints in the response must have a 1:1 mapping in the same order as found in the request.
         response.body.breakpoints = [];
         for (const bp of (args.breakpoints ?? [])) {
             const cdbg = this.breakpointManager?.getBreakpointBySourceBreakpoint(bp);
-            // TODO: Figure out if it's possible it's not found, and if possible then need to fill somehthing in
-            // TODO: Figure out what do do for duplicates:vs
-
             if (cdbg) {
                 response.body.breakpoints.push(cdbg.localBreakpoint);
+            } else {
+              console.log("Unexpected breakpoint not found!");
             }
         }
 
@@ -287,13 +286,9 @@ export class SnapshotDebuggerSession extends DebugSession {
         // We sync over all breakpoints that have not yet had their paths
         // synced.  After the attach request call, the IDE will immediately call
         // setBreakpointRequest for all paths (files) it already has breakpoints
-        // for Any path that had this happen will be marked in
+        // for. Any path that had this happen will be marked in
         // this.initializedPaths.
-        for (const bp of this.breakpointManager!.getBreakpoints()) {
-            if (!this.initializedPaths.get(bp.path) && bp.isActive()) {
-                this.reportNewBreakpointToIDE(bp);
-            }
-        }
+        this.breakpointManager?.syncInitialActiveBreakpointsToIDE(this.initializedPaths);
 
         this.isDeferredInitializationDone = true;
     }

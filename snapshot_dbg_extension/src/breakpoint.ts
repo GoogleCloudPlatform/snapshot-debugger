@@ -129,6 +129,14 @@ export class CdbgBreakpoint {
         return `${this.path}:${this.line}`;
     }
 
+    public get createTimeUnixMsec(): number {
+        if (typeof this.serverBreakpoint.createTimeUnixMsec === "number") {
+            return this.serverBreakpoint.createTimeUnixMsec;
+        }
+
+        return 0;
+    }
+
     public get finalTime(): string {
         return unixTimeToString(this.serverBreakpoint.finalTimeUnixMsec);
     }
@@ -186,6 +194,7 @@ export class CdbgBreakpoint {
         // we cannot populate those fields here.
         const ideBreakpoint: DebugProtocol.SourceBreakpoint = {
             line: serverBreakpoint.location.line,
+            ...(logpointMessage && {logMessage: logpointMessage.userMessage}),
         };
 
         const bp = new CdbgBreakpoint(ideBreakpoint, localBreakpoint, serverBreakpoint);
