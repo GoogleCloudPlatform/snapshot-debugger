@@ -184,6 +184,7 @@ export class CdbgBreakpoint {
 
     public static fromSnapshot(snapshot: DataSnapshot): CdbgBreakpoint {
         const serverBreakpoint: ServerBreakpoint = snapshot.val();
+        const condition = serverBreakpoint.condition;
         const path = serverBreakpoint.location.path;
         const logpointMessage = serverBreakpoint.logMessageFormat ? LogpointMessage.fromBreakpoint(serverBreakpoint) : undefined;
 
@@ -197,12 +198,9 @@ export class CdbgBreakpoint {
             },
         };
 
-        // Here we create a DebugProtocol.SourceBreakpoint represention that the IDE will obtain. Since we're
-        // starting with the DB version of the breakpoint here, it will be synced to the IDE via
-        // the DebugProtocol.Breakpoint representation, which does not have a logMessage or condition field. This means
-        // we cannot populate those fields here.
         const ideBreakpoint: DebugProtocol.SourceBreakpoint = {
             line: serverBreakpoint.location.line,
+            ...(condition && {condition}),
             ...(logpointMessage && {logMessage: logpointMessage.userMessage}),
         };
 

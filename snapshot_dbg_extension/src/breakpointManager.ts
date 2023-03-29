@@ -81,7 +81,7 @@ export class BreakpointManager {
     }
 
     // Supports the case of the step operations we don't support. The breakpoint passed in here is already
-    // complete and full filled in. We just need to store it and get it reloaded in the UI.
+    // complete and fully filled in. We just need to store it and get it reloaded in the UI.
     public loadCompleteSnapshot(cdbgBreakpoint: CdbgBreakpoint): void {
         const bpId = cdbgBreakpoint.id;
         this.breakpoints.set(bpId, cdbgBreakpoint);
@@ -105,6 +105,7 @@ export class BreakpointManager {
 
         const newBPsForIDE = this.initialActiveBreakpoints!.getBreakpointsToSyncToIDEForPath(path, linesSeen);
         for (const bp of newBPsForIDE) {
+            this.scrubBreakpointToSyncToIDE(bp);
             this.addInitServerBreakpoint(bp);
             if (this.onNewBreakpoint) { this.onNewBreakpoint(bp); }
         }
@@ -113,6 +114,7 @@ export class BreakpointManager {
     public syncInitialActiveBreakpointsToIDE(excludePaths: Set<string>) {
         const newBPsForIDE = this.initialActiveBreakpoints!.getBreakpointsToSyncToIDE(excludePaths);
         for (const bp of newBPsForIDE) {
+            this.scrubBreakpointToSyncToIDE(bp);
             this.addInitServerBreakpoint(bp);
             if (this.onNewBreakpoint) { this.onNewBreakpoint(bp); }
         }
@@ -198,4 +200,27 @@ export class BreakpointManager {
         }
     }
 
+    /**
+     * Handles the scenario where at initial attach time, a breakpoint from the
+     * backend gets added to the IDE (ie the IDE did not already have a
+     * breakpoint listed at the location).  The DebbugProtocol.Breakpoint type
+     * is used to transmit the  breakpoint to the IDE. This type does not
+     * support some fields, like logMessage or conditions. The issue that arises
+     * is on setBreakpointRequests that will then occur, the SourceBreakpoint it
+     * passes in will be missing these fields, which will cause confusion when
+     * performing matches, so we scrub these fields to avoid issues.
+     *
+     * @param cdbgBreakpoint breakpoint to scrub
+     */
+    private scrubBreakpointToSyncToIDE(cdbgBreakpoint: CdbgBreakpoint) {
+        if (cdbgBreakpoint.isLogpoint()) {
+            // Do to the limitation of the logMessage not being present in
+            // DebugProtocol.Breakpoint we do not sync logpoints from the
+            // backend to the IDE at initialization time.
+            console.log("ERROR, unexpected call to scrub logpoint.")
+        }
+
+        cdbgBreakpoint.ideBreakpoint.condition = undefined;
+        cdbgBreakpoint.serverBreakpoint.condition = undefined;
+    }
 }

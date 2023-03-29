@@ -1,6 +1,7 @@
 import { DataSnapshot } from "firebase-admin/database";
 import { LogpointMessage } from './logpointMessage';
 import { CdbgBreakpoint } from "./breakpoint";
+import { sourceBreakpointToString } from "./util";
 
 class LineEntry {
     public logpoints: Array<CdbgBreakpoint> = [];
@@ -25,7 +26,7 @@ class LineEntry {
     public matchSnapshot(cdbgBreakpoint: CdbgBreakpoint): CdbgBreakpoint|undefined {
         // If there are multiple BPs, we have to choose only one, for
         // consistency we always choose the newest one.
-        return this.newestSnaphsot();
+        return this.newestBreakpoint(this.snapshots.filter(bp => this.doBreakpointsMatch(cdbgBreakpoint, bp)));
     }
 
     public matchLogpoint(cdbgBreakpoint: CdbgBreakpoint): CdbgBreakpoint|undefined {
@@ -39,9 +40,9 @@ class LineEntry {
         return undefined;
     }
 
-    public newestSnaphsot(): CdbgBreakpoint|undefined {
-        let newestBP = this.snapshots.length === 0 ? undefined : this.snapshots[0];
-        for (const bp of this.snapshots) {
+    public newestBreakpoint(breakpoints: CdbgBreakpoint[]): CdbgBreakpoint|undefined {
+        let newestBP = breakpoints.length === 0 ? undefined : this.snapshots[0];
+        for (const bp of breakpoints) {
             if (bp.createTimeUnixMsec > newestBP!.createTimeUnixMsec) {
                 newestBP = bp;
             }
@@ -55,9 +56,14 @@ class LineEntry {
         // this because the DebugProtocol.Breakpoint type the adapter sends to
         // the IDE does not support a log message field, so it's not possible
         // to communicate to the IDE that a breakpoint is a logpoint.
+        //
         // In addition, can only sync 1 breakpoint per line. For consistency we
         // use the newest snapshot for this.
-        return this.newestSnaphsot();
+        return this.newestBreakpoint(this.snapshots);
+    }
+
+    private doBreakpointsMatch(bp1: CdbgBreakpoint, bp2: CdbgBreakpoint): boolean {
+        return sourceBreakpointToString(bp1.ideBreakpoint) === sourceBreakpointToString(bp2.ideBreakpoint);
     }
 }
 
