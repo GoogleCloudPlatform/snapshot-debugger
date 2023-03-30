@@ -12,7 +12,7 @@ import { pickSnapshot } from './snapshotPicker';
 import { StatusMessage } from './statusMessage';
 import { UserPreferences } from './userPreferences';
 import { IsActiveWhenClauseContext } from './whenClauseContextUtil';
-import { initializeApp, cert, App, deleteApp } from 'firebase-admin/app';
+import { initializeApp, cert, App, deleteApp, Credential } from 'firebase-admin/app';
 import { DataSnapshot, getDatabase } from 'firebase-admin/database';
 
 import { DebugProtocol } from '@vscode/debugprotocol';
@@ -20,6 +20,8 @@ import { Database } from 'firebase-admin/lib/database/database';
 import { addPwd, sleep, sourceBreakpointToString, stringToSourceBreakpoint, stripPwd } from './util';
 import { pickDebuggeeId } from './debuggeePicker';
 import { BreakpointManager } from './breakpointManager';
+import { credential, GoogleOAuthAccessToken } from 'firebase-admin';
+import { GcloudCredential } from './gcloudCredential';
 
 const FIREBASE_APP_NAME = 'snapshotdbg';
 const INITIALIZE_TIME_ALLOWANCE_MS = 2 * 1000; // 2 seconds
@@ -109,15 +111,22 @@ export class SnapshotDebuggerSession extends DebugSession {
         console.log("Attach Request");
         console.log(args);
 
+        const credential = new GcloudCredential();
+        const projectId = await credential.getProjectId();
+        console.log(`Using account: ${await credential.getAccount()}`);
+
+        /*
         const serviceAccount = require(args.serviceAccountPath);
         const projectId = serviceAccount['project_id'];
+        */
         let databaseUrl = args.databaseUrl;
         if (!databaseUrl) {
             databaseUrl = `https://${projectId}-cdbg.firebaseio.com`;
         }
 
         this.app = initializeApp({
-            credential: cert(serviceAccount),
+//            credential: cert(serviceAccount),
+            credential: credential,
             databaseURL: databaseUrl
         },
             FIREBASE_APP_NAME
