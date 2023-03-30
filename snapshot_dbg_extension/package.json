@@ -15,8 +15,7 @@
   "icon": "media/icon-512.png",
   "activationEvents": [
     "onDebugResolve:snapshotdbg",
-    "onDebugDynamicConfigurations:snapshotdbg",
-    "onCommand:extension.snapshotdbg.getServiceAccountPath"
+    "onDebugDynamicConfigurations:snapshotdbg"
   ],
   "contributes": {
     "menus": {
@@ -77,11 +76,6 @@
               "serviceAccountPath"
             ],
             "properties": {
-              "serviceAccountPath": {
-                "type": "string",
-                "description": "Path to the service account credentials file.",
-                "default": "${command:AskForServiceAccountPath}"
-              },
               "databaseUrl": {
                 "type": "string",
                 "description": "URL to the Firebase Realtime Database to use."
@@ -98,7 +92,7 @@
             "type": "snapshotdbg",
             "name": "Snapshot Debugger",
             "request": "attach",
-            "serviceAccountPath": "${command:AskForServiceAccountPath}"
+            "databaseUrl": ""
           }
         ],
         "configurationSnippets": [
@@ -109,15 +103,11 @@
               "type": "snapshotdbg",
               "request": "attach",
               "name": "Snapshot Debugger",
-              "serviceAccountPath": "${command:AskForServiceAccountPath}",
               "databaseUrl": "",
               "debuggeeId": ""
             }
           }
-        ],
-        "variables": {
-          "AskForServiceAccountPath": "extension.snapshotdbg.getServiceAccountPath"
-        }
+        ]
       }
     ]
   },

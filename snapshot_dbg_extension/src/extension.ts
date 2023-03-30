@@ -11,20 +11,6 @@ export function activate(context: vscode.ExtensionContext) {
     IsActiveWhenClauseContext.create();
 
     const userPreferences: UserPreferences = {"isExpressionsPromptEnabled": true};
-    context.subscriptions.push(vscode.commands.registerCommand('extension.snapshotdbg.getServiceAccountPath', async config => {
-        const result = await vscode.window.showOpenDialog({
-            "openLabel": "Select",
-            "title": "Select your service account credentials file",
-            "filters": { "json": ["json"] }
-        });
-
-        if (result && result[0]) {
-            return result[0].fsPath;
-        } else {
-            // TODO: Figure out how to fail gracefully.
-            return undefined;
-        }
-    }));
 
     context.subscriptions.push(vscode.commands.registerCommand('extension.snapshotdbg.viewHistoricalSnapshot', async args => {
         const activeDebugSession: DebugSession | undefined = vscode.debug.activeDebugSession;
