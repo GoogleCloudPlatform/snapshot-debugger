@@ -179,7 +179,7 @@ class DeleteDebuggeesCommandTests(unittest.TestCase):
 
     self.rtdb_service_mock.delete_debuggees.assert_called_once()
     self.assertCountEqual(
-        [d1, d2, d3], self.rtdb_service_mock.delete_debuggees.call_args.args[0])
+        [d1, d2, d3], self.rtdb_service_mock.delete_debuggees.call_args[0][0])
 
   def test_by_default_only_stale_debuggees_deleted(self):
     testargs = []
@@ -204,7 +204,7 @@ class DeleteDebuggeesCommandTests(unittest.TestCase):
     self.rtdb_service_mock.get_debuggees.assert_called_once_with(ANY)
     self.assertCountEqual(
         [DEBUGGEE_INACTIVE, DEBUGGEE_STALE],
-        self.rtdb_service_mock.delete_debuggees.call_args.args[0])
+        self.rtdb_service_mock.delete_debuggees.call_args[0][0])
 
   def test_include_all_flag_deletes_inactive_stale_and_acitve_debuggees(self):
     testargs = ['--include-all']
@@ -217,7 +217,7 @@ class DeleteDebuggeesCommandTests(unittest.TestCase):
     self.rtdb_service_mock.get_debuggees.assert_called_once_with(ANY)
     self.assertCountEqual(
         [DEBUGGEE_ACTIVE, DEBUGGEE_INACTIVE, DEBUGGEE_STALE],
-        self.rtdb_service_mock.delete_debuggees.call_args.args[0])
+        self.rtdb_service_mock.delete_debuggees.call_args[0][0])
 
   def test_user_prompted_with_debuggee_summary_before_delete(self):
     expected_headers = ['Name', 'ID', 'Last Active', 'Status']
@@ -265,7 +265,7 @@ class DeleteDebuggeesCommandTests(unittest.TestCase):
         self.user_output_mock.tabular.assert_called_once_with(
             expected_headers, ANY)
         self.assertCountEqual(expected_rows,
-                              self.user_output_mock.tabular.call_args.args[1])
+                              self.user_output_mock.tabular.call_args[0][1])
 
         self.user_input_mock.prompt_user_to_continue.assert_called_once()
 
