@@ -299,12 +299,12 @@ export class SnapshotDebuggerSession extends DebugSession {
                     extraParams.expressions = await this.runExpressionsPrompt();
                 }
 
-                const cdbgBp = CdbgBreakpoint.fromSourceBreakpoint(args.source, bp, extraParams);
+                const cdbgBp = CdbgBreakpoint.fromSourceBreakpoint(args.source, bp, this.account, extraParams);
                 this.breakpointManager!.saveBreakpointToServer(cdbgBp);
             }
 
             for (const bp of bpDiff.deleted) {
-                const sourceBp = CdbgBreakpoint.fromSourceBreakpoint(args.source, bp);
+                const sourceBp = CdbgBreakpoint.fromSourceBreakpoint(args.source, bp, this.account);
                 for (const cdbgBp of this.breakpointManager!.getBreakpoints()) {
                     if (cdbgBp.matches(sourceBp)) {
                         this.breakpointManager!.deleteBreakpointFromServer(cdbgBp.id);
@@ -322,7 +322,7 @@ export class SnapshotDebuggerSession extends DebugSession {
             // and applyNewIdeSnapshot clobbers all pre-existing data.
             this.ideBreakpoints.applyNewIdeSnapshot(path, sourceBreakpoints);
 
-            const localBreakpoints = sourceBreakpoints.map((bp) => CdbgBreakpoint.fromSourceBreakpoint(args.source, bp));
+            const localBreakpoints = sourceBreakpoints.map((bp) => CdbgBreakpoint.fromSourceBreakpoint(args.source, bp, this.account));
             this.breakpointManager!.initializeWithLocalBreakpoints(path, localBreakpoints);
 
             this.initializedPaths.add(path);

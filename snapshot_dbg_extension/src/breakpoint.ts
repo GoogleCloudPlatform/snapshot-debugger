@@ -1,9 +1,5 @@
-import {
-    Source, Breakpoint
-} from '@vscode/debugadapter';
 import { DebugProtocol } from '@vscode/debugprotocol';
 import { DataSnapshot } from 'firebase-admin/database';
-import { Server } from 'http';
 import { LogpointMessage } from './logpointMessage';
 import { addPwd, stripPwd } from './util';
 
@@ -59,6 +55,7 @@ export interface ServerBreakpoint {
     id: string;
     action: string;  // 'CAPTURE' | 'LOG';
     location: ServerLocation;
+    userEmail: string;
     condition?: string;
     expressions?: string[];
     logMessageFormat?: string;
@@ -212,7 +209,7 @@ export class CdbgBreakpoint {
         return bp;
     }
 
-    public static fromSourceBreakpoint(source: DebugProtocol.Source, sourceBreakpoint: DebugProtocol.SourceBreakpoint, extraParams: SourceBreakpointExtraParams = {}): CdbgBreakpoint {
+    public static fromSourceBreakpoint(source: DebugProtocol.Source, sourceBreakpoint: DebugProtocol.SourceBreakpoint, account: string, extraParams: SourceBreakpointExtraParams = {}): CdbgBreakpoint {
         const bpId = kUnknown;
 
         const localBreakpoint: DebugProtocol.Breakpoint = {
@@ -244,6 +241,7 @@ export class CdbgBreakpoint {
                 path: stripPwd(source.path!),
                 line: sourceBreakpoint.line,
             },
+            userEmail: account,
             ...(logLevel && {logLevel}),
             ...(sourceBreakpoint.condition && {condition: sourceBreakpoint.condition}),
             ...(logpointMessage && {logMessageFormat: logpointMessage.logMessageFormat}),
