@@ -1,7 +1,7 @@
 import {
     DebugSession,
     InitializedEvent, StoppedEvent, BreakpointEvent,
-    Thread, StackFrame, Scope, Source, Variable, ThreadEvent, ContinuedEvent
+    StackFrame, Scope, Source, ThreadEvent, ContinuedEvent
 } from '@vscode/debugadapter';
 import * as vscode from 'vscode';
 import { CdbgBreakpoint, SourceBreakpointExtraParams, Variable as CdbgVariable } from './breakpoint';
@@ -12,15 +12,14 @@ import { pickSnapshot } from './snapshotPicker';
 import { StatusMessage } from './statusMessage';
 import { UserPreferences } from './userPreferences';
 import { IsActiveWhenClauseContext } from './whenClauseContextUtil';
-import { initializeApp, cert, App, deleteApp, Credential } from 'firebase-admin/app';
-import { DataSnapshot, getDatabase } from 'firebase-admin/database';
+import { initializeApp, App, deleteApp } from 'firebase-admin/app';
+import { getDatabase } from 'firebase-admin/database';
 
 import { DebugProtocol } from '@vscode/debugprotocol';
 import { Database } from 'firebase-admin/lib/database/database';
-import { addPwd, sleep, sourceBreakpointToString, stringToSourceBreakpoint, stripPwd } from './util';
+import { addPwd, withTimeout } from './util';
 import { pickDebuggeeId } from './debuggeePicker';
 import { BreakpointManager } from './breakpointManager';
-import { credential, GoogleOAuthAccessToken } from 'firebase-admin';
 import { GcloudCredential } from './gcloudCredential';
 
 const FIREBASE_APP_NAME = 'snapshotdbg';
@@ -52,6 +51,8 @@ export class SnapshotDebuggerSession extends DebugSession {
     private app: App | undefined = undefined;
     private db: Database | undefined = undefined;
     private debuggeeId: string = '';
+    private projectId: string = '';
+    private account: string = '';
 
     private currentBreakpoint: CdbgBreakpoint | undefined = undefined;
     private currentFrameId: number = 0;
@@ -107,32 +108,83 @@ export class SnapshotDebuggerSession extends DebugSession {
         }
     }
 
+    private async connectToFirebase(credential: GcloudCredential, configuredDatabaseUrl?: string): Promise<Database> {
+        // Build the database URL.
+        const databaseUrls = [];
+        if (configuredDatabaseUrl) {
+            databaseUrls.push(configuredDatabaseUrl);
+        } else {
+            databaseUrls.push(`https://${this.projectId}-cdbg.firebaseio.com`);
+            databaseUrls.push(`https://${this.projectId}-default-rtdb.firebaseio.com`);
+        }
+
+        for (const databaseUrl of databaseUrls) {
+            this.app = initializeApp({
+                credential: credential,
+                databaseURL: databaseUrl
+            }, FIREBASE_APP_NAME);
+       
+            const db = getDatabase(this.app);
+
+            // Test the connection by reading the schema version.
+            try {
+                const version_snapshot = await withTimeout(
+                2000,
+                db.ref('cdbg/schema_version').get()
+                );
+                if (version_snapshot) {
+                const version = version_snapshot.val();
+                console.log(
+                    `Firebase app initialized.  Connected to ${databaseUrl}` +
+                    ` with schema version ${version}`
+                );
+
+                return db;
+                } else {
+                throw new Error('failed to fetch schema version from database');
+                }
+            } catch (e) {
+                console.log(`failed to connect to database ${databaseUrl}: ` + e);
+                deleteApp(this.app);
+                this.app = undefined;
+            }
+        }
+
+        throw new Error(`Failed to initialize FirebaseApp, attempted URLs: ${databaseUrls}`);
+    }
+
     protected async attachRequest(response: DebugProtocol.AttachResponse, args: IAttachRequestArguments) {
         console.log("Attach Request");
         console.log(args);
 
         const credential = new GcloudCredential();
-        const projectId = await credential.getProjectId();
-        console.log(`Using account: ${await credential.getAccount()}`);
-
-        /*
-        const serviceAccount = require(args.serviceAccountPath);
-        const projectId = serviceAccount['project_id'];
-        */
-        let databaseUrl = args.databaseUrl;
-        if (!databaseUrl) {
-            databaseUrl = `https://${projectId}-cdbg.firebaseio.com`;
+        try {
+            this.projectId = await credential.getProjectId();
+        } catch (err) {
+            this.sendErrorResponse(response, 3, 'Cannot determine project Id.\n\nIs `gcloud` installed and have you logged in?');
+            return;
         }
 
-        this.app = initializeApp({
-//            credential: cert(serviceAccount),
-            credential: credential,
-            databaseURL: databaseUrl
-        },
-            FIREBASE_APP_NAME
-        );
+        try {
+            this.account = await credential.getAccount();
+        } catch (err) {
+            this.sendErrorResponse(response, 4, 'Cannot determine user account.\n\nIs `gcloud` installed and have you logged in?');
+            return;
+        }
 
-        this.db = getDatabase(this.app);
+        try {
+            this.db = await this.connectToFirebase(credential, args.databaseUrl);
+        } catch (err) {
+            this.sendErrorResponse(response, 2,
+                'Cannot connect to Firebase.\n\n' +
+                '* Are you logged into `gcloud`?\n' +
+                '* Have you set up the Snapshot Debugger on this project?\n' +
+                '* Do you have Firebase Database Admin permissions or higher?\n' +
+                '* Is the correct database URL specified in your launch.json?');
+            return;
+        }
+
+        credential.initialized = true;
 
         const debuggeeId = args.debuggeeId || await pickDebuggeeId(this.db);
         if (!debuggeeId) {

@@ -1,4 +1,3 @@
-import { UserRecord } from 'firebase-admin/lib/auth/user-record';
 import * as vscode from 'vscode';
 import { WorkspaceFolder, DebugConfiguration, DebugSession, ProviderResult, CancellationToken } from 'vscode';
 import { IsActiveWhenClauseContext } from './whenClauseContextUtil';

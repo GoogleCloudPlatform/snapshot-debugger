@@ -1,9 +1,27 @@
 import * as vscode from 'vscode';
 import { DebugProtocol } from '@vscode/debugprotocol';
 
+/**
+ * Returns a promise that will resolve in ms milliseconds.
+ * @param ms 
+ * @returns 
+ */
 export function sleep(ms: number) {
     return new Promise((resolve) => { setTimeout(resolve, ms) });
 }
+
+/**
+ * Waits ms milliseconds for the promise to resolve, or rejects with a timeout.
+ * @param ms
+ * @param promise
+ * @returns Promise wrapped in a timeout.
+ */
+export function withTimeout(ms: number, promise: Promise<any>) {
+    const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(`Timed out after ${ms} ms.`), ms)
+    );
+    return Promise.race([promise, timeout]);
+};
 
 // TODO: Plumb this through from outside this file if possible.
 // FIXME: Use a path library instead of this nonsense.
