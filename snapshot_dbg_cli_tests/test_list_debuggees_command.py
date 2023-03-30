@@ -268,7 +268,7 @@ class ListDebuggeesCommandTests(unittest.TestCase):
         self.user_output_mock.tabular.assert_called_once_with(
             expected_headers, ANY)
         self.assertCountEqual(expected_tabular_data,
-                              self.user_output_mock.tabular.call_args.args[1])
+                              self.user_output_mock.tabular.call_args[0][1])
 
   def test_output_format_json(self):
     testcases = [
