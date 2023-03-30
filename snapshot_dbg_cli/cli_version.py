@@ -51,8 +51,13 @@ class SuppressedUserOutput(UserOutput):
 
 
 def extract_version_number(version_string):
-  return version_string.removeprefix('SNAPSHOT_DEBUGGER_CLI_VERSION_').replace(
-      '_', '.')
+  # Expressly not using str.removeprefix as that was added in Python 3.9
+  # and we want to support older versions.
+  prefix = 'SNAPSHOT_DEBUGGER_CLI_VERSION_'
+  if version_string.startswith(prefix):
+    version_string = version_string[len(prefix):]
+
+  return version_string.replace('_', '.')
 
 
 def running_version():
