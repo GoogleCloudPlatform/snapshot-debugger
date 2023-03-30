@@ -314,6 +314,8 @@ export class SnapshotDebuggerSession extends DebugSession {
             }
 
             for (const bp of bpDiff.deleted) {
+                // TODO: Change this to use getBreakpointBySourceBreakpoint() on
+                // breakpointmanager.
                 const sourceBp = CdbgBreakpoint.fromSourceBreakpoint(args.source, bp, this.account);
                 for (const cdbgBp of this.breakpointManager!.getBreakpoints()) {
                     if (cdbgBp.matches(sourceBp)) {

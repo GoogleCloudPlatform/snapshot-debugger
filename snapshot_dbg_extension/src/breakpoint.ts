@@ -166,6 +166,7 @@ export class CdbgBreakpoint {
         return !this.serverBreakpoint.isFinalState;
     }
 
+    // TODO: Remove use of this.
     public matches(other: CdbgBreakpoint): Boolean {
         if (this.id != kUnknown && other.id === this.id) {
             return true;
