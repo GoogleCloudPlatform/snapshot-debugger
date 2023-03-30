@@ -1,7 +1,3 @@
-chore: Release 0.3.4
-
-- Remove use of str.removeprefix, which fixes/allows the CLI to
-  run on Python < 3.9
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
