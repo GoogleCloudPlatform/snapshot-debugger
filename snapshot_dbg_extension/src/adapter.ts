@@ -108,7 +108,7 @@ export class SnapshotDebuggerSession extends DebugSession {
         }
     }
 
-    private async connectToFirebase(credential: GcloudCredential, configuredDatabaseUrl?: string): Promise<Database> {
+    private async connectToFirebase(credential: GcloudCredential, progress: vscode.Progress<{message: string, increment: number}>, configuredDatabaseUrl?: string): Promise<Database> {
         // Build the database URL.
         const databaseUrls = [];
         if (configuredDatabaseUrl) {
@@ -119,6 +119,7 @@ export class SnapshotDebuggerSession extends DebugSession {
         }
 
         for (const databaseUrl of databaseUrls) {
+            progress.report({message: `Connecting to ${databaseUrl}`,increment: 20});
             this.app = initializeApp({
                 credential: credential,
                 databaseURL: databaseUrl
@@ -154,42 +155,51 @@ export class SnapshotDebuggerSession extends DebugSession {
     }
 
     protected async attachRequest(response: DebugProtocol.AttachResponse, args: IAttachRequestArguments) {
-        console.log("Attach Request");
-        console.log(args);
+        const options = {
+            title: 'Attaching to Snapshot Debugger',
+            location: vscode.ProgressLocation.Notification
+        };
+    
+        await vscode.window.withProgress(options, async (progress) => {
+            console.log("Attach Request");
+            console.log(args);
 
-        const credential = new GcloudCredential();
-        try {
-            this.account = await credential.getAccount();
-        } catch (err) {
-            this.sendErrorResponse(response, 4, 'Cannot determine user account.\n\nIs `gcloud` installed and have you logged in?');
-            return;
-        }
-
-        // We only need the project ID if a database URL was not specified.
-        if (!args.databaseUrl) {
+            progress.report({message: 'Fetching user account', increment: 10});
+            const credential = new GcloudCredential();
             try {
-                this.projectId = await credential.getProjectId();
+                this.account = await credential.getAccount();
             } catch (err) {
-                this.sendErrorResponse(response, 3, 'Cannot determine project Id.\n\nIs `gcloud` installed and have you logged in?');
-                return;
+                this.sendErrorResponse(response, 4, 'Cannot determine user account.\n\nIs `gcloud` installed and have you logged in?');
+                throw err;
             }
-        }
 
-        try {
-            this.db = await this.connectToFirebase(credential, args.databaseUrl);
-        } catch (err) {
-            this.sendErrorResponse(response, 2,
-                'Cannot connect to Firebase.\n\n' +
-                '* Are you logged into `gcloud`?\n' +
-                '* Have you set up the Snapshot Debugger on this project?\n' +
-                '* Do you have Firebase Database Admin permissions or higher?\n' +
-                '* Is the correct database URL specified in your launch.json?');
-            return;
-        }
+            // We only need the project ID if a database URL was not specified.
+            if (!args.databaseUrl) {
+                progress.report({message: 'Fetching project ID', increment: 20});
+                try {
+                    this.projectId = await credential.getProjectId();
+                } catch (err) {
+                    this.sendErrorResponse(response, 3, 'Cannot determine project Id.\n\nIs `gcloud` installed and have you logged in?');
+                    throw err;
+                }
+            }
 
-        credential.initialized = true;
+            try {
+                this.db = await this.connectToFirebase(credential, progress, args.databaseUrl);
+            } catch (err) {
+                this.sendErrorResponse(response, 2,
+                    'Cannot connect to Firebase.\n\n' +
+                    '* Are you logged into `gcloud`?\n' +
+                    '* Have you set up the Snapshot Debugger on this project?\n' +
+                    '* Do you have Firebase Database Admin permissions or higher?\n' +
+                    '* Is the correct database URL specified in your launch.json?');
+                throw err;
+            }
 
-        const debuggeeId = args.debuggeeId || await pickDebuggeeId(this.db);
+            credential.initialized = true;
+        });
+
+        const debuggeeId = args.debuggeeId || await pickDebuggeeId(this.db!);
         if (!debuggeeId) {
             response.success = false;
             this.sendErrorResponse(response, 1, 'No Debuggee selected');
@@ -199,7 +209,7 @@ export class SnapshotDebuggerSession extends DebugSession {
         console.log("Using debuggee id: ", debuggeeId);
 
         // Set up breakpoint manager.
-        this.breakpointManager = new BreakpointManager(debuggeeId, this.db);
+        this.breakpointManager = new BreakpointManager(debuggeeId, this.db!);
         this.breakpointManager.onNewBreakpoint = (bp) => this.reportNewBreakpointToIDE(bp);
         this.breakpointManager.onCompletedBreakpoint = (bp) => this.reportCompletedBreakpointToIDE(bp);
 
