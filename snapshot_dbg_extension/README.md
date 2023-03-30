@@ -28,12 +28,12 @@ You can also:
 
 The Snapshot Debugger will only work if your application is already configured to work with it, is running, and has successfully registered itself.  See [this documentation][setting-up-in-application] for more details.
 
-You will need a service account with the proper credentials to access the Snapshot Debugger.
+You will need `gcloud` to be installed, and to be logged in with an account that has "Firebase Database Admin" permissions or higher on your project.
 
 ## Quirks / Potential Improvements
 
 * Attaching
-  * A service account file is required.  It would be better if we could use user credentials instead.
+  * `gcloud` is used to fetch user credentials and so much be installed and the user must be logged in.  Error messages are not precise if there are issues.
   * A debuggee id is required.  It can be provided in launch.json or selected at launch time.
 
 * Breakpoint management. The system attempts to synchronize breakpoints on the IDE and the backend.
@@ -61,9 +61,6 @@ You will need a service account with the proper credentials to access the Snapsh
   * Proposed improvement: Disable/hide/repurpose the watch expressions
 
 ## Known Issues
-
-* Attaching
-  * No testing/fallback logic is present for database urls.
 
 * Breakpoint management
   * SetBreakpoints response breakpoints need to be in the same order as they are in the request.  This is currently not the case and results in the UI merging breakpoints incorrectly.
