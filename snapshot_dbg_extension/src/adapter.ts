@@ -159,17 +159,20 @@ export class SnapshotDebuggerSession extends DebugSession {
 
         const credential = new GcloudCredential();
         try {
-            this.projectId = await credential.getProjectId();
-        } catch (err) {
-            this.sendErrorResponse(response, 3, 'Cannot determine project Id.\n\nIs `gcloud` installed and have you logged in?');
-            return;
-        }
-
-        try {
             this.account = await credential.getAccount();
         } catch (err) {
             this.sendErrorResponse(response, 4, 'Cannot determine user account.\n\nIs `gcloud` installed and have you logged in?');
             return;
+        }
+
+        // We only need the project ID if a database URL was not specified.
+        if (!args.databaseUrl) {
+            try {
+                this.projectId = await credential.getProjectId();
+            } catch (err) {
+                this.sendErrorResponse(response, 3, 'Cannot determine project Id.\n\nIs `gcloud` installed and have you logged in?');
+                return;
+            }
         }
 
         try {
