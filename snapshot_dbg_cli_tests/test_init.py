@@ -1,3 +1,7 @@
+chore: Release 0.3.4
+
+- Remove use of str.removeprefix, which fixes/allows the CLI to
+  run on Python < 3.9
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,4 +28,4 @@ class CliInitTests(unittest.TestCase):
 
   def test_version_is_expected_value(self):
     # Yes, this will need to be updated for each new version.
-    self.assertEqual('0.3.3', snapshot_dbg_cli.__version__)
+    self.assertEqual('0.3.4', snapshot_dbg_cli.__version__)
