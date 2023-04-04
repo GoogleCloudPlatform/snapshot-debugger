@@ -18,6 +18,7 @@ import { getDatabase } from 'firebase-admin/database';
 import { DebugProtocol } from '@vscode/debugprotocol';
 import { Database } from 'firebase-admin/lib/database/database';
 import { addPwd, withTimeout } from './util';
+import { debugLog, setDebugLogEnabled } from './debugUtil';
 import { pickDebuggeeId } from './debuggeePicker';
 import { BreakpointManager } from './breakpointManager';
 import { GcloudCredential } from './gcloudCredential';
@@ -41,6 +42,9 @@ interface IAttachRequestArguments extends DebugProtocol.AttachRequestArguments {
 
     /** Debuggee Id of an already registered debuggee. */
     debuggeeId: string;
+
+    /** Whether to output debug messages to console. */
+    debugOutput: boolean;
 }
 
 
@@ -90,22 +94,21 @@ export class SnapshotDebuggerSession extends DebugSession {
         response.body.supportsSingleThreadExecutionRequests = true;
 
         this.sendResponse(response);
-        console.log('Initialized');
     }
 
     protected customRequest(command: string, response: DebugProtocol.Response, args: any, request?: DebugProtocol.Request | undefined): void {
-        console.log(`Received custom request: ${command}`);
+        debugLog(`Received custom request: ${command}`);
         switch (command) {
             case CustomRequest.RUN_HISTORICAL_SNAPSHOT_PICKER:
                 this.runPickSnapshot();
                 break;
 
             default:
-                console.log(`Unknown custom request: ${command}`);
+                debugLog(`Unknown custom request: ${command}`);
         }
     }
 
-    private async connectToFirebase(credential: GcloudCredential, progress: vscode.Progress<{message: string, increment: number}>, configuredDatabaseUrl?: string): Promise<Database> {
+    private async connectToFirebase(credential: GcloudCredential, progress: vscode.Progress<{ message: string, increment: number }>, configuredDatabaseUrl?: string): Promise<Database> {
         // Build the database URL.
         const databaseUrls = [];
         if (configuredDatabaseUrl) {
@@ -116,33 +119,32 @@ export class SnapshotDebuggerSession extends DebugSession {
         }
 
         for (const databaseUrl of databaseUrls) {
-            progress.report({message: `Connecting to ${databaseUrl}`,increment: 20});
+            progress.report({ message: `Connecting to ${databaseUrl}`, increment: 20 });
             this.app = initializeApp({
                 credential: credential,
                 databaseURL: databaseUrl
             }, FIREBASE_APP_NAME);
-       
+
             const db = getDatabase(this.app);
 
             // Test the connection by reading the schema version.
             try {
                 const version_snapshot = await withTimeout(
-                2000,
-                db.ref('cdbg/schema_version').get()
-                );
+                    2000,
+                    db.ref('cdbg/schema_version').get());
                 if (version_snapshot) {
-                const version = version_snapshot.val();
-                console.log(
-                    `Firebase app initialized.  Connected to ${databaseUrl}` +
-                    ` with schema version ${version}`
-                );
+                    const version = version_snapshot.val();
+                    debugLog(
+                        `Firebase app initialized.  Connected to ${databaseUrl}` +
+                        ` with schema version ${version}`
+                    );
 
-                return db;
+                    return db;
                 } else {
-                throw new Error('failed to fetch schema version from database');
+                    throw new Error('failed to fetch schema version from database');
                 }
             } catch (e) {
-                console.log(`failed to connect to database ${databaseUrl}: ` + e);
+                debugLog(`failed to connect to database ${databaseUrl}: ` + e);
                 deleteApp(this.app);
                 this.app = undefined;
             }
@@ -152,16 +154,18 @@ export class SnapshotDebuggerSession extends DebugSession {
     }
 
     protected async attachRequest(response: DebugProtocol.AttachResponse, args: IAttachRequestArguments) {
+        setDebugLogEnabled(args.debugOutput);
+
         const options = {
             title: 'Attaching to Snapshot Debugger',
             location: vscode.ProgressLocation.Notification
         };
-    
-        await vscode.window.withProgress(options, async (progress) => {
-            console.log("Attach Request");
-            console.log(args);
 
-            progress.report({message: 'Fetching user account', increment: 10});
+        await vscode.window.withProgress(options, async (progress) => {
+            debugLog("Attach Request");
+            debugLog(args);
+
+            progress.report({ message: 'Fetching user account', increment: 10 });
             const credential = new GcloudCredential();
             try {
                 this.account = await credential.getAccount();
@@ -172,7 +176,7 @@ export class SnapshotDebuggerSession extends DebugSession {
 
             // We only need the project ID if a database URL was not specified.
             if (!args.databaseUrl) {
-                progress.report({message: 'Fetching project ID', increment: 20});
+                progress.report({ message: 'Fetching project ID', increment: 20 });
                 try {
                     this.projectId = await credential.getProjectId();
                 } catch (err) {
@@ -203,7 +207,7 @@ export class SnapshotDebuggerSession extends DebugSession {
             return;
         }
         this.debuggeeId = debuggeeId;
-        console.log("Using debuggee id: ", debuggeeId);
+        debugLog("Using debuggee id: ", debuggeeId);
 
         // Set up breakpoint manager.
         this.breakpointManager = new BreakpointManager(debuggeeId, this.db!);
@@ -216,7 +220,7 @@ export class SnapshotDebuggerSession extends DebugSession {
         this.breakpointManager.setUpServerListeners();
 
         IsActiveWhenClauseContext.enable();
-        console.log('Attached');
+        debugLog('Attached');
         this.sendResponse(response);
 
         this.isDeferredInitializationDone = false;
@@ -229,7 +233,7 @@ export class SnapshotDebuggerSession extends DebugSession {
     protected async disconnectRequest(response: DebugProtocol.DisconnectResponse, args: DebugProtocol.DisconnectArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
         // A new instance of this class is created for each debugging session.
         // Treat this function as a desctructor to clean up any resources that require cleanup.
-        console.log("Received Disconnect request: ", args);
+        debugLog("Received Disconnect request: ", args);
 
         IsActiveWhenClauseContext.disable();
 
@@ -242,7 +246,7 @@ export class SnapshotDebuggerSession extends DebugSession {
     }
 
     protected continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments, request?: DebugProtocol.Request | undefined): void {
-        console.log("Received continue request: ", args);
+        debugLog("Received continue request: ", args);
         const bp = this.breakpointManager?.getBreakpoint(`b-${args.threadId}`);
         if (bp) {
             this.removeBreakpoint(bp);
@@ -257,7 +261,7 @@ export class SnapshotDebuggerSession extends DebugSession {
         // threadID is required, this handler will only ever run once we've
         // notified the UI of a thread (IE provided it with a breakpoint ID
         // which acts as a thread ID).
-        console.log("Received Pause request: ", args);
+        debugLog("Received Pause request: ", args);
         await vscode.window.showInformationMessage("This operation is not supported by the Snapshot Debugger", { "modal": true });
         this.sendResponse(response);
         this.sendEvent(new ContinuedEvent(args.threadId));
@@ -265,28 +269,28 @@ export class SnapshotDebuggerSession extends DebugSession {
 
     protected async nextRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
         // This handler maps to the 'Step Over' debugger toolbar button.
-        console.log("Received Next request: ", args);
+        debugLog("Received Next request: ", args);
         await this.handleUnsupportedStepRequest(args.threadId);
         this.sendResponse(response);
     }
 
     protected async stepInRequest(response: DebugProtocol.StepInResponse, args: DebugProtocol.StepInArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
         // This handler maps to the 'Step Into' debugger toolbar button.
-        console.log("Received StepIn request: ", args);
+        debugLog("Received StepIn request: ", args);
         await this.handleUnsupportedStepRequest(args.threadId);
         this.sendResponse(response);
     }
 
     protected async stepOutRequest(response: DebugProtocol.StepOutResponse, args: DebugProtocol.StepOutArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
         // This handler maps to the 'Step Out' debugger toolbar button.
-        console.log("Received StepOut request: ", args);
+        debugLog("Received StepOut request: ", args);
         await this.handleUnsupportedStepRequest(args.threadId);
         this.sendResponse(response);
     }
 
     protected async setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): Promise<void> {
-        console.log('setBreakPointsRequest');
-        console.log(args);
+        debugLog('setBreakPointsRequest');
+        debugLog(args);
 
         response.body = response.body || { breakpoints: [] };
 
@@ -295,7 +299,7 @@ export class SnapshotDebuggerSession extends DebugSession {
         const initialized: boolean = this.initializedPaths.has(path) || this.isDeferredInitializationDone;
 
         if (initialized) {
-            console.log(`Already initialized for this path.  Looking for user input (create or delete breakpoints)`);
+            debugLog(`Already initialized for this path.  Looking for user input (create or delete breakpoints)`);
             const bpDiff = this.ideBreakpoints.applyNewIdeSnapshot(path, args.breakpoints ?? []);
 
             for (const bp of bpDiff.added) {
@@ -321,7 +325,7 @@ export class SnapshotDebuggerSession extends DebugSession {
                 }
             }
         } else {
-            console.log('Not initialized for this path yet.  Will attempt to synchronize between IDE and server');
+            debugLog('Not initialized for this path yet.  Will attempt to synchronize between IDE and server');
 
             const sourceBreakpoints = args.breakpoints ?? [];
 
@@ -344,17 +348,17 @@ export class SnapshotDebuggerSession extends DebugSession {
             if (cdbg) {
                 response.body.breakpoints.push(cdbg.localBreakpoint);
             } else {
-              console.log("Unexpected breakpoint not found!");
+                debugLog("Unexpected breakpoint not found!");
             }
         }
 
-        console.log('setBreakpointsResponse:');
-        console.log(response.body);
+        debugLog('setBreakpointsResponse:');
+        debugLog(response.body);
         this.sendResponse(response);
     }
 
     private runDeferredInitialization(): void {
-        console.log("Syncing active breakpoints from backend.");
+        debugLog("Syncing active breakpoints from backend.");
 
         // We sync over all breakpoints that have not yet had their paths
         // synced.  After the attach request call, the IDE will immediately call
@@ -379,12 +383,12 @@ export class SnapshotDebuggerSession extends DebugSession {
         // It should probably be in CdbgBreakpoint.fromSnapshot
         bp.localBreakpoint.verified = false;
         bp.localBreakpoint.message = bp.hasError() ? new StatusMessage(bp.serverBreakpoint).message : 'Snapshot captured';
-        console.log(`reporting breakpoint ${bp.id} as unverified`);
+        debugLog(`reporting breakpoint ${bp.id} as unverified`);
         this.sendEvent(new BreakpointEvent('changed', bp.localBreakpoint));
     }
 
     private reportNewBreakpointToIDE(bp: CdbgBreakpoint): void {
-        console.log(`Notifying IDE of BP: ${bp.id} - ${bp.shortPath}:${bp.line}`);
+        debugLog(`Notifying IDE of BP: ${bp.id} - ${bp.shortPath}:${bp.line}`);
         this.ideBreakpoints.add(bp.path, bp.ideBreakpoint);
         this.sendEvent(new BreakpointEvent('new', bp.localBreakpoint));
     }
@@ -427,7 +431,7 @@ export class SnapshotDebuggerSession extends DebugSession {
         const bpId = `b-${args.threadId}`;
         const breakpoint = this.breakpointManager!.getBreakpoint(bpId);
         if (!breakpoint) {
-            console.log(`Unexpected request for unknown breakpoint ${bpId}`);
+            debugLog(`Unexpected request for unknown breakpoint ${bpId}`);
             this.sendResponse(response);
             return;
         }
@@ -455,8 +459,8 @@ export class SnapshotDebuggerSession extends DebugSession {
             response.body.stackFrames = stackFrames;
             this.sendResponse(response);
         } else {
-            console.log(`Not sure what's going on with this one:`);
-            console.log(breakpoint);
+            debugLog(`Not sure what's going on with this one:`);
+            debugLog(breakpoint);
         }
     }
 
@@ -509,7 +513,7 @@ export class SnapshotDebuggerSession extends DebugSession {
                 const cdbgVars: CdbgVariable[] | undefined = args.variablesReference === 1 ? stackFrame.arguments : stackFrame.locals;
                 variables = (cdbgVars ?? []).map(v => this.cdbgVarToDap(v));
             } else {
-                console.log('cannot do a thing');
+                debugLog('cannot do a thing');
             }
         } else if (args.variablesReference === 3) {
             const expressions = this.currentBreakpoint?.serverBreakpoint?.evaluatedExpressions ?? [];
@@ -527,7 +531,7 @@ export class SnapshotDebuggerSession extends DebugSession {
         }
 
         response.body.variables = variables;
-        console.log(response);
+        debugLog(response);
         this.sendResponse(response);
     }
 
@@ -674,8 +678,6 @@ export class SnapshotDebuggerSession extends DebugSession {
     /**
      * Provides the IDE the list of threads to display.
      *
-     * TODO: The pattern of calling this function, particularly with suspended threads, needs to be understood.
-     *
      * The threads to display will be the set of snapshots that have been captured or breakpoints with errors.
      * @param response
      * @param request
@@ -697,14 +699,7 @@ export class SnapshotDebuggerSession extends DebugSession {
         }
 
         response.body.threads = threads;
-        console.log(`reporting threads`);
+        debugLog(`reporting threads`);
         this.sendResponse(response);
-
-        // and suspend all the threads.  This doesn't work right now because sending a thread-related event causes threads to be fetched again.
-        /*        for (const thread of threads) {
-                    const bp = this.breakpoints.get(`b-${thread.id}`)!;
-                    const event = new StoppedEvent(bp.hasError() ? 'error' : 'snapshot', thread.id);
-                    this.sendEvent(event);
-                }*/
     }
 }

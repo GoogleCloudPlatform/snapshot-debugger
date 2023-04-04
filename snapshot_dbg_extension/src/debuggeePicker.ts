@@ -1,5 +1,6 @@
 import { Database } from 'firebase-admin/database';
 import * as vscode from 'vscode';
+import { debugLog } from './debugUtil';
 
 const NO_DEBUGGEES = 'No debuggees found';
 const NO_DEBUGGEES_DETAIL = 'Please check your configuration';
@@ -87,7 +88,7 @@ async function fetchDebuggees(db: Database): Promise<DebuggeeItem[]> {
 export async function pickDebuggeeId(db: Database): Promise<string | undefined> {
     const selection = await vscode.window.showQuickPick(fetchDebuggees(db), {'title': 'Select Debuggee'});
     if (selection) {
-        console.log(`Selected Debuggee: ${selection.debuggeeId}`);
+        debugLog(`Selected Debuggee: ${selection.debuggeeId}`);
         return selection.debuggeeId;
     } else {
         return undefined;

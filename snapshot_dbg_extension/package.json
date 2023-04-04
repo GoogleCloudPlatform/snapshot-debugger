@@ -80,6 +80,10 @@
               "debuggeeId": {
                 "type": "string",
                 "description": "ID of the debuggee to debug."
+              },
+              "debugOutput": {
+                "type": "boolean",
+                "description": "If enabled, will output extension debug messages to the console."
               }
             }
           }
