@@ -72,9 +72,6 @@
         "label": "Snapshot Debugger",
         "configurationAttributes": {
           "attach": {
-            "required": [
-              "serviceAccountPath"
-            ],
             "properties": {
               "databaseUrl": {
                 "type": "string",
