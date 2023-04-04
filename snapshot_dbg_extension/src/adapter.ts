@@ -36,9 +36,6 @@ export enum CustomRequest {
  * interface should always match this schema.
  */
 interface IAttachRequestArguments extends DebugProtocol.AttachRequestArguments {
-    /** An absolute path to the service account credentials file. */
-    serviceAccountPath: string;
-
     /** URL to the Firebase RTDB database. */
     databaseUrl: string | undefined;
 
