@@ -20,8 +20,6 @@ type StatusMessageRefersTo =
 
 interface FormatMessage {
   format?: string;
-  // TODO: The code expects the `parameters` field to be optional.
-  //       Verify if this aligns with the API reference.
   parameters?: string[];
 }
 
