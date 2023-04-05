@@ -4,6 +4,7 @@ import { CdbgBreakpoint } from "./breakpoint";
 import { InitialActiveBreakpoints } from "./initialActiveBreakpoints";
 import { sleep, sourceBreakpointToString } from "./util";
 import { LineMappings } from "./lineMappings";
+import { debugLog } from "./debugUtil";
 
 export class BreakpointManager {
     private lineMappings: LineMappings = new LineMappings();
@@ -68,7 +69,7 @@ export class BreakpointManager {
         const activeBreakpointRef = this.db.ref(`cdbg/breakpoints/${this.debuggeeId}/active`);
         const activeSnapshot: DataSnapshot = await activeBreakpointRef.get();
         this.initialActiveBreakpoints = new InitialActiveBreakpoints(activeSnapshot);
-        console.log('Active breakpoints loaded from server');
+        debugLog('Active breakpoints loaded from server');
     }
 
     public setUpServerListeners() {
@@ -78,7 +79,7 @@ export class BreakpointManager {
             'child_changed',
             async (snapshot: DataSnapshot) => {
                 const bpId = snapshot.key!;
-                console.log(`breakpoint changed on server: ${snapshot.key}`);
+                debugLog(`breakpoint changed on server: ${snapshot.key}`);
                 this.handleActiveBreakpointUpdate(CdbgBreakpoint.fromSnapshot(snapshot));
             });
 
@@ -86,7 +87,7 @@ export class BreakpointManager {
             'child_removed',
             async (snapshot: DataSnapshot) => {
                 const bpId = snapshot.key!;
-                console.log(`breakpoint removed from server: ${snapshot.key}`);
+                debugLog(`breakpoint removed from server: ${snapshot.key}`);
 
                 const bp = this.breakpoints.get(bpId);
 
@@ -153,14 +154,14 @@ export class BreakpointManager {
     public saveBreakpointToServer(breakpoint: CdbgBreakpoint): void {
         const numericId = this.generateBreakpointId();
         const bpId = `b-${numericId}`;
-        console.log(`creating new breakpoint in firebase: ${bpId}`);
+        debugLog(`creating new breakpoint in firebase: ${bpId}`);
         breakpoint.id = bpId;
         breakpoint.localBreakpoint.id = numericId;
         breakpoint.serverBreakpoint.createTimeUnixMsec = { '.sv': 'timestamp' };
         breakpoint.hasUnsavedData = true;
         this.breakpoints.set(bpId, breakpoint);
         this.db?.ref(`cdbg/breakpoints/${this.debuggeeId}/active/${bpId}`).set(breakpoint.serverBreakpoint);
-        console.log(this.breakpoints);
+        debugLog(this.breakpoints);
     }
 
     public deleteBreakpointLocally(id: string): void {
@@ -168,7 +169,7 @@ export class BreakpointManager {
     }
 
     public deleteBreakpointFromServer(bpId: string): void {
-        console.log(`deleting breakpoint from server: ${bpId}`);
+        debugLog(`deleting breakpoint from server: ${bpId}`);
         this.breakpoints.delete(bpId);
         this.db?.ref(`cdbg/breakpoints/${this.debuggeeId}/active/${bpId}`).set(null);
     }
@@ -187,22 +188,22 @@ export class BreakpointManager {
 
     private addInitServerBreakpoint(breakpoint: CdbgBreakpoint): void {
         const bpId = breakpoint.id!;
-        console.log(`adding initial breakpoint ${bpId}, state: ${breakpoint.isActive() ? 'active' : 'final'}`);
+        debugLog(`adding initial breakpoint ${bpId}, state: ${breakpoint.isActive() ? 'active' : 'final'}`);
         this.breakpoints.set(bpId, breakpoint);
-        console.log(this.breakpoints);
+        debugLog(this.breakpoints);
     }
 
     private addServerBreakpoint(breakpoint: CdbgBreakpoint): void {
         const bpId = breakpoint.id!;
-        console.log(this.breakpoints);
+        debugLog(this.breakpoints);
         if (this.breakpoints.has(bpId)) {
             const bp = this.breakpoints.get(bpId)!;
-            console.log(`Breakpoint was already set; replacing server breakpoint data for ${bpId}`);
+            debugLog(`Breakpoint was already set; replacing server breakpoint data for ${bpId}`);
             // This is completing the flow of a user setting a breakpoint in the UI, saving to db, and getting a confirmed update.
             bp.serverBreakpoint = breakpoint.serverBreakpoint;
             bp.hasUnsavedData = false;
         } else {
-            console.log(`New breakpoint from unknown source: ${bpId}`);
+            debugLog(`New breakpoint from unknown source: ${bpId}`);
             this.breakpoints.set(bpId, breakpoint);
             if (this.onNewBreakpoint) { this.onNewBreakpoint(breakpoint); }
         }
@@ -210,7 +211,7 @@ export class BreakpointManager {
 
     private async loadSnapshotDetails(bpId: string): Promise<void> {
         // Just try loading it from the /snapshot table.
-        console.log('loading snapshot details');
+        debugLog('loading snapshot details');
         const snapshotRef = this.db!.ref(`cdbg/breakpoints/${this.debuggeeId}/snapshot/${bpId}`);
         let dataSnapshot: DataSnapshot = await snapshotRef.get();
         let retryCount = 0;
@@ -218,14 +219,14 @@ export class BreakpointManager {
             await (sleep(250));
             dataSnapshot = await snapshotRef.get();
             retryCount += 1;
-            console.log(`retrying: ${retryCount}`);
+            debugLog(`retrying: ${retryCount}`);
         }
         if (dataSnapshot.val()) {
             this.breakpoints.get(bpId)!.updateServerData(dataSnapshot);
-            console.log(`Loaded snapshot details for ${bpId}`);
-            console.log(this.breakpoints.get(bpId));
+            debugLog(`Loaded snapshot details for ${bpId}`);
+            debugLog(this.breakpoints.get(bpId));
         } else {
-            console.log(`Failed to load snapshot details for ${bpId}`);
+            debugLog(`Failed to load snapshot details for ${bpId}`);
             // TODO: Figure out how to fail gracefully.
         }
     }
@@ -247,7 +248,7 @@ export class BreakpointManager {
             // Do to the limitation of the logMessage not being present in
             // DebugProtocol.Breakpoint we do not sync logpoints from the
             // backend to the IDE at initialization time.
-            console.log("ERROR, unexpected call to scrub logpoint.")
+            debugLog("ERROR, unexpected call to scrub logpoint.")
         }
 
         cdbgBreakpoint.ideBreakpoint.condition = undefined;
@@ -255,7 +256,6 @@ export class BreakpointManager {
     }
 
     private handleActiveBreakpointUpdate(updatedBP: CdbgBreakpoint) {
-        console.log(updatedBP);
         const currentBP = this.breakpoints.get(updatedBP.id);
 
         // There are two types of changes we expect on an active breakpoint .
@@ -274,7 +274,6 @@ export class BreakpointManager {
 
         if (this.getBreakpointByLocation(updatedBP.locationString) === undefined) {
             this.lineMappings.add(currentBP.path, currentBP.line, updatedBP.line);
-            console.log(this.lineMappings);
             const originalLine = currentBP.line;
             currentBP.line = updatedBP.line;
             if (this.onChangedBreakpoint) { this.onChangedBreakpoint(currentBP, originalLine); }

@@ -1,6 +1,7 @@
 import { Database, DataSnapshot } from 'firebase-admin/database';
 import { CdbgBreakpoint } from './breakpoint';
 import * as vscode from 'vscode';
+import { debugLog } from './debugUtil';
 
 class SnapshotItem implements vscode.QuickPickItem {
     label: string;
@@ -33,7 +34,7 @@ async function fetchSnapshots(db: Database, debuggeeId: string): Promise<Snapsho
 export async function pickSnapshot(db: Database, debuggeeId: string): Promise<CdbgBreakpoint | undefined> {
     const selection = await vscode.window.showQuickPick(fetchSnapshots(db, debuggeeId), {'title': 'Select Previously Captured Snapshot'});
     if (selection?.cdbgBreakpoint) {
-        console.log(`Selected Snapshot: ${selection.cdbgBreakpoint.id}`);
+        debugLog(`Selected Snapshot: ${selection.cdbgBreakpoint.id}`);
         return selection.cdbgBreakpoint;
     } else {
         return undefined;

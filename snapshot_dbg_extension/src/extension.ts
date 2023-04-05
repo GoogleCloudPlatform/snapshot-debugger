@@ -4,6 +4,7 @@ import { IsActiveWhenClauseContext } from './whenClauseContextUtil';
 
 import { CustomRequest, SnapshotDebuggerSession } from './adapter';
 import { UserPreferences } from './userPreferences';
+import { debugLog, setDebugLogEnabled } from './debugUtil';
 
 // This method is called when the extension is activated.
 // The extension is activated the very first time the command is executed
@@ -17,7 +18,7 @@ export function activate(context: vscode.ExtensionContext) {
         if (activeDebugSession) {
             activeDebugSession.customRequest(CustomRequest.RUN_HISTORICAL_SNAPSHOT_PICKER);
         } else {
-            console.log("Unexpected no active SnapshotDebugger session.")
+            debugLog("Unexpected no active SnapshotDebugger session.")
         }
     }));
 
@@ -45,12 +46,7 @@ export function deactivate() {
 
 class SnapshotDebuggerConfigurationProvider implements vscode.DebugConfigurationProvider {
     resolveDebugConfiguration(folder: WorkspaceFolder | undefined, config: DebugConfiguration, token?: CancellationToken): ProviderResult<DebugConfiguration> {
-        // TODO: Figure out if this is ever called.
-        if (!config.serviceAccountPath) {
-            return vscode.window.showInformationMessage("Cannot find service account credentials").then(_ => {
-                return undefined;    // abort launch
-            });
-        }
+        // Just accept all configuration.
         return config;
     }
 }

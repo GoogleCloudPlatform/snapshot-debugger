@@ -4,14 +4,14 @@
   "publisher": "GoogleCloudPlatform",
   "license": "Apache-2.0",
   "description": "Integrates the Snapshot Debugger into your IDE.  Set dynamic logpoints and grab snapshots from your running applications.",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "engines": {
     "vscode": "^1.74.0"
   },
   "categories": [
     "Debuggers"
   ],
-  "main": "./out/extension.js",
+  "main": "./out/main.js",
   "icon": "media/icon-512.png",
   "activationEvents": [
     "onDebugResolve:snapshotdbg",
@@ -72,9 +72,6 @@
         "label": "Snapshot Debugger",
         "configurationAttributes": {
           "attach": {
-            "required": [
-              "serviceAccountPath"
-            ],
             "properties": {
               "databaseUrl": {
                 "type": "string",
@@ -83,6 +80,10 @@
               "debuggeeId": {
                 "type": "string",
                 "description": "ID of the debuggee to debug."
+              },
+              "debugOutput": {
+                "type": "boolean",
+                "description": "If enabled, will output extension debug messages to the console."
               }
             }
           }

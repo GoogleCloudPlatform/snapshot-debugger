@@ -1,5 +1,6 @@
 import { DebugProtocol } from '@vscode/debugprotocol';
 import { DataSnapshot } from 'firebase-admin/database';
+import { debugLog } from './debugUtil';
 import { LogpointMessage } from './logpointMessage';
 import { addPwd, stripPwd } from './util';
 
@@ -108,7 +109,7 @@ export class CdbgBreakpoint {
         // It's considered a programming error  if numericId is accessed before
         // one has been assigned, so this should ideally only be seen during
         // development, and when seen fixed.
-        console.log("ERROR, breakpoint ID is unknown");
+        debugLog("ERROR, breakpoint ID is unknown");
         return 0;
     }
 
