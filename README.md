@@ -674,6 +674,23 @@ Deleted 4 snapshots.
 ```
 
 
+## VSCode Extension
+
+There is a VSCode extension for the Snapshot Debugger.  You can use this
+extension to set logpoints, set breakpoints and view snapshots in the comfort
+of your IDE.  See the [extension's README][extension-readme] for more details.
+
+You can install the extension by downloading it from the
+[most recent release][extension-release], and then running
+`code --install-extension snapshotdbg-*.vsix`.
+
+Note that you will still need to use the Snapshot Debugger CLI to set up your
+environment and to purge old data.  Gcloud needs to be installed for credential
+management.
+
+[extension-release]: https://github.com/GoogleCloudPlatform/snapshot-debugger/releases
+[extension-readme]: https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/main/snapshot_dbg_extension/README.md
+
 ## Troubleshooting
 
 See [Snapshot Debugger Troubleshooting][troubleshooting]
