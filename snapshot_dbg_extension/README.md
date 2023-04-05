@@ -8,7 +8,7 @@ for more information about the Snapshot Debugger product.
 ## Features
 
 The Snapshot Debugger allows you to set a special sort of breakpoint on your running applications
-that will capture snapshots of memory, or to emit logs when certain lines of code or run.
+that will capture snapshots of memory, or to emit logs when certain lines of code are run.
 This extension allows you to do this from within VSCode.
 
 1.  Attach to a debuggee that has registered itself with the Snapshot Debugger.
@@ -33,12 +33,36 @@ You will need `gcloud` to be installed, and to be logged in with an account that
 ## Quirks / Potential Improvements
 
 * Attaching
-  * `gcloud` is used to fetch user credentials and so much be installed and the user must be logged in.  Error messages are not precise if there are issues.
+  * `gcloud` is used to fetch user credentials and so must be installed and the user must be logged in.  Error messages are not precise if there are issues.
   * A debuggee id is required.  It can be provided in launch.json or selected at launch time.
 
-* Breakpoint management. The system attempts to synchronize breakpoints on the IDE and the backend.
-  * Breakpoints set in the UI prior to attaching will attempt to match against active breakpoints on the server.  If there isn't a match, a new breakpoint will be created.
-  * All active breakpoints are read twice; once before completing attachment and once immediately after (concurrently).
+* Breakpoint management.
+  * The system attempts to synchronize breakpoints on the IDE and the server.
+    * This is only done at attach time, when the IDE connects to the adapter.
+      Any breakpoints added externally afterwards, (eg via the Snapshot Debugger
+      CLI) will not be reflected in the IDE.
+    * Breakpoints set in the UI prior to attaching will attempt to match against
+      active breakpoints on the server. If there isn't a match, a new
+      breakpoint will be created.
+    * Active breakpoints on the server that did not get matched to a breakpoint
+      in the IDE will get synced to the IDE.
+    * Active breakpoints on the server that don't find a match already present
+      in the IDE at sync time:
+      * If it is a logpoint, it will not be synced. This is because the spec
+        does not provide a way for the debug adapter to notify the IDE of a
+        logpoint (that only works in the direction IDE -> Debug Adaper).
+      * Breakpoints with a condition that get synced to the IDE will appear to
+        not have a condition when viewed through the IDE. On the server the
+        condition does exist and the agents will make use of it.  This is
+        because the spec does not provide a way for the debug adapter to notify
+        the IDE of a condition (that only works in the direction IDE -> Debug
+        Adaper).
+      * Only one breakpoint per line will be synced. In general the IDE (and
+        hence the extension) only supports one breakpoint per line. When there
+        are multiple active breakpoints on the server for the same line, the
+        extension will choose one to be synced to the IDE.
+        * The Snapshot Debugger extension does not support Inline Breakpoints (aka
+          columns).
 
 * Virtual threads.  The concept of snapshots is not present in vscode and the debug protocol, so threads
   are reported for each active breakpoint.
@@ -48,6 +72,11 @@ You will need `gcloud` to be installed, and to be logged in with an account that
 
 * Files
   * Breakpoints that are created outside of vscode (eg. the CLI) may fail to display the correct source file in the UI when they are loaded.
+    * To ensure they line up, when specifying the breakpoint via the cli, the
+      relative path from the root of the vscode workspace to the file should be
+      used. E.g. for file `/usr/local/src/project/com/app/App.java`, if the vscode
+      workspace is rooted at `/usr/local/src/project`, then the CLI would need
+      to create the breakpoint at `com/app/App.java`.
   * There is no current way to hint to users that the version of the file they are viewing is not the version of the file that they are debugging.
   * Stacktraces that include files in dependencies are reported as existing in the local workspace.  They are not, so result in error messages being displayed.
 
@@ -62,16 +91,15 @@ You will need `gcloud` to be installed, and to be logged in with an account that
 
 ## Known Issues
 
-* Breakpoint management
-  * SetBreakpoints response breakpoints need to be in the same order as they are in the request.  This is currently not the case and results in the UI merging breakpoints incorrectly.
-  * Matching local and backend breakpoints is done through path and line number.  This should be improved:
-    * Handle multiple matches in a reasonable way (TBD)
-
 * Virtual threads
   * Deleting a breakpoint should result in its thread being removed.
 
-* Updating breakpoint locations
-  * The Java agent will move breakpoints to the nearest line of code that can have a breakpoint.  This is not handled in this extension and will result in confusing behaviour.
+* Inline breakpoints (specifying a column).
+  * Columns are not supported, though at the moment the extension does not
+    handle this gracefully.
+  * Attempting to set multiple inline breakpoints on the same line will lead to
+    confusion in the extension/IDE, since the extension only supports one
+    breakpoint per line.
 
 
 [snapshot-debugger-readme]: https://github.com/GoogleCloudPlatform/snapshot-debugger#readme
