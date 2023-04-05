@@ -1,0 +1,154 @@
+{
+  "name": "snapshotdbg",
+  "displayName": "Snapshot Debugger",
+  "publisher": "GoogleCloudPlatform",
+  "license": "Apache-2.0",
+  "description": "Integrates the Snapshot Debugger into your IDE.  Set dynamic logpoints and grab snapshots from your running applications.",
+  "version": "0.1.0",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Debuggers"
+  ],
+  "main": "./out/main.js",
+  "icon": "media/icon-512.png",
+  "activationEvents": [
+    "onDebugResolve:snapshotdbg",
+    "onDebugDynamicConfigurations:snapshotdbg"
+  ],
+  "contributes": {
+    "menus": {
+      "debug/toolBar": [
+        {
+          "command": "extension.snapshotdbg.viewHistoricalSnapshot",
+          "when": "extension.snapshotdbg.isActive",
+          "icon": "$(history)"
+        },
+        {
+          "command": "extension.snapshotdbg.toggleExpressions",
+          "when": "extension.snapshotdbg.isActive",
+          "icon": "media/expr.svg"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "extension.snapshotdbg.viewHistoricalSnapshot",
+        "title": "View the snapshot of a historical already completed breakpoint.",
+        "when": "extension.snapshotdbg.isActive",
+        "icon": "$(history)"
+      },
+      {
+        "command": "extension.snapshotdbg.toggleExpressions",
+        "title": "Enable/Disable Expressions Prompt On Breakpoint Creation",
+        "when": "extension.snapshotdbg.isActive",
+        "icon": "media/expr.svg"
+      }
+    ],
+    "breakpoints": [
+      {
+        "language": "javascript"
+      },
+      {
+        "language": "typescript"
+      },
+      {
+        "language": "python"
+      },
+      {
+        "language": "java"
+      }
+    ],
+    "debuggers": [
+      {
+        "type": "snapshotdbg",
+        "languages": [
+          "javascript",
+          "typescript",
+          "python",
+          "java"
+        ],
+        "label": "Snapshot Debugger",
+        "configurationAttributes": {
+          "attach": {
+            "properties": {
+              "databaseUrl": {
+                "type": "string",
+                "description": "URL to the Firebase Realtime Database to use."
+              },
+              "debuggeeId": {
+                "type": "string",
+                "description": "ID of the debuggee to debug."
+              },
+              "debugOutput": {
+                "type": "boolean",
+                "description": "If enabled, will output extension debug messages to the console."
+              }
+            }
+          }
+        },
+        "initialConfigurations": [
+          {
+            "type": "snapshotdbg",
+            "name": "Snapshot Debugger",
+            "request": "attach",
+            "databaseUrl": ""
+          }
+        ],
+        "configurationSnippets": [
+          {
+            "label": "Snapshot Debugger",
+            "description": "A new configuration for debugging a live application using Snapshot Debugger.",
+            "body": {
+              "type": "snapshotdbg",
+              "request": "attach",
+              "name": "Snapshot Debugger",
+              "databaseUrl": "",
+              "debuggeeId": ""
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GoogleCloudPlatform/snapshot-debugger.git"
+  },
+  "bugs": {
+    "url": "https://github.com/GoogleCloudPlatform/snapshot-debugger/issues"
+  },
+  "homepage": "https://github.com/GoogleCloudPlatform/snapshot-debugger/tree/main/snapshot_dbg_extension#readme",
+  "scripts": {
+    "vscode:prepublish": "npm run esbuild-base -- --minify",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js",
+    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
+    "esbuild": "npm run esbuild-base -- --sourcemap",
+    "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
+    "test-compile": "tsc -p ./"
+  },
+  "dependencies": {
+    "@vscode/debugadapter": "^1.59.0",
+    "@vscode/debugprotocol": "^1.59.0",
+    "firebase-admin": "^11.5.0"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.0.1",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "16.x",
+    "@types/vscode": "^1.74.0",
+    "@typescript-eslint/eslint-plugin": "^5.49.0",
+    "@typescript-eslint/parser": "^5.49.0",
+    "@vscode/test-electron": "^2.2.2",
+    "esbuild": "^0.17.12",
+    "eslint": "^8.33.0",
+    "glob": "^8.1.0",
+    "mocha": "^10.1.0",
+    "typescript": "^4.9.4"
+  }
+}
