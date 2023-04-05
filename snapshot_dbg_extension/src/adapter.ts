@@ -17,7 +17,7 @@ import { getDatabase } from 'firebase-admin/database';
 
 import { DebugProtocol } from '@vscode/debugprotocol';
 import { Database } from 'firebase-admin/lib/database/database';
-import { addPwd, withTimeout } from './util';
+import { addPwd, sourceBreakpointToString, withTimeout } from './util';
 import { pickDebuggeeId } from './debuggeePicker';
 import { BreakpointManager } from './breakpointManager';
 import { GcloudCredential } from './gcloudCredential';
@@ -211,6 +211,7 @@ export class SnapshotDebuggerSession extends DebugSession {
         // Set up breakpoint manager.
         this.breakpointManager = new BreakpointManager(debuggeeId, this.db!);
         this.breakpointManager.onNewBreakpoint = (bp) => this.reportNewBreakpointToIDE(bp);
+        this.breakpointManager.onChangedBreakpoint = (bp, originalLine) => this.reportChangedBreakpointToIDE(bp, originalLine);
         this.breakpointManager.onCompletedBreakpoint = (bp) => this.reportCompletedBreakpointToIDE(bp);
 
         // Load all breakpoints before setting up listeners to avoid race conditions.
@@ -292,14 +293,26 @@ export class SnapshotDebuggerSession extends DebugSession {
         console.log(args);
 
         response.body = response.body || { breakpoints: [] };
-
         const path = args.source.path!;
-
         const initialized: boolean = this.initializedPaths.has(path) || this.isDeferredInitializationDone;
+        const sourceBreakpoints = args.breakpoints ?? [];
+        const linesPresent: Set<number> = new Set();
+
+        for (const bp of (args.breakpoints ?? [])) {
+            linesPresent.add(bp.line);
+        }
+
+        for (const bp of sourceBreakpoints) {
+            const lineMapping = this.breakpointManager?.getLineMapping(path, bp.line);
+            if (lineMapping !== undefined && !linesPresent.has(lineMapping)) {
+                linesPresent.add(lineMapping);
+                bp.line = lineMapping;
+            }
+        }
 
         if (initialized) {
             console.log(`Already initialized for this path.  Looking for user input (create or delete breakpoints)`);
-            const bpDiff = this.ideBreakpoints.applyNewIdeSnapshot(path, args.breakpoints ?? []);
+            const bpDiff = this.ideBreakpoints.applyNewIdeSnapshot(path, sourceBreakpoints);
 
             for (const bp of bpDiff.added) {
                 const extraParams: SourceBreakpointExtraParams = {};
@@ -326,8 +339,6 @@ export class SnapshotDebuggerSession extends DebugSession {
         } else {
             console.log('Not initialized for this path yet.  Will attempt to synchronize between IDE and server');
 
-            const sourceBreakpoints = args.breakpoints ?? [];
-
             // Ordering here matters. We need to do the applyNewIdeSnapshot
             // before the call to initializeWithLocalBreakpoints as that second
             // call will cause breakpoints to be added to this.ideBreakpoints,
@@ -347,7 +358,7 @@ export class SnapshotDebuggerSession extends DebugSession {
             if (cdbg) {
                 response.body.breakpoints.push(cdbg.localBreakpoint);
             } else {
-              console.log("Unexpected breakpoint not found!");
+              console.log("Unexpected breakpoint not found!: "), sourceBreakpointToString(bp);
             }
         }
 
@@ -388,8 +399,16 @@ export class SnapshotDebuggerSession extends DebugSession {
 
     private reportNewBreakpointToIDE(bp: CdbgBreakpoint): void {
         console.log(`Notifying IDE of BP: ${bp.id} - ${bp.shortPath}:${bp.line}`);
+        console.log(bp.localBreakpoint);
         this.ideBreakpoints.add(bp.path, bp.ideBreakpoint);
         this.sendEvent(new BreakpointEvent('new', bp.localBreakpoint));
+    }
+
+    private reportChangedBreakpointToIDE(bp: CdbgBreakpoint, originalLine: number): void {
+        console.log(`Notifying IDE of Changed BP: ${bp.id} - ${bp.shortPath}:${bp.line}`);
+        console.log(bp.localBreakpoint);
+        this.ideBreakpoints.updateLine(bp.path, originalLine, bp.line);
+        this.sendEvent(new BreakpointEvent('changed', bp.localBreakpoint));
     }
 
     private removeBreakpoint(bp: CdbgBreakpoint) {

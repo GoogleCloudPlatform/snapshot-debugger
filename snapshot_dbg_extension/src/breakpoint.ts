@@ -126,7 +126,13 @@ export class CdbgBreakpoint {
     }
 
     public get line() {
-        return this.localBreakpoint.line;
+        return this.localBreakpoint.line!;
+    }
+
+    public set line(newLine: number) {
+        this.ideBreakpoint.line = newLine;
+        this.localBreakpoint.line = newLine;
+        this.serverBreakpoint.location.line = newLine;
     }
 
     /** Returns string of format "{full path}:{line number}}" */
@@ -164,6 +170,17 @@ export class CdbgBreakpoint {
 
     public isActive(): boolean {
         return !this.serverBreakpoint.isFinalState;
+    }
+
+    public markFailedUnknownLocation(): void {
+        this.serverBreakpoint.isFinalState = true,
+        this.serverBreakpoint.status = {
+            isError: true,
+            refersTo: 'BREAKPOINT_SOURCE_LOCATION',
+            description: {
+                format :`No code found at line ${this.line}`,
+            }
+        };
     }
 
     // TODO: Remove use of this.

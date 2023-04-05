@@ -3,14 +3,17 @@ import { DebugProtocol } from '@vscode/debugprotocol';
 import { CdbgBreakpoint } from "./breakpoint";
 import { InitialActiveBreakpoints } from "./initialActiveBreakpoints";
 import { sleep, sourceBreakpointToString } from "./util";
+import { LineMappings } from "./lineMappings";
 
 export class BreakpointManager {
+    private lineMappings: LineMappings = new LineMappings();
     private breakpoints: Map<string, CdbgBreakpoint> = new Map();
     private initialActiveBreakpoints?: InitialActiveBreakpoints;
 
     public constructor(readonly debuggeeId: string, readonly db: Database) {}
 
     public onNewBreakpoint?: ((bp: CdbgBreakpoint) => void);
+    public onChangedBreakpoint?: ((bp: CdbgBreakpoint, originalLine: number) => void);
     public onCompletedBreakpoint?: ((bp: CdbgBreakpoint) => void);
 
     public getBreakpointIds(): string[] {
@@ -33,16 +36,32 @@ export class BreakpointManager {
         return this.getBreakpointBySourceBreakpointString(sourceBreakpointToString(sourceBreakpoint));
     }
 
+    // Here the sourecBreatkpointString argument is a string obtained by the
+    // sourceBreakpointToString utility function.
     public getBreakpointBySourceBreakpointString(sourceBreakpointString: string): CdbgBreakpoint | undefined {
-        // TODO: May want to also add an extra breakpoint map indexed on source breakpoint string
         for (let [bpId, cdbgBreakpoint] of this.breakpoints) {
             if (sourceBreakpointToString(cdbgBreakpoint.ideBreakpoint) === sourceBreakpointString) {
-                // TODO: Figure out what to do for duplicates, here we return first hit
                 return cdbgBreakpoint;
             }
         }
 
         return undefined;
+    }
+
+    // Here the locationString argument is a string obtained by the
+    // CdbgBreakpoint.locationString() method.
+    public getBreakpointByLocation(locationString: string): CdbgBreakpoint | undefined {
+        for (let [bpId, cdbgBreakpoint] of this.breakpoints) {
+            if (cdbgBreakpoint.locationString === locationString) {
+                return cdbgBreakpoint;
+            }
+        }
+
+        return undefined;
+    }
+
+    public getLineMapping(path: string, line: number): number|undefined {
+        return this.lineMappings.get(path, line);
     }
 
     public async loadServerBreakpoints() {
@@ -56,21 +75,32 @@ export class BreakpointManager {
         const activeBreakpointRef = this.db.ref(`cdbg/breakpoints/${this.debuggeeId}/active`);
 
         activeBreakpointRef.on(
+            'child_changed',
+            async (snapshot: DataSnapshot) => {
+                const bpId = snapshot.key!;
+                console.log(`breakpoint changed on server: ${snapshot.key}`);
+                this.handleActiveBreakpointUpdate(CdbgBreakpoint.fromSnapshot(snapshot));
+            });
+
+        activeBreakpointRef.on(
             'child_removed',
             async (snapshot: DataSnapshot) => {
                 const bpId = snapshot.key!;
                 console.log(`breakpoint removed from server: ${snapshot.key}`);
 
-                if (this.breakpoints.has(bpId)) {
+                const bp = this.breakpoints.get(bpId);
+
+                // We check if the bp is active or not. One situation where we may have
+                // the BP but it's already finalized is the case of a changed breakpoint
+                // where the agent notifies us that the line number changed. We  may
+                // have already locally failed that BP if the UI already had a BP at
+                // the line the BP was changed to.
+                if (bp && bp.isActive()) {
                     // Breakpoint finalized server-side.  Find out what to do next by loading /snapshot on the breakpoint.
                     await this.loadSnapshotDetails(bpId);
                     if (this.onCompletedBreakpoint) { this.onCompletedBreakpoint(this.getBreakpoint(bpId)!); }
-                } else {
-                    // Breakpoint removed from UI.  We should have already handled this in setBreakPointsRequest.
-                    this.breakpoints.delete(bpId);
                 }
             });
-
     }
 
     public async addHistoricalSnapshot(cdbgBreakpoint: CdbgBreakpoint): Promise<void> {
@@ -222,5 +252,36 @@ export class BreakpointManager {
 
         cdbgBreakpoint.ideBreakpoint.condition = undefined;
         cdbgBreakpoint.serverBreakpoint.condition = undefined;
+    }
+
+    private handleActiveBreakpointUpdate(updatedBP: CdbgBreakpoint) {
+        console.log(updatedBP);
+        const currentBP = this.breakpoints.get(updatedBP.id);
+
+        // There are two types of changes we expect on an active breakpoint .
+        // 1. createActive
+        // is the line
+        // number, which can occur if the agent found no code at the requested
+        // line but it then chooses to set to the breakpoint on a nearby line
+        // and sends an update indicating this. To note, not all agents
+        // actually do this, some will simply fail the breakpoint request
+        // with an error indicating not code was found  at the given line.
+        // The Snapshot Debugger Java agent is an example of an agent known to
+        // update the line in this manner.
+        if (!currentBP || (currentBP.line === updatedBP.line)) {
+            return;
+        }
+
+        if (this.getBreakpointByLocation(updatedBP.locationString) === undefined) {
+            this.lineMappings.add(currentBP.path, currentBP.line, updatedBP.line);
+            console.log(this.lineMappings);
+            const originalLine = currentBP.line;
+            currentBP.line = updatedBP.line;
+            if (this.onChangedBreakpoint) { this.onChangedBreakpoint(currentBP, originalLine); }
+        } else {
+            currentBP.markFailedUnknownLocation();
+            if (this.onCompletedBreakpoint) { this.onCompletedBreakpoint(currentBP); }
+        }
+
     }
 }

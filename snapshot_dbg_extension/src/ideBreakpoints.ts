@@ -41,4 +41,10 @@ export class IdeBreakpoints {
         const bpString = sourceBreakpointToString(breakpoint);
         this.breakpoints.set(path, bps.filter(b => bpString !== sourceBreakpointToString(b)));
     }
+
+    public updateLine(path: string, originalLine: number, newLine: number) : void {
+        const bps: DebugProtocol.SourceBreakpoint[] = this.breakpoints.get(path) ?? [];
+        const bp = bps?.find(b => b.line === originalLine);
+        if (bp) { bp.line = newLine; }
+    }
 }
