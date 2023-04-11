@@ -120,7 +120,27 @@ export class BreakpointManager {
         if (this.onCompletedBreakpoint) { this.onCompletedBreakpoint(cdbgBreakpoint); }
     }
 
-    public initializeWithLocalBreakpoints(path: string, localBreakpoints: CdbgBreakpoint[]): void {
+    /**
+     * Called when the adapter at attach/initialization time finds that the IDE
+     * already has some breakpoints present it is attempting to sync over. This
+     * handles matching the active breakpoints in the backend with the IDE
+     * breakpoints.
+     *
+     * Given this method is called during a setBreakPointsRequest being handled
+     * by the adapter, it avoids notifying the IDE about any active breakpoints
+     * found in the backend that did not match up with breakpoints in the IDE.
+     * Instead it returns a function that can be called after the
+     * setBreakPointsResponse has been sent to the IDE. This avoids notifying
+     * the IDE about any breakpoints while there is an outstanding
+     * setBreakPointsRequest.
+     *
+     * @param path The path of the file the breakpoints are being synced for.
+     * @param localBreakpoints The breakpoints present in the IDE at attach time
+     *   for the given path.
+     * @returns A function that when called with flush any unmatched active
+     *   breakpoints found in the backend to the IDE.
+     */
+    public initializeWithLocalBreakpoints(path: string, localBreakpoints: CdbgBreakpoint[]): () => void {
         const matches = this.initialActiveBreakpoints!.match(path, localBreakpoints);
         const linesSeen: Set<number> = new Set();
         for (let i = 0; i < localBreakpoints.length; i++) {
@@ -135,10 +155,13 @@ export class BreakpointManager {
         }
 
         const newBPsForIDE = this.initialActiveBreakpoints!.getBreakpointsToSyncToIDEForPath(path, linesSeen);
-        for (const bp of newBPsForIDE) {
-            this.scrubBreakpointToSyncToIDE(bp);
-            this.addInitServerBreakpoint(bp);
-            if (this.onNewBreakpoint) { this.onNewBreakpoint(bp); }
+        return () => {
+            debugLog(`Syncing unmatched server breakpoints to IDE for path ${path}`);
+            for (const bp of newBPsForIDE) {
+                this.scrubBreakpointToSyncToIDE(bp);
+                this.addInitServerBreakpoint(bp);
+                if (this.onNewBreakpoint) { this.onNewBreakpoint(bp); }
+            }
         }
     }
 
