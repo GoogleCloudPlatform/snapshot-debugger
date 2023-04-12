@@ -296,11 +296,13 @@ export class SnapshotDebuggerSession extends DebugSession {
         response.body = response.body || { breakpoints: [] };
         const path = args.source.path!;
         const initialized: boolean = this.initializedPaths.has(path) || this.isDeferredInitializationDone;
-        const sourceBreakpoints = args.breakpoints ?? [];
+        const sourceBreakpoints = [];
         const linesPresent: Set<number> = new Set();
+        let flushServerBreakpointsToIDE: (() => void) | undefined = undefined;
 
         for (const bp of (args.breakpoints ?? [])) {
             linesPresent.add(bp.line);
+            sourceBreakpoints.push({...bp})
         }
 
         for (const bp of sourceBreakpoints) {
@@ -340,24 +342,20 @@ export class SnapshotDebuggerSession extends DebugSession {
         } else {
             debugLog('Not initialized for this path yet.  Will attempt to synchronize between IDE and server');
 
-            // Ordering here matters. We need to do the applyNewIdeSnapshot
-            // before the call to initializeWithLocalBreakpoints as that second
-            // call will cause breakpoints to be added to this.ideBreakpoints,
-            // and applyNewIdeSnapshot clobbers all pre-existing data.
             this.ideBreakpoints.applyNewIdeSnapshot(path, sourceBreakpoints);
 
             const localBreakpoints = sourceBreakpoints.map((bp) => CdbgBreakpoint.fromSourceBreakpoint(args.source, bp, this.account));
-            this.breakpointManager!.initializeWithLocalBreakpoints(path, localBreakpoints);
+            flushServerBreakpointsToIDE = this.breakpointManager!.initializeWithLocalBreakpoints(path, localBreakpoints);
 
             this.initializedPaths.add(path);
         }
 
         // The breakpoints in the response must have a 1:1 mapping in the same order as found in the request.
         response.body.breakpoints = [];
-        for (const bp of (args.breakpoints ?? [])) {
+        for (const bp of (sourceBreakpoints)) {
             const cdbg = this.breakpointManager?.getBreakpointBySourceBreakpoint(bp);
             if (cdbg) {
-                response.body.breakpoints.push(cdbg.localBreakpoint);
+                response.body.breakpoints.push({...cdbg.localBreakpoint});
             } else {
                 debugLog("Unexpected breakpoint not found!: "), sourceBreakpointToString(bp);
             }
@@ -366,6 +364,10 @@ export class SnapshotDebuggerSession extends DebugSession {
         debugLog('setBreakpointsResponse:');
         debugLog(response.body);
         this.sendResponse(response);
+
+        if (flushServerBreakpointsToIDE) {
+            flushServerBreakpointsToIDE();
+        }
     }
 
     private runDeferredInitialization(): void {
