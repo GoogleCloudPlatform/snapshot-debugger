@@ -342,10 +342,6 @@ export class SnapshotDebuggerSession extends DebugSession {
         } else {
             debugLog('Not initialized for this path yet.  Will attempt to synchronize between IDE and server');
 
-            // Ordering here matters. We need to do the applyNewIdeSnapshot
-            // before the call to initializeWithLocalBreakpoints as that second
-            // call will cause breakpoints to be added to this.ideBreakpoints,
-            // and applyNewIdeSnapshot clobbers all pre-existing data.
             this.ideBreakpoints.applyNewIdeSnapshot(path, sourceBreakpoints);
 
             const localBreakpoints = sourceBreakpoints.map((bp) => CdbgBreakpoint.fromSourceBreakpoint(args.source, bp, this.account));
