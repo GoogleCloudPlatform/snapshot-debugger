@@ -7,7 +7,7 @@ import * as vscode from 'vscode';
 import { CdbgBreakpoint, SourceBreakpointExtraParams, Variable as CdbgVariable } from './breakpoint';
 import { promptUserForExpressions } from './expressionsPrompter';
 import { IdeBreakpoints } from './ideBreakpoints';
-import { pickLogLevel } from './logLevelPicker';
+import { pickLogLevelNewlyCreated } from './logLevelPicker';
 import { pickSnapshot } from './snapshotPicker';
 import { StatusMessage } from './statusMessage';
 import { UserPreferences } from './userPreferences';
@@ -64,6 +64,7 @@ export class SnapshotDebuggerSession extends DebugSession {
     private setVariableType: boolean = false;
     private userPreferences: UserPreferences;
     private isDeferredInitializationDone = false;
+    private activeInitializePathCount = 0;
 
     private breakpointManager?: BreakpointManager;
 
@@ -298,7 +299,7 @@ export class SnapshotDebuggerSession extends DebugSession {
         const initialized: boolean = this.initializedPaths.has(path) || this.isDeferredInitializationDone;
         const sourceBreakpoints = [];
         const linesPresent: Set<number> = new Set();
-        let flushServerBreakpointsToIDE: (() => void) | undefined = undefined;
+        let finalizeInitializePath: (() => void) | undefined = undefined;
 
         for (const bp of (args.breakpoints ?? [])) {
             linesPresent.add(bp.line);
@@ -320,7 +321,7 @@ export class SnapshotDebuggerSession extends DebugSession {
             for (const bp of bpDiff.added) {
                 const extraParams: SourceBreakpointExtraParams = {};
                 if (bp.logMessage) {
-                    extraParams.logLevel = await pickLogLevel();
+                    extraParams.logLevel = await pickLogLevelNewlyCreated();
                 } else {
                     extraParams.expressions = await this.runExpressionsPrompt();
                 }
@@ -341,11 +342,17 @@ export class SnapshotDebuggerSession extends DebugSession {
             }
         } else {
             debugLog('Not initialized for this path yet.  Will attempt to synchronize between IDE and server');
+            this.activeInitializePathCount++;
 
             this.ideBreakpoints.applyNewIdeSnapshot(path, sourceBreakpoints);
 
             const localBreakpoints = sourceBreakpoints.map((bp) => CdbgBreakpoint.fromSourceBreakpoint(args.source, bp, this.account));
-            flushServerBreakpointsToIDE = this.breakpointManager!.initializeWithLocalBreakpoints(path, localBreakpoints);
+            const flushServerBreakpointsToIDE = await this.breakpointManager!.initializeWithLocalBreakpoints(path, localBreakpoints);
+
+            finalizeInitializePath = () => {
+                flushServerBreakpointsToIDE();
+                this.activeInitializePathCount--;
+            }
 
             this.initializedPaths.add(path);
         }
@@ -365,12 +372,17 @@ export class SnapshotDebuggerSession extends DebugSession {
         debugLog(response.body);
         this.sendResponse(response);
 
-        if (flushServerBreakpointsToIDE) {
-            flushServerBreakpointsToIDE();
+        if (finalizeInitializePath) {
+            finalizeInitializePath();
         }
     }
 
     private runDeferredInitialization(): void {
+        if (this.activeInitializePathCount > 0) {
+            setTimeout(() => { this.runDeferredInitialization() }, 250);
+            return;
+        }
+
         debugLog("Syncing active breakpoints from backend.");
 
         // We sync over all breakpoints that have not yet had their paths
