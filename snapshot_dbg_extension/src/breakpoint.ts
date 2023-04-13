@@ -159,6 +159,10 @@ export class CdbgBreakpoint {
         return this.serverBreakpoint.action == 'LOG';
     }
 
+    public set logLevel(level: string) {
+        this.serverBreakpoint.logLevel = level;
+    }
+
     public hasSnapshot(): boolean {
         return this.serverBreakpoint.stackFrames !== undefined;
     }

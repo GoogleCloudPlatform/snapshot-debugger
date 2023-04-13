@@ -1,6 +1,10 @@
 import * as vscode from 'vscode';
 
-export async function pickLogLevel(): Promise<string | undefined> {
+import { sleep } from "./util";
+
+let gPickPending = false;
+
+async function pickLogLevel(title: string): Promise<string | undefined> {
     /**
      * The lable field supports icons via the $(<name>)-syntax.
      * https://code.visualstudio.com/api/references/vscode-api#ThemeIcon
@@ -17,6 +21,27 @@ export async function pickLogLevel(): Promise<string | undefined> {
             {'label': `${level} $(${level.toLowerCase()})`}
         ));
 
-    const selection = await vscode.window.showQuickPick(items, {'title': 'Select Log Level'});
+    // If we have one call to showQuickPick outstanding, any other calls to it
+    // during this time will immediately return with a value of undefined.
+    // During initialization time it's possible we'll be prompting the user
+    // to select a log level for logpoints found in the IDE in multiple
+    // different files. This can lead to this situation occurring, so here
+    // we serialize the calls.
+    while (gPickPending) {
+        await (sleep(250));
+    }
+
+    gPickPending = true;
+    const selection = await vscode.window.showQuickPick(items, {title});
+    gPickPending = false;
+
     return selection?.label.split(' ')[0].trim();
+}
+
+export async function pickLogLevelNewlyCreated(): Promise<string | undefined> {
+    return pickLogLevel('Select Log Level');
+}
+
+export async function pickLogLevelSyncedFromIDE(path: string, line: number): Promise<string | undefined> {
+    return pickLogLevel(`Select Log Level For Logpoint: ${path}:${line}`);
 }

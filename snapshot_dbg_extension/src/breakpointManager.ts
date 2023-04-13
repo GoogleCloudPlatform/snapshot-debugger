@@ -5,6 +5,7 @@ import { InitialActiveBreakpoints } from "./initialActiveBreakpoints";
 import { sleep, sourceBreakpointToString } from "./util";
 import { LineMappings } from "./lineMappings";
 import { debugLog } from "./debugUtil";
+import { pickLogLevelSyncedFromIDE } from "./logLevelPicker";
 
 export class BreakpointManager {
     private lineMappings: LineMappings = new LineMappings();
@@ -140,7 +141,7 @@ export class BreakpointManager {
      * @returns A function that when called with flush any unmatched active
      *   breakpoints found in the backend to the IDE.
      */
-    public initializeWithLocalBreakpoints(path: string, localBreakpoints: CdbgBreakpoint[]): () => void {
+    public async initializeWithLocalBreakpoints(path: string, localBreakpoints: CdbgBreakpoint[]): Promise<() => void> {
         const matches = this.initialActiveBreakpoints!.match(path, localBreakpoints);
         const linesSeen: Set<number> = new Set();
         for (let i = 0; i < localBreakpoints.length; i++) {
@@ -148,6 +149,12 @@ export class BreakpointManager {
             const matchedBP = matches[i];
             linesSeen.add(localBP.line!);
             if (matchedBP === undefined) {
+                if (localBP.isLogpoint()) {
+                    const logLevel = await pickLogLevelSyncedFromIDE(localBP.shortPath, localBP.line);
+                    if (logLevel) {
+                        localBP.logLevel = logLevel;
+                    }
+                }
                 this.saveBreakpointToServer(localBP);
             } else {
                 this.addInitServerBreakpoint(matchedBP);
