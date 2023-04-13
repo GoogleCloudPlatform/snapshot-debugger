@@ -64,6 +64,19 @@ export class SnapshotDebuggerSession extends DebugSession {
     private setVariableType: boolean = false;
     private userPreferences: UserPreferences;
     private isDeferredInitializationDone = false;
+
+    // At initialization time, immediately after the attach, any files that have
+    // breakpoints/logpoints set in the IDE will be passed to the adapter via
+    // setBreakPointsRequests, one call per file. In addition, these calls are
+    // not serialized, there can be multiple outstanding. If there are logpoints
+    // that need to be synced to the backend as part of this, we prompt the user
+    // for the log level for each logpoint. This can cause delays in this
+    // initial processing since it's gated on user input and will delay the
+    // completion of the setBreakPointsRequest calls. While this phase is
+    // still active we need to delay the work runDeferredInitialization does.
+    // This variable tracks how many such active calls we have and is used for
+    // the purpose of delaying runDeferredInitialization, once this value is 0,
+    // it can proceed.
     private activeInitializePathCount = 0;
 
     private breakpointManager?: BreakpointManager;
@@ -349,6 +362,8 @@ export class SnapshotDebuggerSession extends DebugSession {
             const localBreakpoints = sourceBreakpoints.map((bp) => CdbgBreakpoint.fromSourceBreakpoint(args.source, bp, this.account));
             const flushServerBreakpointsToIDE = await this.breakpointManager!.initializeWithLocalBreakpoints(path, localBreakpoints);
 
+            // See below, but we need to defer this work until after the
+            // sendReponse occurs.
             finalizeInitializePath = () => {
                 flushServerBreakpointsToIDE();
                 this.activeInitializePathCount--;
@@ -372,6 +387,11 @@ export class SnapshotDebuggerSession extends DebugSession {
         debugLog(response.body);
         this.sendResponse(response);
 
+        // Some work needs to be delayed to the very end of this function, after
+        // the sendResponse has occurred. One example is the syncing of any
+        // breakpoints that exist on the server to the IDE. We ensure these
+        // notification as sent after the sendResponse so that the IDE does not
+        // receive them while the setBreakPointsRequest is still active.
         if (finalizeInitializePath) {
             finalizeInitializePath();
         }

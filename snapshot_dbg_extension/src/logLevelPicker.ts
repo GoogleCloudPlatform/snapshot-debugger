@@ -43,5 +43,5 @@ export async function pickLogLevelNewlyCreated(): Promise<string | undefined> {
 }
 
 export async function pickLogLevelSyncedFromIDE(path: string, line: number): Promise<string | undefined> {
-    return pickLogLevel(`Select Log Level For Logpoint Being Synced From the IDE: ${path}:${line}`);
+    return pickLogLevel(`Select Log Level For Logpoint: ${path}:${line}`);
 }
