@@ -249,6 +249,33 @@ Note: The information printed by the `init` command can be accessed from within
 your Firebase project. It’s safe to run the `snapshot-dbg-cli init
 --use-default-rtdb` command multiple times to view this information.
 
+#### Setting up Firebase RTDB in other regions
+
+By default, `snapshot-dbg-cli init` will create a Firebase Realtime Database in
+`us-central1`.  It is possible to create and use a database in any region
+supported by Firebase Realtime Database.  See
+[supported RTDB locations][rtdb_locations].
+
+Setting up your database in a non-default region comes with some trade-offs:
+*  As a positive, you get to control where your snapshot data will be stored.
+   This may be important for compliance reasons.
+*  As a negative, the CLI, vsCode extension, and agents will be unable to
+   automatically find the database.  The database URL will need to be provided
+   explicitly in commandline flags, configuration files, etc.
+
+You can set up your database in a non-default location as follows:
+```
+snapshot-dbg-cli init --location={YOUR_LOCATION}
+```
+
+For example, you may want to set up your database in Belgium, and so would run
+```snapshot-dbg-cli init --location=europe-west1```
+
+Make note of the database URL provided in the command output; you will need to
+provide this to your debug agent(s) and the CLI or vsCode plugin.
+
+[rtdb_locations]: https://firebase.google.com/docs/projects/locations#rtdb-locations
+
 ## Set up Snapshot Debugger in your Google Cloud project
 
 ### Working Samples
