@@ -22,6 +22,7 @@ import { debugLog, setDebugLogEnabled } from './debugUtil';
 import { pickDebuggeeId } from './debuggeePicker';
 import { BreakpointManager } from './breakpointManager';
 import { GcloudCredential } from './gcloudCredential';
+import { debuglog } from 'util';
 
 const FIREBASE_APP_NAME = 'snapshotdbg';
 const INITIALIZE_TIME_ALLOWANCE_MS = 2 * 1000; // 2 seconds
@@ -45,6 +46,9 @@ interface IAttachRequestArguments extends DebugProtocol.AttachRequestArguments {
 
     /** Whether to output debug messages to console. */
     debugOutput: boolean;
+
+    /** Timeout for initial firebase database connection, in milliseconds. */
+    connectionTimeoutMs: number | undefined;
 }
 
 
@@ -122,8 +126,9 @@ export class SnapshotDebuggerSession extends DebugSession {
         }
     }
 
-    private async connectToFirebase(credential: GcloudCredential, progress: vscode.Progress<{ message: string, increment: number }>, configuredDatabaseUrl?: string): Promise<Database> {
+    private async connectToFirebase(credential: GcloudCredential, progress: vscode.Progress<{ message: string, increment: number }>, args?: IAttachRequestArguments): Promise<Database> {
         // Build the database URL.
+        const configuredDatabaseUrl = args?.databaseUrl;
         const databaseUrls = [];
         if (configuredDatabaseUrl) {
             databaseUrls.push(configuredDatabaseUrl);
@@ -132,6 +137,8 @@ export class SnapshotDebuggerSession extends DebugSession {
             databaseUrls.push(`https://${this.projectId}-default-rtdb.firebaseio.com`);
         }
 
+        const timeout = args?.connectionTimeoutMs ?? 2000;
+        debugLog(`Timeout set to ${timeout}`);
         for (const databaseUrl of databaseUrls) {
             progress.report({ message: `Connecting to ${databaseUrl}`, increment: 20 });
             this.app = initializeApp({
@@ -144,7 +151,7 @@ export class SnapshotDebuggerSession extends DebugSession {
             // Test the connection by reading the schema version.
             try {
                 const version_snapshot = await withTimeout(
-                    2000,
+                    timeout,
                     db.ref('cdbg/schema_version').get());
                 if (version_snapshot) {
                     const version = version_snapshot.val();
@@ -200,7 +207,7 @@ export class SnapshotDebuggerSession extends DebugSession {
             }
 
             try {
-                this.db = await this.connectToFirebase(credential, progress, args.databaseUrl);
+                this.db = await this.connectToFirebase(credential, progress, args);
             } catch (err) {
                 this.sendErrorResponse(response, 2,
                     'Cannot connect to Firebase.\n\n' +
