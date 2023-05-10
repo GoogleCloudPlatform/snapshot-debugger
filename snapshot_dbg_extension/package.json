@@ -84,6 +84,10 @@
               "debugOutput": {
                 "type": "boolean",
                 "description": "If enabled, will output extension debug messages to the console."
+              },
+              "connectionTimeoutMs": {
+                "type": "number",
+                "description": "Timeout for initial firebase database connection, in milliseconds."
               }
             }
           }
