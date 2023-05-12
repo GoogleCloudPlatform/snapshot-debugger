@@ -58,6 +58,9 @@
       },
       {
         "language": "java"
+      },
+      {
+        "language": "php"
       }
     ],
     "debuggers": [
@@ -67,7 +70,8 @@
           "javascript",
           "typescript",
           "python",
-          "java"
+          "java",
+          "php"
         ],
         "label": "Snapshot Debugger",
         "configurationAttributes": {
