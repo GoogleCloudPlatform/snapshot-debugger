@@ -259,7 +259,7 @@ supported by Firebase Realtime Database.  See
 Setting up your database in a non-default region comes with some trade-offs:
 *  As a positive, you get to control where your snapshot data will be stored.
    This may be important for compliance reasons.
-*  As a negative, the CLI, vsCode extension, and agents will be unable to
+*  As a negative, the vsCode extension and agents will be unable to
    automatically find the database.  The database URL will need to be provided
    explicitly in commandline flags, configuration files, etc.
 
@@ -272,7 +272,7 @@ For example, you may want to set up your database in Belgium, and so would run
 ```snapshot-dbg-cli init --location=europe-west1```
 
 Make note of the database URL provided in the command output; you will need to
-provide this to your debug agent(s) and the CLI or vsCode plugin.
+provide this to your debug agent(s) and the vsCode plugin.
 
 [rtdb_locations]: https://firebase.google.com/docs/projects/locations#rtdb-locations
 
