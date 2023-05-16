@@ -58,6 +58,10 @@ RTDB_INSTANCE_GET_STATE_ERROR_MSG = """
   {response}
 """
 
+VALID_LOCATIONS_URL = (
+    "https://firebase.google.com/docs/projects/locations#rtdb-locations"
+)
+
 
 class FirebaseManagementRestService:
   """Implements a service for making Firebase RTDB management REST requests.
@@ -282,6 +286,20 @@ class FirebaseManagementRestService:
             self._user_output.debug("Got 400:", parsed_error)
             return DatabaseCreateResponse(
                 DatabaseCreateStatus.FAILED_PRECONDITION)
+
+          if parsed_error["error"]["status"] == "INVALID_ARGUMENT":
+            print_http_error(
+              self._user_output, request, err, error_message=error_message)
+
+            self._user_output.error(
+                "This was attempting to create the database instance. One "
+                "potential reason for this is if an invalid location was "
+                "specified, valid locations for RTDBs can be found at "
+                f"{VALID_LOCATIONS_URL}. To note, valid RTDB locations are a "
+                "subset of valid Google Cloud regions.")
+
+            raise SilentlyExitError from err
+
         except (TypeError, KeyError, ValueError):
           pass
 

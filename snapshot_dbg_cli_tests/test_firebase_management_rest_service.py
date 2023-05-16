@@ -38,8 +38,10 @@ TEST_PROJECT_ID = 'cli-test-project'
 
 VALID_PROJECT_RESPONSE = {'state': 'ACTIVE'}
 
+DB_NAME = "projects/1111111111/locations/us-central1/instances/db-name"
+
 VALID_DB_RESPONSE = {
-    'name': 'db-name',
+    'name': DB_NAME,
     'project': 'project-name',
     'databaseUrl': 'project-default-rtdb.firebaseio.com',
     'type': 'DEFAULT_DATABASE',
@@ -252,7 +254,7 @@ class FirebaseManagementRestServiceTests(unittest.TestCase):
 
   def test_rtdb_instance_get_returns_expected_value_on_success(self):
     self.http_service_mock.send.return_value = {
-        'name': 'db-name',
+        'name': DB_NAME,
         'project': 'project-name',
         'databaseUrl': 'project-default-rtdb.firebaseio.com',
         'type': 'DEFAULT_DATABASE',
@@ -263,7 +265,7 @@ class FirebaseManagementRestServiceTests(unittest.TestCase):
         'db-name')
 
     self.assertEqual(DatabaseGetStatus.EXISTS, obtained_response.status)
-    self.assertEqual('db-name', obtained_response.database_instance.name)
+    self.assertEqual(DB_NAME, obtained_response.database_instance.name)
     self.assertEqual('project-name',
                      obtained_response.database_instance.project)
     self.assertEqual('project-default-rtdb.firebaseio.com',
@@ -327,7 +329,30 @@ class FirebaseManagementRestServiceTests(unittest.TestCase):
     self.assertEqual(DatabaseCreateStatus.FAILED_PRECONDITION,
                      obtained_response.status)
 
-  def test_rtdb_instance_create_raises_on_400_non_failed_precondition(self):
+  def test_rtdb_instance_create_returns_status_invalid_argument(self):
+    error_message = json.dumps({'error': {'status': 'INVALID_ARGUMENT', 'message': 'Invalid location "bad-location"'}})
+
+    http_error = HTTPError('https://foo.com', 400, 'Invalid Argument', {},
+                           BytesIO(bytes(f'{error_message}', 'utf-8')))
+
+    self.http_service_mock.send.side_effect = http_error
+
+    with self.assertRaises(SilentlyExitError), \
+         patch('sys.stdout', new_callable=StringIO) as out, \
+         patch('sys.stderr', new_callable=StringIO) as err:
+      self.firebase_management_rest_service.rtdb_instance_create(
+          'db-name', 'bad-location')
+
+    self.assertIn('Invalid location', err.getvalue())
+    self.assertIn((
+        'One potential reason for this is if an invalid location was specified, '
+        'valid locations for RTDBs can be found at '
+        'https://firebase.google.com/docs/projects/locations#rtdb-locations.'),
+        err.getvalue())
+
+    self.assertEqual('', out.getvalue())
+
+  def test_rtdb_instance_create_raises_on_400_non_special_type(self):
     http_error = HTTPError('https://foo.com', 400, 'Internal Server Error', {},
                            BytesIO(b'Fake Error Message'))
     self.http_service_mock.send.side_effect = http_error
@@ -357,7 +382,7 @@ class FirebaseManagementRestServiceTests(unittest.TestCase):
 
   def test_rtdb_instance_create_returns_expected_value_on_success(self):
     self.http_service_mock.send.return_value = {
-        'name': 'db-name',
+        'name': DB_NAME,
         'project': 'project-name',
         'databaseUrl': 'project-default-rtdb.firebaseio.com',
         'type': 'DEFAULT_DATABASE',
@@ -369,7 +394,7 @@ class FirebaseManagementRestServiceTests(unittest.TestCase):
           'db-name', 'us-central1')
 
     self.assertEqual(DatabaseCreateStatus.SUCCESS, obtained_response.status)
-    self.assertEqual('db-name', obtained_response.database_instance.name)
+    self.assertEqual(DB_NAME, obtained_response.database_instance.name)
     self.assertEqual('project-name',
                      obtained_response.database_instance.project)
     self.assertEqual('project-default-rtdb.firebaseio.com',
