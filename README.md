@@ -265,6 +265,7 @@ Setting up your database in a non-default region comes with some trade-offs:
    * [Configuring the Java Agent][java_agent_config]
    * [Configuring the Python Agent][python_agent_config]
    * [Configuring the Node.js Agent][nodejs_agent_config]
+   * [Configuring the VsCode Extension][extension_config]
 
 You can set up your database in a non-default location as follows:
 ```
@@ -281,6 +282,7 @@ provide this to your debug agent(s) and the vsCode plugin.
 [java_agent_config]: https://github.com/GoogleCloudPlatform/cloud-debug-java#snapshot-debugger---firebase-realtime-database-backend
 [python_agent_config]: https://github.com/GoogleCloudPlatform/cloud-debug-python/blob/main/README.md#snapshot-debugger---firebase-realtime-database-backend
 [nodejs_agent_config]: https://github.com/googleapis/cloud-debug-nodejs/blob/main/README.md#snapshot-debugger---firebase-realtime-database-backend
+[extension_config]: https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/main/snapshot_dbg_extension/README.md#configuration
 
 
 ## Set up Snapshot Debugger in your Google Cloud project
