@@ -59,8 +59,7 @@ RTDB_INSTANCE_GET_STATE_ERROR_MSG = """
 """
 
 VALID_LOCATIONS_URL = (
-    "https://firebase.google.com/docs/projects/locations#rtdb-locations"
-)
+    "https://firebase.google.com/docs/projects/locations#rtdb-locations")
 
 
 class FirebaseManagementRestService:
@@ -289,7 +288,7 @@ class FirebaseManagementRestService:
 
           if parsed_error["error"]["status"] == "INVALID_ARGUMENT":
             print_http_error(
-              self._user_output, request, err, error_message=error_message)
+                self._user_output, request, err, error_message=error_message)
 
             self._user_output.error(
                 "This was attempting to create the database instance. One "

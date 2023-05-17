@@ -197,7 +197,7 @@ LOCTION_MISMATCH_ERROR_MSG = (
     "however its location '{existing_location}' does not match the requested "
     "location '{requested_location}'.\n\n"
     "The database ID ('{database_id}' in this case) must be unique across "
-    "locations and projects.\n\n"
+    'locations and projects.\n\n'
     "If you meant to finalize the initialization of '{database_id}' in "
     "'{requested_location}' (or verify it is already correctly initialized) "
     "rerun the init command and specify '--location={existing_location}'.\n\n"
@@ -205,7 +205,7 @@ LOCTION_MISMATCH_ERROR_MSG = (
     "'{database_id}' is already in use, you'll need to use a new name by "
     "providing the '--database-id' argument to the init command. Note, even "
     "if you delete '{database_id}', the name will remain reserved and will not "
-    "be available to be reused in a new location, a new name must be chosen.")
+    'be available to be reused in a new location, a new name must be chosen.')
 
 
 class InitCommand:
@@ -352,10 +352,10 @@ class InitCommand:
       if args.location != database_instance.location:
         self.user_output.error(
             LOCTION_MISMATCH_ERROR_MSG.format(
-              full_database_name=database_instance.name,
-              existing_location=database_instance.location,
-              requested_location=args.location,
-              database_id=database_id))
+                full_database_name=database_instance.name,
+                existing_location=database_instance.location,
+                requested_location=args.location,
+                database_id=database_id))
 
         raise SilentlyExitError
 

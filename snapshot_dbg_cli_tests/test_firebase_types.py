@@ -27,11 +27,16 @@ class DatabaseInstanceTests(unittest.TestCase):
     for location in locations:
       with self.subTest(location):
         db_instance = DatabaseInstance({
-            'name': f'projects/1111111111/locations/{location}/instances/foo-cdbg',
-            'project': 'projects/1111111111',
-            'databaseUrl': 'https://foo-cdbg.firebaseio.com',
-            'type': 'USER_DATABASE',
-            'state': 'ACTIVE'
+            'name':
+                f'projects/1111111111/locations/{location}/instances/foo-cdbg',
+            'project':
+                'projects/1111111111',
+            'databaseUrl':
+                'https://foo-cdbg.firebaseio.com',
+            'type':
+                'USER_DATABASE',
+            'state':
+                'ACTIVE'
         })
         self.assertEqual(location, db_instance.location)
 
@@ -48,11 +53,13 @@ class DatabaseInstanceTests(unittest.TestCase):
     for full_db_name in invalid_names:
       with self.subTest(full_db_name):
         with self.assertRaises(ValueError) as ctxt:
-            DatabaseInstance({
+          DatabaseInstance({
               'name': full_db_name,
               'project': 'projects/1111111111',
               'databaseUrl': 'https://foo-cdbg.firebaseio.com',
               'type': 'USER_DATABASE',
               'state': 'ACTIVE'
-            })
-        self.assertEqual(f"Failed to extract location from project name '{full_db_name}'", str(ctxt.exception))
+          })
+        self.assertEqual(
+            f"Failed to extract location from project name '{full_db_name}'",
+            str(ctxt.exception))

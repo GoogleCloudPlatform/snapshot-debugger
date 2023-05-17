@@ -22,6 +22,7 @@ import re
 FIREBASE_MANAGMENT_API_SERVICE = 'firebase.googleapis.com'
 FIREBASE_RTDB_MANAGMENT_API_SERVICE = 'firebasedatabase.googleapis.com'
 
+
 class FirebaseProjectStatus(Enum):
   ENABLED = 1
   NOT_ENABLED = 2
@@ -142,6 +143,7 @@ class DatabaseInstance:
       return None
 
     return location_search.groups()[0]
+
 
 class DatabaseCreateResponse:
   """Represents the response of a database create request.
