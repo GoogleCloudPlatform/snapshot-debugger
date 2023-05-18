@@ -4,7 +4,7 @@
   "publisher": "GoogleCloudPlatform",
   "license": "Apache-2.0",
   "description": "Integrates the Snapshot Debugger into your IDE.  Set dynamic logpoints and grab snapshots from your running applications.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "engines": {
     "vscode": "^1.74.0"
   },
@@ -84,6 +84,10 @@
               "debugOutput": {
                 "type": "boolean",
                 "description": "If enabled, will output extension debug messages to the console."
+              },
+              "connectionTimeoutMs": {
+                "type": "number",
+                "description": "Timeout for initial firebase database connection, in milliseconds."
               }
             }
           }
