@@ -30,6 +30,16 @@ The Snapshot Debugger will only work if your application is already configured t
 
 You will need `gcloud` to be installed, and to be logged in with an account that has "Firebase Database Admin" permissions or higher on your project.
 
+## Configuration
+
+The full set of configuration parameters can be found under the [configurationAttributes][configuration_attributes] node of the extension's [package.json][extension_package_json] file. Here we list a few of the more common ones that may need to be used:
+
+* databaseUrl - URL to the Firebase Realtime Database to use.
+* debuggeeId - ID of the debuggee to debug.
+
+[configuration_attributes]: https://github.com/search?q=repo%3AGoogleCloudPlatform%2Fsnapshot-debugger+path%3Asnapshot_dbg_extension%2Fpackage.json+%22configurationAttributes%22&type=code
+[extension_package_json]: https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/main/snapshot_dbg_extension/package.json
+
 ## Quirks / Potential Improvements
 
 * Attaching
