@@ -192,7 +192,7 @@ commands.
   state:        {db_state}
 """
 
-LOCTION_MISMATCH_ERROR_MSG = (
+LOCATION_MISMATCH_ERROR_MSG = (
     "ERROR the following database already exists: '{full_database_name}', "
     "however its location '{existing_location}' does not match the requested "
     "location '{requested_location}'.\n\n"
@@ -351,7 +351,7 @@ class InitCommand:
       database_instance = instance_response.database_instance
       if args.location != database_instance.location:
         self.user_output.error(
-            LOCTION_MISMATCH_ERROR_MSG.format(
+            LOCATION_MISMATCH_ERROR_MSG.format(
                 full_database_name=database_instance.name,
                 existing_location=database_instance.location,
                 requested_location=args.location,
