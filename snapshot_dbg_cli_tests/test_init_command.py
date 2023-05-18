@@ -55,10 +55,16 @@ def build_firebase_project(defaut_rtdb_name=None):
   return FirebaseProject(project_data)
 
 
-def build_database_instance(db_name, db_type):
+def build_database_instance(db_name, db_type, location='us-central1'):
   return DatabaseInstance({
-      'name': f'projects/1111111111/locations/us-central1/instances/{db_name}',
+      'name': f'projects/1111111111/locations/{location}/instances/{db_name}',
       'project': 'projects/1111111111',
+
+      # Note, in practise, the domain is dependent on the location, however for
+      # our purposes here we don't need to get that specific and simply use
+      # firebaseio.com. For reference the actual domains used for the supported
+      # regions can be found at:
+      # https://firebase.google.com/docs/projects/locations#rtdb-locations
       'databaseUrl': f'https://{db_name}.firebaseio.com',
       'type': db_type,
       'state': 'ACTIVE'
@@ -146,25 +152,6 @@ class InitCommandTests(unittest.TestCase):
         cli_run.run(self.cli_services)
 
     return out, err
-
-  def test_only_default_location_allowed(self):
-    testargs = ['--location=us-west1']
-
-    out, err = self.run_cmd(testargs, expected_exception=SilentlyExitError)
-
-    self.assertEqual(
-        "ERROR: Currently the only supported location is 'us-central1'\n",
-        err.getvalue())
-    self.assertEqual('', out.getvalue())
-
-    # Ensure the test had not progressed at all, that check should be done
-    # first.
-    self.permissions_service_mock.check_required_permissions.assert_not_called()
-    self.gcloud_service_mock.is_api_enabled.assert_not_called()
-    self.firebase_management_service_mock.project_get.assert_not_called()
-    self.firebase_management_service_mock.rtdb_instance_get.assert_not_called()
-    self.cli_services.get_snapshot_debugger_rtdb_service.assert_not_called()
-    self.debugger_rtdb_service_mock.get_schema_version.assert_not_called()
 
   def test_permissions_check_done_as_expected(self):
     testargs = []
@@ -353,6 +340,54 @@ class InitCommandTests(unittest.TestCase):
         self.firebase_rtdb_service_mock.get.assert_called_once_with(
             db_path='', shallow=True, extra_retry_codes=[404])
 
+  def test_location_specified(self):
+    # Testdata: (test_name, testargs, location, db_type, expected_db_name)
+    # The db_type doesn't actually enter into this test, but we are setting it
+    # nonetheless to the value it would have in practise.
+    #
+    # By default if the user does not specify a location the CLI will default to
+    # 'us-central1'. Otherwise the CLI will honour what the user specifies.
+    # There is no special handling when --use-default-rtdb or --database-id are
+    # used, the location is passed through as is.
+    testcases = [
+        # When not specified it should default to 'us-central1'
+        ('Default', ['--location=us-central1'], 'USER_DATABASE',
+         'cli-test-project-cdbg', 'us-central1'),
+        ('Use Default RTDB', ['--use-default-rtdb', '--location=europe-west1'],
+         'DEFAULT_DATABASE', 'cli-test-project-default-rtdb', 'europe-west1'),
+        ('Custom',
+         ['--database-id=custom-database-name', '--location=asia-southeast1'
+         ], 'USER_DATABASE', 'custom-database-name', 'asia-southeast1'),
+    ]
+
+    self.firebase_management_service_mock.rtdb_instance_get = MagicMock(
+        return_value=DatabaseGetResponse(
+            status=DatabaseGetStatus.DOES_NOT_EXIST))
+
+    self.firebase_rtdb_service_mock.get = MagicMock(return_value=None)
+
+    for test_name, testargs, db_type, expected_db_name, \
+        expected_location in testcases:
+      with self.subTest(test_name):
+        self.firebase_management_service_mock.rtdb_instance_get.reset_mock()
+        self.firebase_rtdb_service_mock.get.reset_mock()
+        database_instance = build_database_instance(expected_db_name, db_type)
+
+        self.firebase_management_service_mock.rtdb_instance_create = MagicMock(
+            return_value=DatabaseCreateResponse(
+                status=DatabaseCreateStatus.SUCCESS,
+                database_instance=database_instance))
+
+        self.run_cmd(testargs)
+
+        service_mock = self.firebase_management_service_mock
+        service_mock.rtdb_instance_get.assert_called_once_with(expected_db_name)
+        service_mock.rtdb_instance_create.assert_called_once_with(
+            database_id=expected_db_name, location=expected_location)
+
+        self.firebase_rtdb_service_mock.get.assert_called_once_with(
+            db_path='', shallow=True, extra_retry_codes=[404])
+
   def test_handles_db_create_fails_precondition_as_expected(self):
     # Testdata: (test_name, testargs, db_type, expected_db_name)
     # The db_type doesn't actually enter into this test, but we are setting it
@@ -400,6 +435,49 @@ class InitCommandTests(unittest.TestCase):
         self.assertIn(f"Visit {project_billing_link} and click 'Modify plan'",
                       err.getvalue())
         self.assertEqual('', out.getvalue())
+
+  def test_db_already_exists_at_different_location_from_default(self):
+    database_instance = build_database_instance('foo-cdbg', 'USER_DATABASE',
+                                                'asia-southeast1')
+
+    self.firebase_management_service_mock.rtdb_instance_get = MagicMock(
+        return_value=DatabaseGetResponse(
+            status=DatabaseGetStatus.EXISTS,
+            database_instance=database_instance))
+
+    out, err = self.run_cmd(testargs=[], expected_exception=SilentlyExitError)
+
+    service_mock = self.firebase_management_service_mock
+    service_mock.rtdb_instance_create.assert_not_called()
+
+    self.assertIn(
+        (f"the following database already exists: '{database_instance.name}', "
+         "however its location 'asia-southeast1' does not match the requested "
+         "location 'us-central1'"), err.getvalue())
+
+    self.assertEqual('', out.getvalue())
+
+  def test_db_already_exists_at_different_location_from_user_specfied(self):
+    database_instance = build_database_instance('foo-cdbg', 'USER_DATABASE',
+                                                'us-central1')
+
+    self.firebase_management_service_mock.rtdb_instance_get = MagicMock(
+        return_value=DatabaseGetResponse(
+            status=DatabaseGetStatus.EXISTS,
+            database_instance=database_instance))
+
+    out, err = self.run_cmd(['--location=europe-west1'],
+                            expected_exception=SilentlyExitError)
+
+    service_mock = self.firebase_management_service_mock
+    service_mock.rtdb_instance_create.assert_not_called()
+
+    self.assertIn(
+        (f"the following database already exists: '{database_instance.name}', "
+         "however its location 'us-central1' does not match the requested "
+         "location 'europe-west1'"), err.getvalue())
+
+    self.assertEqual('', out.getvalue())
 
   def test_db_not_created_when_it_exists(self):
     # Testdata: (test_name, testargs, db_type, expected_db_name)

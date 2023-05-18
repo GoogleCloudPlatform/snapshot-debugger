@@ -17,6 +17,7 @@ The types here help work with the data and response messages from Firebase.
 """
 
 from enum import Enum
+import re
 
 FIREBASE_MANAGMENT_API_SERVICE = 'firebase.googleapis.com'
 FIREBASE_RTDB_MANAGMENT_API_SERVICE = 'firebasedatabase.googleapis.com'
@@ -123,11 +124,25 @@ class DatabaseInstance:
       self.database_url = database_instance['databaseUrl']
       self.type = database_instance['type']
       self.state = database_instance['state']
+      self.location = self.extract_location(self.name)
+
+      if self.location is None:
+        raise ValueError(
+            f"Failed to extract location from project name '{self.name}'")
+
     except KeyError as e:
       missing_key = e.args[0]
       error_message = ('DatabaseInstance is missing expected field '
                        f"'{missing_key}' instance: {database_instance}")
       raise ValueError(error_message) from e
+
+  @staticmethod
+  def extract_location(name):
+    location_search = re.search('/locations/([^/]+)/', name)
+    if not location_search or len(location_search.groups()) != 1:
+      return None
+
+    return location_search.groups()[0]
 
 
 class DatabaseCreateResponse:

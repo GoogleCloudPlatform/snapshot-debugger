@@ -192,6 +192,21 @@ commands.
   state:        {db_state}
 """
 
+LOCATION_MISMATCH_ERROR_MSG = (
+    "ERROR the following database already exists: '{full_database_name}', "
+    "however its location '{existing_location}' does not match the requested "
+    "location '{requested_location}'.\n\n"
+    "The database ID ('{database_id}' in this case) must be unique across "
+    'locations and projects.\n\n'
+    "If you meant to finalize the initialization of '{database_id}' in "
+    "'{requested_location}' (or verify it is already correctly initialized) "
+    "rerun the init command and specify '--location={existing_location}'.\n\n"
+    "If you meant to create a new database in '{requested_location}', given "
+    "'{database_id}' is already in use, you'll need to use a new name by "
+    "providing the '--database-id' argument to the init command. Note, even "
+    "if you delete '{database_id}', the name will remain reserved and will not "
+    'be available to be reused in a new location, a new name must be chosen.')
+
 
 class InitCommand:
   """This class implements the init command.
@@ -222,14 +237,6 @@ class InitCommand:
 
     # Only some locations are supported, see:
     # https://firebase.google.com/docs/projects/locations#rtdb-locations
-    #
-    # If unsupported location is used, this error occurs
-    # "error": {
-    #   "code": 400,
-    #   "message": "Request contains an invalid argument.",
-    #   "status": "INVALID_ARGUMENT"
-    # }
-    # For now however we only support 'us-central1'
     parser.add_argument(
         '-l', '--location', help=LOCATION_HELP, default=DEFAULT_LOCATION)
     self.args_parser = parser
@@ -242,11 +249,6 @@ class InitCommand:
     self.gcloud_service = cli_services.gcloud_service
     self.permissions_service = cli_services.permissions_service
     self.project_id = cli_services.project_id
-
-    if args.location != DEFAULT_LOCATION:
-      self.user_output.error('ERROR: Currently the only supported location is '
-                             f"'{DEFAULT_LOCATION}'")
-      raise SilentlyExitError
 
     # If the user does not have the required permissions this will emit an error
     # message and exit.
@@ -347,6 +349,16 @@ class InitCommand:
 
     if status == DatabaseGetStatus.EXISTS:
       database_instance = instance_response.database_instance
+      if args.location != database_instance.location:
+        self.user_output.error(
+            LOCATION_MISMATCH_ERROR_MSG.format(
+                full_database_name=database_instance.name,
+                existing_location=database_instance.location,
+                requested_location=args.location,
+                database_id=database_id))
+
+        raise SilentlyExitError
+
     elif status == DatabaseGetStatus.DOES_NOT_EXIST:
       create_response = self.firebase_management_service.rtdb_instance_create(
           database_id=database_id, location=args.location)
