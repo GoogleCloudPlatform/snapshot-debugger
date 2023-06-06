@@ -279,9 +279,9 @@ Make note of the database URL provided in the command output; you will need to
 provide this to your debug agent(s) and the vsCode plugin.
 
 [rtdb_locations]: https://firebase.google.com/docs/projects/locations#rtdb-locations
-[java_agent_config]: https://github.com/GoogleCloudPlatform/cloud-debug-java#snapshot-debugger---firebase-realtime-database-backend
-[python_agent_config]: https://github.com/GoogleCloudPlatform/cloud-debug-python/blob/main/README.md#snapshot-debugger---firebase-realtime-database-backend
-[nodejs_agent_config]: https://github.com/googleapis/cloud-debug-nodejs/blob/main/README.md#snapshot-debugger---firebase-realtime-database-backend
+[java_agent_config]: https://github.com/GoogleCloudPlatform/cloud-debug-java/blob/main/README.md#configuring-the-firebase-realtime-database-url
+[python_agent_config]: https://github.com/GoogleCloudPlatform/cloud-debug-python/blob/main/README.md#flag-reference
+[nodejs_agent_config]: https://github.com/googleapis/cloud-debug-nodejs/blob/main/README.md#debugger-agent-settings
 [extension_config]: https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/main/snapshot_dbg_extension/README.md#configuration
 
 
