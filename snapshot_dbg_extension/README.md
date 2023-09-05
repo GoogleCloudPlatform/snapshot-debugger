@@ -40,6 +40,24 @@ The full set of configuration parameters can be found under the [configurationAt
 [configuration_attributes]: https://github.com/search?q=repo%3AGoogleCloudPlatform%2Fsnapshot-debugger+path%3Asnapshot_dbg_extension%2Fpackage.json+%22configurationAttributes%22&type=code
 [extension_package_json]: https://github.com/GoogleCloudPlatform/snapshot-debugger/blob/main/snapshot_dbg_extension/package.json
 
+## User Guide
+
+1.  Configure the extension:
+    1.  Open a source file in one of the supported debuggable languages.  Currently, this is Python, Java, Typescript, and PHP.
+    2.  Switch to the Run & Debug tab (ctrl+shift+D)
+    3.  Click on "create a launch.json file" and choose "Snapshot Debugger" from the dropdown.
+    4.  (optional) Add configuration to the launch.json file.
+2.  Start a debugging session:
+    1.  Click the Run button with "Snapshot Debugger" next to it or hit F5.
+    2.  Wait for the extension to connect to your Firebase database.  A progress tracker will be shown in the bottom right corner.
+    3.  When prompted, choose which running application you would like to debug.
+3.  Debug your application:
+    1.  Create a breakpoint that will capture a snapshot by clicking in the gutter next to the line numbers in the file you'd like to debug.
+        *   To set a condition on a breakpoint, right-click in the gutter instead, and choose to create a conditional breakpoint.
+	*   You will be prompted to enter any expressions that you would like to have evaluated at snapshot time.
+    2.  Once a snapshot has been taken, view it using a combination of the call stack and the variables panel on the left in the run & debug view.
+    3.  To set a logpoint, right-click in the gutter and make the appropriate selection.  Logpoints will not result in snapshots but will emit log messages in your application.  View those log messages however you would normally view your logs.
+
 ## Quirks / Potential Improvements
 
 * Attaching
