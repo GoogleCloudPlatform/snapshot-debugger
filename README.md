@@ -23,7 +23,7 @@ deprecated on May 16, 2022 and the service was shut down on May 31, 2023
 
 ## Limitations
 
-*  Python 2.7 is not be supported
+*  Python 2.7 is not supported
 
 
 ## CLI Command Reference
