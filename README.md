@@ -11,27 +11,19 @@ than 10ms to the request latency only when the application state is captured. In
 most cases, this isn’t noticeable by users.
 
 
+## Project Status: Archived
+
+This project has been archived and is no longer supported. There will be no
+further bug fixes or security patches. The repository can be forked by users
+if they want to maintain it going forward. 
+
+This OSS solution provides an alternative to Cloud Debugger. Cloud Debugger was
+deprecated on May 16, 2022 and the service was shut down on May 31, 2023
+
+
 ## Limitations
 
-*  Python 2.7 will not be supported
-
-
-## Support Period
-
-Snapshot Debugger and associated agents will be supported until Aug 31, 2023,
-after which they will be archived and frozen. No bug fixes or security patches
-will be made after the freeze date. The repository can be forked by users if
-they wish to maintain it going forward.
-
-### What happens after Aug 31
-
-After Aug 31, 2023, Snapshot Debugger CLI and agents remain functional. Users
-can fork the repository to add features.
-
-This OSS solution is being provided as an alternative to Cloud Debugger that
-users can use beyond the end of the support period. The purpose of the support
-period is to assist users with issues or questions they have around
-transitioning from Cloud Debugger to Snapshot Debugger.
+*  Python 2.7 is not supported
 
 
 ## CLI Command Reference
